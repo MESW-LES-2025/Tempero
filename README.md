@@ -36,5 +36,27 @@ To create a cooking community that empowers users to **discover, review and shar
 
 ---
 
+## Product
+**What it is:**  
+A social and gamified recipe platform where users can:
+- Upload and review recipes (photos, difficulty, time, taste).
+- Follow friends and share cooking experiences.
+- Earn points and level up based on cooking activity.
+- Create thematic or private lists (favorites, quick meals, seasonal dishes).
+- Get personalized recipe recommendations based on skill level.
 
-  
+**Key features (3–5):**
+1. Recipe upload with structured difficulty, time and quality metrics.  
+2. Gamified user levels based on cooking activity and skill growth.  
+3. Personalized recipe and user discovery via filters.  
+4. Social features: reviews, follows, comments and collections.
+
+**Differentiation:**
+- Skill-based progression system + detailed evaluation formula: Evaluation = Quality / (Time + Difficulty)
+- Mix of **social interaction** (like Letterboxd) and **skill tracking** (like Duolingo).
+
+**Feasibility:**
+- Technologies we are going to use?
+
+---
+
