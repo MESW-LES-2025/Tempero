@@ -23,3 +23,18 @@ To create a cooking community that empowers users to **discover, review and shar
 - Market need: a platform merging **social interaction + gamified learning + recipe management**.
 
 ---
+
+## Needs
+- Central place to **share and discover new recipes**.
+- Ability to **evaluate recipes fairly** (difficulty, time, quality).
+- Desire for **progression and recognition** (levels, achievements).
+- Social connection: follow friends, exchange reviews, build community.
+
+**Main problem solved:**
+> “Recipe websites don’t motivate users to improve because they just show instructions and most times the user behind the recipe is unknown.  
+> Tempero helps you *learn, track and grow* your cooking skills while being connected to your friends.”
+
+---
+
+
+  
