@@ -60,3 +60,19 @@ A social and gamified recipe platform where users can:
 
 ---
 
+## Business goals
+- Build an active user base of cooking enthusiasts.  
+- Increase daily engagement through gamification and challenges.  
+- Encourage recipe submissions and reviews to grow the content base.  
+- Establish partnerships with cooking schools or food brands for sponsorship.  
+- Long-term goal: create a **data-driven culinary learning platform** with personalized cooking insights.
+
+**Success metrics:**
+- Number of active users per month.  
+- Number of reviews and average engagement per recipe.  
+- Growth in user level progression over time.  
+- Community activity (follows, comments).  
+- Potential for monetization via premium features, partnerships or ads.
+
+---
+
