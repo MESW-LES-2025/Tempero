@@ -5,6 +5,7 @@ import { supabase } from "../config/supabaseClient";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -16,7 +17,30 @@ export default function RegisterPage() {
     setErr(null);
     setLoading(true);
 
-    // Basic front-end rules (adjust as you wish)
+    if (username.trim().length < 4) {
+      setErr("Username must be at least 4 characters.");
+      setLoading(false);
+      return;
+    }
+
+    // Check username uniqueness in "profiles" table
+    const { data: existing, error: fetchErr } = await supabase
+      .from("profiles")
+      .select("authId")
+      .eq("username", username)
+      .limit(1)
+      .maybeSingle();
+    if (fetchErr) {
+      setErr(fetchErr.message);
+      setLoading(false);
+      return;
+    }
+    if (existing) {
+      setErr("Username already taken.");
+      setLoading(false);
+      return;
+    }
+
     if (password.length < 8) {
       setErr("Password must be at least 8 characters.");
       setLoading(false);
@@ -65,6 +89,22 @@ export default function RegisterPage() {
               className="w-full rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-gray-900"
               placeholder="you@tempero.app"
             />
+          </div>
+
+            <div className="space-y-1">
+              <label htmlFor="reg-username" className="text-sm font-medium">
+                Username
+              </label>
+              <input
+                id="reg-username"
+                type="text"
+                autoComplete="username"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-gray-900"
+                placeholder="Choose a unique username"
+              />
           </div>
 
           <div className="space-y-1">
