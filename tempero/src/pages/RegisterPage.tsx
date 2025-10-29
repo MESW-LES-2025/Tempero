@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { supabase } from "../config/supabaseClient";
@@ -12,42 +12,73 @@ export default function RegisterPage() {
   const [err, setErr] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  // New states for live username validation
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+
+  // Debounced availability check
+useEffect(() => {
+  setUsernameError(null);
+  setUsernameAvailable(null);
+
+  const raw = username.trim();
+  if (!raw) return;
+  if (raw.length < 4) {
+    setUsernameError("Username must be at least 4 characters.");
+    return;
+  }
+
+  let mounted = true;
+  setCheckingUsername(true);
+
+
+
+  const timeout = setTimeout(async () => {
+    const { data, error } = await supabase.rpc("is_username_available", {
+      p_username: username,
+    });
+
+    if (!mounted) return;
+    setCheckingUsername(false);
+
+    if (error) {
+      console.error("Username check error:", error);
+      setUsernameError("Could not check username. Try again.");
+      setUsernameAvailable(null);
+      return;
+    }
+
+    // data === true means available
+    setUsernameAvailable(Boolean(data));
+  }, 400);
+
+  return () => {
+    mounted = false;
+    clearTimeout(timeout);
+  };
+}, [username]);
+
+
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    setLoading(true);
 
-    if (username.trim().length < 4) {
-      setErr("Username must be at least 4 characters.");
-      setLoading(false);
-      return;
-    }
-
-    // Check username uniqueness in "profiles" table
-    const { data: existing, error: fetchErr } = await supabase
-      .from("profiles")
-      .select("authId")
-      .eq("username", username)
-      .limit(1)
-      .maybeSingle();
-    if (fetchErr) {
-      setErr(fetchErr.message);
-      setLoading(false);
-      return;
-    }
-    if (existing) {
-      setErr("Username already taken.");
-      setLoading(false);
+    // prevent submit until username is explicitly available
+    if (usernameAvailable !== true) {
+      setErr("Please choose an available username.");
       return;
     }
 
     if (password.length < 8) {
       setErr("Password must be at least 8 characters.");
-      setLoading(false);
       return;
     }
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    setLoading(true);
+
+    const { error } = await supabase.auth.signUp({ email, password, options: {data: {username: username.trim(), bio: null, profile_picture_url: null}} });
+
     setLoading(false);
 
     if (error) {
@@ -91,20 +122,34 @@ export default function RegisterPage() {
             />
           </div>
 
-            <div className="space-y-1">
-              <label htmlFor="reg-username" className="text-sm font-medium">
-                Username
-              </label>
-              <input
-                id="reg-username"
-                type="text"
-                autoComplete="username"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-gray-900"
-                placeholder="Choose a unique username"
-              />
+          <div className="space-y-1">
+            <label htmlFor="reg-username" className="text-sm font-medium">
+              Username
+            </label>
+            <input
+              id="reg-username"
+              type="text"
+              autoComplete="username"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-gray-900"
+              placeholder="Choose a unique username"
+            />
+            <div className="mt-1 text-sm">
+              {checkingUsername && (
+                <span className="text-gray-600">Checking availability…</span>
+              )}
+              {!checkingUsername && usernameError && (
+                <span className="text-red-600">{usernameError}</span>
+              )}
+              {!checkingUsername && usernameAvailable === false && !usernameError && (
+                <span className="text-red-600">Username is already taken.</span>
+              )}
+              {!checkingUsername && usernameAvailable === true && (
+                <span className="text-green-600">Username is available.</span>
+              )}
+            </div>
           </div>
 
           <div className="space-y-1">
@@ -138,7 +183,7 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || usernameAvailable !== true}
             className="w-full rounded-lg bg-black px-4 py-2.5 text-white hover:bg-gray-900 disabled:opacity-70"
           >
             {loading ? "Creating account…" : "Register"}
