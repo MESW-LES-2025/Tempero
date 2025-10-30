@@ -87,7 +87,6 @@ useEffect(() => {
     }
 
     // Success: do NOT auto-login — send user to Login page
-    alert("Registration successful! Please log in.");
     navigate("/login");
   }
 
@@ -96,13 +95,13 @@ useEffect(() => {
       <div className="absolute inset-0  backdrop-blur-xs  pointer-events-none"></div>
       <div className="mx-auto mt-12 max-w-md ">
         <div className="rounded-xl  bg-bright/90 p-6 shadow-sm relative z-10">
-          <h1 className="mb-2 text-3xl font-bold font-heading text-main "> Register</h1>
+            <h1 className="mb-4 text-3xl font-bold font-heading text-main text-center">Register</h1>
           <p className="mb-10 text-sm text-gray-600">
             Start your journey with Tempero: cook, review, and level up.
           </p>
 
           {err && (
-            <div className="mb-3 font-body rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div className="mb-3 font-body rounded-lg  bg-main/10 px-3 py-2 text-sm text-danger">
               {err}
             </div>
           )}
