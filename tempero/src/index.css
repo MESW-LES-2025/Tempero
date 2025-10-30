@@ -1,1 +1,16 @@
 @import "tailwindcss";
+
+@theme{
+    --color-main: #E47D39;
+    --color-secondary: #81532B;
+    --color-dark: #2C2C25;
+    --color-bright: #FBF8EF;
+    --color-off-white: #F1F1F1;
+    --color-danger: #FF2000;
+
+    /* Fonts */
+    --font-heading-styled: "Bad Script", cursive;
+    --font-heading: "Quicksand", sans-serif;
+    --font-body: "Montserrat", sans-serif;
+    
+}
