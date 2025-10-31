@@ -75,8 +75,7 @@ A social and gamified recipe platform where users can:
 - Potential for monetization via premium features, partnerships or ads.
 
 ---
-**Development account
-email: temperoteam@gmail.com
-username: Masterchef
-password: 123FoodLover
+## Development account
+- **Email**: temperoteam@gmail.com
+- **username**: Masterchef
 ---
