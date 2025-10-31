@@ -77,5 +77,6 @@ A social and gamified recipe platform where users can:
 ---
 ## Development account
 - **Email**: temperoteam@gmail.com
-- **username**: Masterchef
+- **Username**: Masterchef
+- **Password**: 123TastyFood
 ---
