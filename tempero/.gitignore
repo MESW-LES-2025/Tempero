@@ -7,18 +7,50 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Dependency directories
+node_modules/
 
-# Editor directories and files
+# Build outputs
+dist/
+dist-ssr/
+build/
+.vite/
+
+# Local env files
+.env
+.env.*
+!.env.example     # keep your example template if you have one
+
+# OS & Editor junk
+.DS_Store
+Thumbs.db
+.idea/
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# TypeScript
+*.tsbuildinfo
+
+# Tailwind / PostCSS cache
+*.tailwindcss.tmp
+.postcssrc.*
+
+# Supabase local dev
+.supabase/
+supabase/.temp/
+supabase/.branches/
+
+# Testing & coverage
+coverage/
+*.lcov
+jest-stare/
+playwright-report/
+test-results/
+
+# Misc
+*.local
