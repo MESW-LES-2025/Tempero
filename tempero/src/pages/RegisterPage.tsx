@@ -97,7 +97,7 @@ useEffect(() => {
         <div className="rounded-xl  bg-bright/90 p-6 shadow-sm relative z-10">
             <h1 className="mb-4 text-3xl font-bold font-heading text-main text-center">Register</h1>
           <p className="mb-10 text-sm text-gray-600">
-            Start your journey with Tempero: cook, review, and level up.
+            Start your journey with Tempero: cook, review and level up.
           </p>
 
           {err && (

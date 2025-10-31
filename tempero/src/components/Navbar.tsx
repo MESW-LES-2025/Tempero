@@ -33,7 +33,8 @@ if (location.pathname === "/register" || location.pathname === "/login") return 
   }, []);
 
   const username = user?.user_metadata?.username ?? null;
-  const profileHref = username ? `/users/${username}` : "/profile";
+  // If not logged in, clicking the "Guest" profile should go to the login page
+  const profileHref = username ? `/users/${username}` : (user ? "/profile" : "/login");
   const profileLabel = username ?? (user ? "Profile" : "Guest");
 
   async function handleSignOut() {
@@ -48,29 +49,38 @@ if (location.pathname === "/register" || location.pathname === "/login") return 
   return (
     <nav className="navbar text-bright text-lg font-heading flex flex-row w-screen-2 justify-between bg-main px-3 py-4 m-2 rounded-lg shadow-lg items-center">
       <h1 className="logo">
-        <Link to="/">Tempero</Link>
+        <Link to="/">
+          <img src="/images/logo.png" alt="Tempero Logo" className="h-15" />
+        </Link>
       </h1>
-      <ul className="flex gap-4 mr-4 items-center">
-        {user && (
-          <li>
-            <button 
-              onClick={handleSignOut} 
-              className="text-bright/70 cursor-pointer" 
-              aria-label="Sign out"
-            >
-              Log out
-            </button>
-          </li>
-        )}
-
+      <ul className="flex gap-6 mr-4 items-center">
+        <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">
+            <Link to="/lists">Lists</Link>
+        </li>
+        <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">
+            <Link to="/favorites">Favorites</Link>
+        </li>
+        <div className="usersection  bg-bright/10 p-2 rounded-md gap-2 flex font-heading ">
         {!user && (
           <li>
             <Link to="/login">Log in</Link>
           </li>
         )}
-        <li className="border border-bright/20 bg-bright/10 rounded-md px-2 py-1 hover:bg-bright/10 transition-colors">
-          <Link to={profileHref}>{profileLabel}</Link>
-        </li>
+            
+            <li className="border border-bright/20 bg-bright/20 rounded-md px-2 py-1 hover:-translate-y-1 transition-transform duration-200 ease-in-out text-sm">
+            <Link to={profileHref}>{profileLabel}</Link>
+            </li>
+            {user && (
+            <button 
+              onClick={handleSignOut} 
+              className="text-bright/70 cursor-pointer text-xs hover:text-bright" 
+              aria-label="Sign out"
+              
+            >
+             <Link to="/login">Log out</Link>
+            </button>
+            )}
+        </div>
 
       </ul>
     </nav>
