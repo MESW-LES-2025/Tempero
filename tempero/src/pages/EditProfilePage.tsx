@@ -4,6 +4,7 @@ import { supabase } from "../config/supabaseClient";
 
 type Profile = {
   auth_id: string;
+  username?: string | null;
   first_name?: string | null;
   last_name?: string | null;
   bio?: string | null;

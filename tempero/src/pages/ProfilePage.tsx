@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
 import Recipes from "../components/Recipes";
 import Reviews from "../components/Reviews";
@@ -28,6 +28,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!username) return;
@@ -70,6 +71,7 @@ export default function ProfilePage() {
       : profile?.username ?? "Unnamed User";
 
   return (
+    <div className="min-h-screen w-full bg-amber-50 flex justify-center items-start py-10">
     <section className="w-full flex flex-col lg:flex-row items-start justify-center gap-8 mt-10 px-4 sm:px-6 lg:px-10">
       {/* Left card */}
       <article className="w-full lg:w-1/3 rounded-xl bg-white shadow-md ring-1 ring-black/5 p-5 sm:p-7">
@@ -114,7 +116,9 @@ export default function ProfilePage() {
           </>
         )}
         {/* Edit profile button */}
-        <button className="mt-6 w-full bg-[#e57f22] hover:bg-[#cf6e1d] text-white text-sm sm:text-base font-medium py-2.5 rounded-md transition-colors">
+        <button className="mt-6 w-full bg-[#e57f22] hover:bg-[#cf6e1d] text-white text-sm sm:text-base font-medium py-2.5 rounded-md transition-colors"
+        onClick={() => navigate("/profile/edit")}
+        >
           Edit Profile
         </button>
       </article>
@@ -152,5 +156,6 @@ export default function ProfilePage() {
         )}
       </div>
     </section>
+    </div>
   );
 }
