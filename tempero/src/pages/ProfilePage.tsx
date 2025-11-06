@@ -1,4 +1,7 @@
+import { useState } from "react";
 import chefImg from "../assets/febrian-zakaria-SiQgni-cqFg-unsplash.jpg";
+import Recipes from "../components/Recipes";
+import Reviews from "../components/Reviews";
 
 type Badge = { label: string; icon: string };
 const badges: Badge[] = [
@@ -9,9 +12,12 @@ const badges: Badge[] = [
 ];
 
 export default function ProfilePage() {
+  const [tab, setTab] = useState<"recipes" | "reviews">("recipes");
+
   return (
-    <section className="w-full flex items-start justify-center mt-10 px-4 sm:px-6 lg:px-8">
-      <article className="w-full max-w-3xl rounded-xl bg-white shadow-md ring-1 ring-black/5 p-5 sm:p-7">
+    <section className="w-full flex flex-col lg:flex-row items-start justify-center gap-8 mt-10 px-4 sm:px-6 lg:px-10">
+      {/* Lft */}
+      <article className="w-full lg:w-1/3 rounded-xl bg-white shadow-md ring-1 ring-black/5 p-5 sm:p-7">
         <div className="flex gap-4 sm:gap-6">
           <img
             src={chefImg}
@@ -50,6 +56,35 @@ export default function ProfilePage() {
           is not just a craft, it is harmony, precision and pure joy.
         </p>
       </article>
+
+      {/* R8 */}
+      <div className="w-full lg:w-2/3">
+        {/* Tgle */}
+        <div className="flex gap-3 mb-5 border-b border-gray-200">
+          <button
+            className={`pb-2 text-sm sm:text-base font-medium ${
+              tab === "recipes"
+                ? "text-[#e57f22] border-b-2 border-[#e57f22]"
+                : "text-gray-600 hover:text-[#e57f22]"
+            }`}
+            onClick={() => setTab("recipes")}
+          >
+            Recipes
+          </button>
+          <button
+            className={`pb-2 text-sm sm:text-base font-medium ${
+              tab === "reviews"
+                ? "text-[#e57f22] border-b-2 border-[#e57f22]"
+                : "text-gray-600 hover:text-[#e57f22]"
+            }`}
+            onClick={() => setTab("reviews")}
+          >
+            Reviews
+          </button>
+        </div>
+
+        {tab === "recipes" ? <Recipes /> : <Reviews />}
+      </div>
     </section>
   );
 }
