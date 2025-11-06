@@ -64,11 +64,11 @@ const active = "text-dark scale-110 border-b-1 border-dark/50 border-bright";
 
   return (
     <>
-      <nav className="navbar text-bright text-lg font-heading flex flex-row w-screen-2 justify-between bg-main px-3 py-4 m-2 rounded-lg shadow-lg items-center">
+  <nav className="navbar text-bright text-lg max-[500px]:text-sm font-heading flex flex-row w-screen-2 justify-between bg-main px-3 py-4 m-2 rounded-lg shadow-lg items-center">
         <div className="flex items-center gap-4">
           <h1 className="logo">
             <Link to="/">
-              <img src="/images/logo.png" alt="Tempero Logo" className="h-15" />
+              <img src="/images/logo.png" alt="Tempero Logo" className="h-15 max-[500px]:h-10 min-h-5 min-w-9 min" />
             </Link>
           </h1>
           
@@ -135,7 +135,7 @@ const active = "text-dark scale-110 border-b-1 border-dark/50 border-bright";
          </li>
  
          {/* profile link */}
-     <div className="usersection  bg-bright/10 p-2 rounded-md gap-2 flex font-heading ">
+     <div className="usersection max-[500px]:flex-col max-[500px]:text-xs bg-bright/10 p-2 rounded-md gap-2 flex font-heading  ">
         {!user && (
           <li>
             <Link to="/login">Log in</Link>
@@ -152,7 +152,7 @@ const active = "text-dark scale-110 border-b-1 border-dark/50 border-bright";
               aria-label="Sign out"
               
             >
-             <Link to="/login">Log out</Link>
+             <Link to="/login" className="max-[500px]:text-3xs">Log out</Link>
             </button>
             )}
         </div>
