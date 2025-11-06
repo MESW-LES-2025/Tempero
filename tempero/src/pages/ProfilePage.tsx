@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
-import { getLevelInfo } from "../utils/Levels";
-
-
+import Recipes from "../components/Recipes";
+import Reviews from "../components/Reviews";
 import chefImg from "../assets/febrian-zakaria-SiQgni-cqFg-unsplash.jpg";
 
 type Badge = { label: string; icon: string };
@@ -17,7 +16,6 @@ const badges: Badge[] = [
 type Profile = {
   auth_id: string;
   username: string;
-  xp?: number | null;
   first_name?: string | null;
   last_name?: string | null;
   bio?: string | null;
@@ -26,8 +24,9 @@ type Profile = {
 
 export default function ProfilePage() {
   const { username } = useParams<{ username: string }>();
+  const [tab, setTab] = useState<"recipes" | "reviews">("recipes");
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,7 +37,6 @@ export default function ProfilePage() {
     setError(null);
 
     (async () => {
-      // Replace "profiles" with your table name; ensure it has a "username" column
       const { data, error: fetchErr } = await supabase
         .from("profiles")
         .select("*")
@@ -50,18 +48,15 @@ export default function ProfilePage() {
 
       if (fetchErr) {
         setError(fetchErr.message);
-        console.error("Profile fetch error:", fetchErr);
         setProfile(null);
         return;
       }
-
       if (!data) {
         setError("User not found.");
         setProfile(null);
         return;
       }
-
-      setProfile(data);
+      setProfile(data as Profile);
     })();
 
     return () => {
@@ -69,66 +64,89 @@ export default function ProfilePage() {
     };
   }, [username]);
 
+  const displayName =
+    (profile?.first_name || profile?.last_name)
+      ? `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim()
+      : profile?.username ?? "Unnamed User";
+
   return (
-    <section className="w-full flex items-start justify-center mt-10 px-4 sm:px-6 lg:px-8 font-body">
-      <article className="relative w-full max-w-3xl rounded-xl bg-white shadow-xl ring-1 ring-black/5 p-5 sm:p-7">
+    <section className="w-full flex flex-col lg:flex-row items-start justify-center gap-8 mt-10 px-4 sm:px-6 lg:px-10">
+      {/* Left card */}
+      <article className="w-full lg:w-1/3 rounded-xl bg-white shadow-md ring-1 ring-black/5 p-5 sm:p-7">
         {loading ? (
-          <div>Loading...</div>
+          <div>Loading…</div>
         ) : error ? (
           <div className="text-sm text-red-600">{error}</div>
-        ) : profile ? (
+        ) : !profile ? (
+          <div>No profile to display.</div>
+        ) : (
           <>
             <div className="flex gap-4 sm:gap-6">
-              {/* Level badge top-right of the card */}
-              <div className="absolute top-4 right-4">
-                {(() => {
-                  const lvl = getLevelInfo(profile.xp ?? 0);
-                  return (
-                    <div className="inline-flex items-center gap-2 rounded-md bg-bright/10 px-3 py-1 text-sm font-medium shadow-sm">
-                      <span className="text-xs text-gray-600">Level {lvl.level}</span>
-                      <span className="text-main">{lvl.name}</span>
-                    </div>
-                  );
-                })()}
-              </div>
               <img
-                src={profile.avatar_url ?? chefImg}
-                alt={profile.username ?? "User avatar"}
-                className="h-50 w-30 sm:h-50 sm:w-30  object-cover ring-1 ring-black/10 absolute  rounded-tl-xl rounded-br-xl  shadow-lg top-0 left-0 m-0 p-0"
+                src={profile.avatar_url || chefImg}
+                alt={displayName}
+                className="h-24 w-24 sm:h-28 sm:w-28 rounded-lg object-cover ring-1 ring-black/10"
               />
-              <div className="top-section-info ml-30">
-                <div className="flex-1 ">
-                  <h1 className="text-2xl sm:text-3xl font-heading-styled text-[#e57f22]">
-                    {profile.first_name || profile.username || "Unnamed User"}{" "}
-                    {profile.last_name ? profile.last_name : ""}
-                  </h1>
+              <div className="flex-1">
+                <h1 className="text-2xl sm:text-3xl font-semibold text-[#e57f22]">
+                  {displayName}
+                </h1>
 
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {badges.map((b, i) => (
-                      <span
-                        key={i}
-                        className="inline-flex items-center gap-1 rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs sm:text-sm "
-                      >
-                        <span aria-hidden>{b.icon}</span>
-                        <span className="font-medium">{b.label}</span>
-                      </span>
-                    ))}
-                  </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {badges.map((b, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1 rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs sm:text-sm"
+                    >
+                      <span aria-hidden>{b.icon}</span>
+                      <span className="font-medium">{b.label}</span>
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>
 
-            <div className="my-4 mt-30 border-t border-dashed border-gray-300" />
+            <div className="my-4 border-t border-dashed border-gray-300" />
 
             <p className="text-sm sm:text-base leading-7 text-slate-700">
-              {profile.bio ??
-                `This user has not provided a bio yet.`}
+              {profile.bio?.trim() || "This user has not provided a bio yet."}
             </p>
           </>
-        ) : (
-          <div>No profile to display.</div>
         )}
       </article>
+
+      {/* Right side: Tabs + content */}
+      <div className="w-full lg:w-2/3">
+        <div className="flex gap-3 mb-5 border-b border-gray-200">
+          <button
+            className={`pb-2 text-sm sm:text-base font-medium ${
+              tab === "recipes"
+                ? "text-[#e57f22] border-b-2 border-[#e57f22]"
+                : "text-gray-600 hover:text-[#e57f22]"
+            }`}
+            onClick={() => setTab("recipes")}
+          >
+            Recipes
+          </button>
+          <button
+            className={`pb-2 text-sm sm:text-base font-medium ${
+              tab === "reviews"
+                ? "text-[#e57f22] border-b-2 border-[#e57f22]"
+                : "text-gray-600 hover:text-[#e57f22]"
+            }`}
+            onClick={() => setTab("reviews")}
+          >
+            Reviews
+          </button>
+        </div>
+
+        {/* Pass identifiers to child components so they can query Supabase */}
+        {tab === "recipes" ? (
+          <Recipes userId={profile?.auth_id} username={profile?.username} />
+        ) : (
+          <Reviews userId={profile?.auth_id} username={profile?.username} />
+        )}
+      </div>
     </section>
   );
 }
