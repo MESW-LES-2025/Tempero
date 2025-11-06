@@ -6,6 +6,8 @@ import { supabase } from "../config/supabaseClient";
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -75,9 +77,38 @@ useEffect(() => {
       return;
     }
 
+    if (firstName.length > 20) {
+      setErr("First name must be at most 20 characters.");
+      return;
+    }
+    if (firstName.length <= 2) {
+      setErr("First name must be at least 2 characters.");
+      return;
+    }
+  
+    if (lastName.length > 20) {
+      setErr("Last name must be at most 20 characters.");
+      return;
+    }
+    if (lastName.length <= 2) {
+      setErr("Last name must be at least 2 characters.");
+      return;
+    }
+
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({ email, password, options: {data: {username: username.trim(), bio: null, profile_picture_url: null}} });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          username: username.trim(),
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          profile_picture_url: null,
+        },
+      },
+    });
 
     setLoading(false);
 
@@ -123,11 +154,11 @@ useEffect(() => {
               />
             </div>
 
-            <div className="space-y-1 mb-3">
+            <div className="space-y-0.5 mb-3"> 
               <label htmlFor="reg-username" className="text-lg font-heading text-dark">
                 Username
               </label>
-              <input
+                <input
                 id="reg-username"
                 type="text"
                 autoComplete="username"
@@ -136,8 +167,9 @@ useEffect(() => {
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full rounded-lg border px-3 py-2 outline-none shadow-xl bg-amber-50 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none  transition-all duration-200 ease-in-out"
                 placeholder="Choose a unique username"
-              />
-              <div className="mt-1 text-sm">
+                />
+                </div>
+                              <div className="mt-1 text-sm">
                 {checkingUsername && (
                   <span className="text-gray-600">Checking availability…</span>
                 )}
@@ -151,7 +183,38 @@ useEffect(() => {
                   <span className="text-main">Username is available.</span>
                 )}
               </div>
-            </div>
+                <div className="space-y-0.5 mb-3">
+                  <label htmlFor="reg-firstname" className="text-lg font-heading text-dark">
+                    First Name
+                  </label>
+                  <input
+                    id="reg-firstname"
+                    type="text"
+                    autoComplete="given-name"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 outline-none shadow-xl bg-amber-50 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none  transition-all duration-200 ease-in-out"
+                    placeholder="Enter your first name"
+                  />
+                </div>
+
+                <div className="space-y-0.5 mb-3">
+                  <label htmlFor="reg-lastname" className="text-lg font-heading text-dark">
+                    Last Name
+                  </label>
+                  <input
+                    id="reg-lastname"
+                    type="text"
+                    autoComplete="family-name"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 outline-none shadow-xl bg-amber-50 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none  transition-all duration-200 ease-in-out"
+                    placeholder="Enter your last name"
+                  />
+                </div>
+
 
             <div className="space-y-1 ">
               <label htmlFor="reg-pass" className="text-lg font-heading text-dark">

@@ -1,9 +1,17 @@
+type ReviewsProps = {
+  userId?: string;
+  username?: string;
+};
+
 type Review = {
   id: number;
   author: string;
   rating: number;
   comment: string;
 };
+
+export default function Reviews({ userId, username }: ReviewsProps) {
+  console.log("Reviews filtering by:", userId, username);
 
 const reviews: Review[] = [
   {
@@ -29,7 +37,6 @@ const reviews: Review[] = [
   },
 ];
 
-export default function Reviews() {
   return (
     <div className="space-y-4">
       {reviews.map((rev) => (
@@ -44,6 +51,7 @@ export default function Reviews() {
               {"☆".repeat(5 - rev.rating)}
             </span>
           </div>
+
           <p className="mt-2 text-gray-700 text-sm leading-relaxed">
             {rev.comment}
           </p>
