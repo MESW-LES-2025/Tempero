@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../config/supabaseClient";
 
@@ -6,8 +6,7 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Hide navbar on the register page
-if (location.pathname === "/register" || location.pathname === "/login") return null;
+
   const [user, setUser] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showMobileSearch, setShowMobileSearch] = useState(false);
@@ -35,10 +34,16 @@ if (location.pathname === "/register" || location.pathname === "/login") return 
     };
   }, []);
 
+  // Hide navbar on the register page
+  if (location.pathname === "/register" || location.pathname === "/login") return null;
+
   const username = user?.user_metadata?.username ?? null;
   // If not logged in, clicking the "Guest" profile should go to the login page
   const profileHref = username ? `/users/${username}` : (user ? "/profile" : "/login");
   const profileLabel = username ?? (user ? "Profile" : "Guest");
+
+//Active link highlight
+const active = "text-dark scale-110 border-b-1 border-dark/50 border-bright";
 
   async function handleSignOut() {
     try {
@@ -110,13 +115,27 @@ if (location.pathname === "/register" || location.pathname === "/login") return 
         </div>
         
         <ul className="flex gap-6 mr-4 items-center">
-        <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">
-            <Link to="/lists">Lists</Link>
-        </li>
-        <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">
-            <Link to="/favorites">Favorites</Link>
-        </li>
-        <div className="usersection  bg-bright/10 p-2 rounded-md gap-2 flex font-heading ">
+
+         <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">
+             <NavLink
+       to="/lists"
+       className={({ isActive }) => `${isActive ? active : ""} px-1`}
+     >
+       Lists
+     </NavLink>
+         </li>
+ 
+         <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">
+             <NavLink
+       to="/favorites"
+       className={({ isActive }) => `${isActive ? active : ""} px-1`}
+     >
+       Favorites
+     </NavLink>
+         </li>
+ 
+         {/* profile link */}
+     <div className="usersection  bg-bright/10 p-2 rounded-md gap-2 flex font-heading ">
         {!user && (
           <li>
             <Link to="/login">Log in</Link>
@@ -137,35 +156,34 @@ if (location.pathname === "/register" || location.pathname === "/login") return 
             </button>
             )}
         </div>
+         </ul>
+      </nav>
 
-      </ul>
-    </nav>
-
-    {/* Mobile search overlay - shown below navbar on small screens */}
-    {showMobileSearch && (
-      <div className="min-[700px]:hidden fixed left-0 right-0 top-22 z-40 mx-2 rounded-lg bg-main px-4 py-3 shadow-lg">
-        <form onSubmit={handleSearch} className="relative">
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search recipes..."
-            className="w-full pl-10 rounded-lg bg-bright/10 px-4 py-2 text-sm text-bright placeholder-bright/50 outline-none focus:ring-2 focus:ring-bright/30 transition-all"
-            aria-label="Search recipes"
-            autoFocus
-          />
-          <button
-            type="submit"
-            className="absolute left-2 top-1/2 -translate-y-1/2 text-bright/70 hover:text-bright"
-            aria-label="Submit search"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 " viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-            </svg>
-          </button>
-        </form>
-      </div>
-    )}
-  </>
+      {/* Mobile search overlay - shown below navbar on small screens */}
+      {showMobileSearch && (
+        <div className="min-[700px]:hidden fixed left-0 right-0 top-22 z-40 mx-2 rounded-lg bg-main px-4 py-3 shadow-lg">
+          <form onSubmit={handleSearch} className="relative">
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search recipes..."
+              className="w-full pl-10 rounded-lg bg-bright/10 px-4 py-2 text-sm text-bright placeholder-bright/50 outline-none focus:ring-2 focus:ring-bright/30 transition-all"
+              aria-label="Search recipes"
+              autoFocus
+            />
+            <button
+              type="submit"
+              className="absolute left-2 top-1/2 -translate-y-1/2 text-bright/70 hover:text-bright"
+              aria-label="Submit search"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 " viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      )}
+    </>
   );
 }
