@@ -113,6 +113,10 @@ export default function ProfilePage() {
             </p>
           </>
         )}
+        {/* Edit profile button */}
+        <button className="mt-6 w-full bg-[#e57f22] hover:bg-[#cf6e1d] text-white text-sm sm:text-base font-medium py-2.5 rounded-md transition-colors">
+          Edit Profile
+        </button>
       </article>
 
       {/* Right side: Tabs + content */}
