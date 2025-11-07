@@ -78,9 +78,13 @@ export default function EditProfilePage() {
 
     setSaving(false);
 
-    if (error) setErr(error.message);
-    else setInfo("Profile updated successfully!");
-  }
+    if (error) {
+    setErr(error.message);
+    } else {
+    setInfo("Profile updated successfully!");
+    navigate(`/profile/${profile.username}`);
+    }
+    }
 
   if (loading)
     return (
