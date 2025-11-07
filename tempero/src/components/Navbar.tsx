@@ -1,13 +1,14 @@
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../config/supabaseClient";
+import type { User } from "@supabase/supabase-js";
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
 
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showMobileSearch, setShowMobileSearch] = useState(false);
 
@@ -19,7 +20,7 @@ export default function Navbar() {
         const { data } = await supabase.auth.getUser();
         if (!mounted) return;
         setUser(data?.user ?? null);
-      } catch (err) {
+      } catch {
         // ignore
       }
     })();
@@ -35,11 +36,11 @@ export default function Navbar() {
   }, []);
 
   // Hide navbar on the register page
-  if (location.pathname === "/register" || location.pathname === "/login") return null;
+  if (location.pathname === "/register" || location.pathname === "/login" || location.pathname === "/skill-assessment") return null;
 
   const username = user?.user_metadata?.username ?? null;
   // If not logged in, clicking the "Guest" profile should go to the login page
-  const profileHref = username ? `/users/${username}` : (user ? "/profile" : "/login");
+  const profileHref = username ? `/profile/${username}` : (user ? "/profile" : "/login");
   const profileLabel = username ?? (user ? "Profile" : "Guest");
 
 //Active link highlight
