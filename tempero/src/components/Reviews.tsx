@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../config/supabaseClient";
+import Loader from "./Loader";
 
 type Review = {
   id: number;
@@ -27,7 +28,7 @@ export default function Reviews() {
     fetchReviews();
   }, []);
 
-  if (loading) return <p>Loading reviews...</p>;
+  if (loading) return <Loader message="Fetching reviews..." />;
 
   return (
     <div className="space-y-4">

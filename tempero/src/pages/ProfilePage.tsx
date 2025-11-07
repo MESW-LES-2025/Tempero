@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import chefImg from "../assets/febrian-zakaria-SiQgni-cqFg-unsplash.jpg";
+import Loader from "../components/Loader";
 import Recipes from "../components/Recipes";
 import Reviews from "../components/Reviews";
 import { supabase } from "../config/supabaseClient";
@@ -76,7 +77,9 @@ export default function ProfilePage() {
         {/* Left card */}
         <article className="w-full lg:w-1/3 rounded-xl bg-white shadow-md ring-1 ring-black/5 p-5 sm:p-7">
           {loading ? (
-            <div>Loading…</div>
+            <div>
+              <Loader message="Fetching User..." />
+            </div>
           ) : error ? (
             <div className="text-sm text-red-600">{error}</div>
           ) : !profile ? (

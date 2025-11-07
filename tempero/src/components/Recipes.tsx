@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../config/supabaseClient";
+import Loader from "./Loader";
 type Recipe = {
   id: number;
   title: string;
@@ -25,9 +26,9 @@ export default function Recipes() {
 
     fetchRecipes();
   }, []);
-  if (loading) {
-    return <p>Loading recipes...</p>;
-  }
+
+  if (loading) return <Loader message="Fetching recipes..." />;
+
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {recipes.map((r) => (
