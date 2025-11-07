@@ -210,7 +210,7 @@ export default function AssessmentPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[url('/images/croissant-bg.jpg')] bg-cover bg-center overflow-y-auto">
+    <div className="relative min-h-screen flex items-center justify-center bg-[url('/images/croissant-bg.jpg')] bg-cover bg-center bg-fixed">
       <div className="absolute inset-0 backdrop-blur-xs pointer-events-none"></div>
 
       <div className="relative z-10 mx-auto max-w-2xl w-full px-4 py-16">
