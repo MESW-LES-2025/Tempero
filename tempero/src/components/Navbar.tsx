@@ -34,7 +34,7 @@ if (location.pathname === "/register" || location.pathname === "/login" || locat
 
   const username = user?.user_metadata?.username ?? null;
   // If not logged in, clicking the "Guest" profile should go to the login page
-  const profileHref = username ? `/users/${username}` : (user ? "/profile" : "/login");
+  const profileHref = username ? `/profile/${username}` : (user ? "/profile" : "/login");
   const profileLabel = username ?? (user ? "Profile" : "Guest");
 
   async function handleSignOut() {
