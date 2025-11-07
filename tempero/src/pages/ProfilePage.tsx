@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
+import { getLevelInfo } from "../utils/Levels";
 import Recipes from "../components/Recipes";
 import Reviews from "../components/Reviews";
 import chefImg from "../assets/febrian-zakaria-SiQgni-cqFg-unsplash.jpg";
@@ -20,6 +21,7 @@ type Profile = {
   last_name?: string | null;
   bio?: string | null;
   avatar_url?: string | null;
+  xp?: number | null;
 };
 
 export default function ProfilePage() {
@@ -74,7 +76,7 @@ export default function ProfilePage() {
     <div className="min-h-screen w-full bg-amber-50 flex justify-center items-start py-10">
     <section className="w-full flex flex-col lg:flex-row items-start justify-center gap-8 mt-10 px-4 sm:px-6 lg:px-10">
       {/* Left card */}
-      <article className="w-full lg:w-1/3 rounded-xl bg-white shadow-md ring-1 ring-black/5 p-5 sm:p-7">
+      <article className="relative w-full lg:w-1/3 rounded-xl bg-white shadow-md ring-1 ring-black/5 p-5 sm:p-7">
         {loading ? (
           <div>Loading…</div>
         ) : error ? (
@@ -83,6 +85,17 @@ export default function ProfilePage() {
           <div>No profile to display.</div>
         ) : (
           <>
+            <div className="absolute top-4 right-4">
+              {(() => {
+                const lvl = getLevelInfo(profile.xp ?? 0);
+                return (
+                  <div className="inline-flex items-center gap-2 rounded-md bg-bright/10 px-3 py-1 text-sm font-medium shadow-sm">
+                    <span className="text-xs text-gray-600">Level {lvl.level}</span>
+                    <span className="text-main">{lvl.name}</span>
+                  </div>
+                );
+              })()} 
+            </div>
             <div className="flex gap-4 sm:gap-6">
               <img
                 src={profile.avatar_url || chefImg}
@@ -93,6 +106,8 @@ export default function ProfilePage() {
                 <h1 className="text-2xl sm:text-3xl font-semibold text-[#e57f22]">
                   {displayName}
                 </h1>
+
+
 
                 <div className="mt-3 flex flex-wrap gap-2">
                   {badges.map((b, i) => (

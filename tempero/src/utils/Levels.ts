@@ -6,11 +6,11 @@ export type LevelDef = {
 };
 
 const LEVELS: LevelDef[] = [
-  { level: 1, name: "New cook", minXp: 0, maxXp: 19 },
-  { level: 2, name: "Junior Coock", minXp: 20, maxXp: 39 },
-  { level: 3, name: "Home Chef", minXp: 40, maxXp: 59 },
-  { level: 4, name: "Sous Chef", minXp: 60, maxXp: 79 },
-  { level: 5, name: "Star Chef", minXp: 80, maxXp: 100 },
+  { level: 1, name: "New cook", minXp: 1000, maxXp: 1999 },
+  { level: 2, name: "Junior Coock", minXp: 2000, maxXp: 2999 },
+  { level: 3, name: "Home Chef", minXp: 3000, maxXp: 3999 },
+  { level: 4, name: "Sous Chef", minXp: 4000, maxXp: 4999 },
+  { level: 5, name: "Star Chef", minXp: 5000, maxXp: Number.POSITIVE_INFINITY },
 ];
 
 export function getLevelInfo(xp: number) {
