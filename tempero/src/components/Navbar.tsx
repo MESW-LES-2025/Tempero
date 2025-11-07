@@ -1,13 +1,16 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../config/supabaseClient";
+import type { User } from "@supabase/supabase-js";
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
 
-  // Hide navbar on the register page
-if (location.pathname === "/register" || location.pathname === "/login" || location.pathname === "/skill-assessment") return null;
-  const [user, setUser] = useState<any | null>(null);
+
+  const [user, setUser] = useState<User | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -17,7 +20,7 @@ if (location.pathname === "/register" || location.pathname === "/login" || locat
         const { data } = await supabase.auth.getUser();
         if (!mounted) return;
         setUser(data?.user ?? null);
-      } catch (err) {
+      } catch {
         // ignore
       }
     })();
@@ -32,10 +35,16 @@ if (location.pathname === "/register" || location.pathname === "/login" || locat
     };
   }, []);
 
+  // Hide navbar on the register page
+  if (location.pathname === "/register" || location.pathname === "/login" || location.pathname === "/skill-assessment") return null;
+
   const username = user?.user_metadata?.username ?? null;
   // If not logged in, clicking the "Guest" profile should go to the login page
   const profileHref = username ? `/profile/${username}` : (user ? "/profile" : "/login");
   const profileLabel = username ?? (user ? "Profile" : "Guest");
+
+//Active link highlight
+const active = "text-dark scale-110 border-b-1 border-dark/50 border-bright";
 
   async function handleSignOut() {
     try {
@@ -46,21 +55,88 @@ if (location.pathname === "/register" || location.pathname === "/login" || locat
     }
   }
 
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+    }
+  }
+
   return (
-    <nav className="navbar text-bright text-lg font-heading flex flex-row w-screen-2 justify-between bg-main px-3 py-4 m-2 rounded-lg shadow-lg items-center">
-      <h1 className="logo">
-        <Link to="/">
-          <img src="/images/logo.png" alt="Tempero Logo" className="h-15" />
-        </Link>
-      </h1>
-      <ul className="flex gap-6 mr-4 items-center">
-        <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">
-            <Link to="/lists">Lists</Link>
-        </li>
-        <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">
-            <Link to="/favorites">Favorites</Link>
-        </li>
-        <div className="usersection  bg-bright/10 p-2 rounded-md gap-2 flex font-heading ">
+    <>
+  <nav className="navbar text-bright text-lg max-[500px]:text-sm font-heading flex flex-row w-screen-2 justify-between bg-main px-3 py-4 m-2 rounded-lg shadow-lg items-center">
+        <div className="flex items-center gap-4">
+          <h1 className="logo">
+            <Link to="/">
+              <img src="/images/logo.png" alt="Tempero Logo" className="h-15 max-[500px]:h-10 min-h-5 min-w-9 min" />
+            </Link>
+          </h1>
+          
+          {/* Desktop search form - hidden below 700px */}
+          <form onSubmit={handleSearch} className="relative hidden min-[700px]:block">
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search recipes..."
+              className="w-64 pl-10  rounded-lg bg-bright/10 px-4 py-2 text-sm text-bright placeholder-bright/50 outline-none focus:ring-2 focus:ring-bright/30 transition-all"
+              aria-label="Search recipes"
+            />
+            <button
+              type="submit"
+              className="absolute left-2 top-1/2 -translate-y-1/2 text-bright/70 hover:text-bright"
+              aria-label="Submit search"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 " viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </form>
+
+          {/* Mobile search icon - visible only below 700px */}
+          <button
+            onClick={() => setShowMobileSearch(!showMobileSearch)}
+            className="min-[700px]:hidden text-bright/70 hover:text-bright p-2"
+            aria-label={showMobileSearch ? "Close search" : "Open search"}
+          >
+            {showMobileSearch ? (
+              /* Close (X) icon when mobile search is open */
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            ) : (
+              /* Search icon when closed */
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
+        </div>
+        
+        <ul className="flex gap-6 mr-4 items-center">
+
+         <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">
+             <NavLink
+       to="/lists"
+       className={({ isActive }) => `${isActive ? active : ""} px-1`}
+     >
+       Lists
+     </NavLink>
+         </li>
+ 
+         <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">
+             <NavLink
+       to="/favorites"
+       className={({ isActive }) => `${isActive ? active : ""} px-1`}
+     >
+       Favorites
+     </NavLink>
+         </li>
+ 
+         {/* profile link */}
+     <div className="usersection max-[500px]:flex-col max-[500px]:text-xs bg-bright/10 p-2 rounded-md gap-2 flex font-heading  ">
         {!user && (
           <li>
             <Link to="/login">Log in</Link>
@@ -77,12 +153,38 @@ if (location.pathname === "/register" || location.pathname === "/login" || locat
               aria-label="Sign out"
               
             >
-             <Link to="/login">Log out</Link>
+             <Link to="/login" className="max-[500px]:text-3xs">Log out</Link>
             </button>
             )}
         </div>
+         </ul>
+      </nav>
 
-      </ul>
-    </nav>
+      {/* Mobile search overlay - shown below navbar on small screens */}
+      {showMobileSearch && (
+        <div className="min-[700px]:hidden fixed left-0 right-0 top-22 z-40 mx-2 rounded-lg bg-main px-4 py-3 shadow-lg">
+          <form onSubmit={handleSearch} className="relative">
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search recipes..."
+              className="w-full pl-10 rounded-lg bg-bright/10 px-4 py-2 text-sm text-bright placeholder-bright/50 outline-none focus:ring-2 focus:ring-bright/30 transition-all"
+              aria-label="Search recipes"
+              autoFocus
+            />
+            <button
+              type="submit"
+              className="absolute left-2 top-1/2 -translate-y-1/2 text-bright/70 hover:text-bright"
+              aria-label="Submit search"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 " viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      )}
+    </>
   );
 }
