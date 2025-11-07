@@ -6,7 +6,7 @@ export default function Navbar() {
   const location = useLocation();
 
   // Hide navbar on the register page
-if (location.pathname === "/register" || location.pathname === "/login") return null;
+if (location.pathname === "/register" || location.pathname === "/login" || location.pathname === "/skill-assessment") return null;
   const [user, setUser] = useState<any | null>(null);
 
   useEffect(() => {

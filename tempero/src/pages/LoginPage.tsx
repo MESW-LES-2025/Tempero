@@ -43,7 +43,20 @@ export default function LoginPage() {
     }
 
     if (data.user) {
-      navigate("/");
+      // Check if user needs to take XP assessment
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('xp')
+        .eq('auth_id', data.user.id)
+        .single();
+
+      console.log("User profile:", profile);
+
+      if (!profile?.xp) {
+        navigate("/skill-assessment");
+      } else {
+        navigate("/");
+      }
     }
   }
 
