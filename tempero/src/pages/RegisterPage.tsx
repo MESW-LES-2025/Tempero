@@ -26,6 +26,13 @@ useEffect(() => {
 
   const raw = username.trim();
   if (!raw) return;
+  
+  // Check for uppercase characters
+  if (raw !== raw.toLowerCase()) {
+    setUsernameError("Username must be lowercase only.");
+    return;
+  }
+  
   if (raw.length < 4) {
     setUsernameError("Username must be at least 4 characters.");
     return;
@@ -38,7 +45,7 @@ useEffect(() => {
 
   const timeout = setTimeout(async () => {
     const { data, error } = await supabase.rpc("is_username_available", {
-      p_username: username,
+      p_username: raw.toLowerCase(),
     });
 
     if (!mounted) return;
@@ -102,7 +109,7 @@ useEffect(() => {
       password,
       options: {
         data: {
-          username: username.trim(),
+          username: username.trim().toLowerCase(),
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           profile_picture_url: null,
@@ -122,13 +129,13 @@ useEffect(() => {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-[url('/images/croissant-bg.jpg')] bg-cover bg-center ">
-      <div className="logo absolute top-1 left-1 z-10 ">
+    <div className="fixed  min-h-screen min-w-screen flex items-center justify-center bg-[url('/images/croissant-bg.jpg')] bg-cover bg-center ">
+      <div className="logo fixed top-1 left-1 z-10 ">
         <img src="/images/logo.png" alt="Tempero Logo" className="h-16" />
       </div>
       <div className="absolute inset-0  backdrop-blur-xs  pointer-events-none"></div>
       <div className="mx-auto mt-12 max-w-md ">
-        <div className="rounded-xl  bg-bright/90 p-6 shadow-sm relative z-10">
+        <div className="rounded-xl  bg-bright/90 p-6 shadow-sm  bg-fixed bg-no-scroll relative z-10">
             <h1 className="mb-4 text-3xl font-bold font-heading text-main text-center">Register</h1>
           <p className="mb-10 text-sm text-gray-600">
             Start your journey with Tempero: cook, review and level up.
@@ -186,6 +193,38 @@ useEffect(() => {
                   <span className="text-main">Username is available.</span>
                 )}
               </div>
+                <div className="space-y-0.5 mb-3">
+                  <label htmlFor="reg-firstname" className="text-lg font-heading text-dark">
+                    First Name
+                  </label>
+                  <input
+                    id="reg-firstname"
+                    type="text"
+                    autoComplete="given-name"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 outline-none shadow-xl bg-amber-50 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none  transition-all duration-200 ease-in-out"
+                    placeholder="Enter your first name"
+                  />
+                </div>
+
+                <div className="space-y-0.5 mb-3">
+                  <label htmlFor="reg-lastname" className="text-lg font-heading text-dark">
+                    Last Name
+                  </label>
+                  <input
+                    id="reg-lastname"
+                    type="text"
+                    autoComplete="family-name"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 outline-none shadow-xl bg-amber-50 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none  transition-all duration-200 ease-in-out"
+                    placeholder="Enter your last name"
+                  />
+                </div>
+                
                 <div className="space-y-0.5 mb-3">
                   <label htmlFor="reg-firstname" className="text-lg font-heading text-dark">
                     First Name
