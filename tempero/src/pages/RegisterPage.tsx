@@ -129,15 +129,15 @@ useEffect(() => {
   }
 
   return (
-    <div className="fixed  min-h-screen min-w-screen flex items-center justify-center bg-[url('/images/croissant-bg.jpg')] bg-cover bg-center ">
+    <div className="fixed  min-h-screen min-w-screen px-2 flex items-center justify-center bg-[url('/images/croissant-bg.jpg')] bg-cover bg-center ">
       <div className="logo fixed top-1 left-1 z-10 ">
         <img src="/images/logo.png" alt="Tempero Logo" className="h-16" />
       </div>
       <div className="absolute inset-0  backdrop-blur-xs  pointer-events-none"></div>
       <div className="mx-auto mt-12 max-w-md ">
-        <div className="max-h-[80vh]  rounded-xl  bg-bright/90 p-6 shadow-sm  bg-fixed bg-no-scroll relative z-10 overflow-visible">
+        <div className="max-h-[85vh] flex flex-col rounded-xl bg-bright/90 p-6 shadow-sm bg-fixed bg-no-scroll relative z-10 overflow-visible">
             <h1 className="mb-4 text-3xl font-bold font-heading text-main text-center">Register</h1>
-          <p className="mb-10 text-sm text-gray-600">
+          <p className="mb-6 text-sm text-gray-600">
             Start your journey with Tempero: cook, review and level up.
           </p>
 
@@ -149,7 +149,7 @@ useEffect(() => {
 
           <form
             onSubmit={handleRegister}
-            className="space-y-4 max-h-100 w-1/1 overflow-y-auto overflow-x-visible custom-scroll"
+            className="space-y-4 -mx-6 px-6 flex-1 min-h-0 w-full+6 overflow-y-auto overflow-x-visible custom-scroll"
             noValidate
           >
             <div className="space-y-1 mb-5">
@@ -286,7 +286,7 @@ useEffect(() => {
                   {showPass ? "Hide" : "Show"}
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mt-4 mb-15">
+              <p className="text-xs text-gray-500 mt-4 mb-5">
                 Use at least 8 characters. Consider a mix of letters, numbers, and symbols.
               </p>
             </div>
