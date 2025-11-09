@@ -135,7 +135,7 @@ useEffect(() => {
       </div>
       <div className="absolute inset-0  backdrop-blur-xs  pointer-events-none"></div>
       <div className="mx-auto mt-12 max-w-md ">
-        <div className="rounded-xl  bg-bright/90 p-6 shadow-sm  bg-fixed bg-no-scroll relative z-10">
+        <div className="max-h-[80vh]  rounded-xl  bg-bright/90 p-6 shadow-sm  bg-fixed bg-no-scroll relative z-10 overflow-visible">
             <h1 className="mb-4 text-3xl font-bold font-heading text-main text-center">Register</h1>
           <p className="mb-10 text-sm text-gray-600">
             Start your journey with Tempero: cook, review and level up.
@@ -147,7 +147,11 @@ useEffect(() => {
             </div>
           )}
 
-          <form onSubmit={handleRegister} className="space-y-4" noValidate>
+          <form
+            onSubmit={handleRegister}
+            className="space-y-4 max-h-100 w-1/1 overflow-y-auto overflow-x-visible custom-scroll"
+            noValidate
+          >
             <div className="space-y-1 mb-5">
               <label htmlFor="reg-email" className="text-lg font-heading text-dark">
                 Email
