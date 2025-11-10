@@ -20,7 +20,7 @@ export default function App() {
         <Route path="register" element={<RegisterPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="skill-assessment" element={<AssessmentPage />} />
-        <Route path="/profile/:username" element={<ProfilePage />} />
+        <Route path="profile/:username" element={<ProfilePage />} />
         <Route path="profile/edit" element={<EditProfilePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

@@ -229,38 +229,6 @@ useEffect(() => {
                   />
                 </div>
                 
-                <div className="space-y-0.5 mb-3">
-                  <label htmlFor="reg-firstname" className="text-lg font-heading text-dark">
-                    First Name
-                  </label>
-                  <input
-                    id="reg-firstname"
-                    type="text"
-                    autoComplete="given-name"
-                    required
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full rounded-lg border px-3 py-2 outline-none shadow-xl bg-amber-50 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none  transition-all duration-200 ease-in-out"
-                    placeholder="Enter your first name"
-                  />
-                </div>
-
-                <div className="space-y-0.5 mb-3">
-                  <label htmlFor="reg-lastname" className="text-lg font-heading text-dark">
-                    Last Name
-                  </label>
-                  <input
-                    id="reg-lastname"
-                    type="text"
-                    autoComplete="family-name"
-                    required
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="w-full rounded-lg border px-3 py-2 outline-none shadow-xl bg-amber-50 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none  transition-all duration-200 ease-in-out"
-                    placeholder="Enter your last name"
-                  />
-                </div>
-
 
             <div className="space-y-1 ">
               <label htmlFor="reg-pass" className="text-lg font-heading text-dark">
