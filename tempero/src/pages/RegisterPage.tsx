@@ -131,7 +131,7 @@ useEffect(() => {
   return (
     <div className="fixed  min-h-screen min-w-screen px-2 flex items-center justify-center bg-[url('/images/croissant-bg.jpg')] bg-cover bg-center ">
       <div className="logo fixed top-1 left-1 z-10 ">
-        <img src="/images/logo.png" alt="Tempero Logo" className="h-16" />
+        <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="Tempero Logo" className="h-16" />
       </div>
       <div className="absolute inset-0  backdrop-blur-xs  pointer-events-none"></div>
       <div className="mx-auto mt-12 max-w-md ">

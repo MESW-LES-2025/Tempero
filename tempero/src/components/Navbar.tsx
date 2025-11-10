@@ -69,7 +69,7 @@ const active = "text-dark scale-110 border-b-1 border-dark/50 border-bright";
         <div className="flex items-center gap-4">
           <h1 className="logo">
             <Link to="/">
-              <img src="/images/logo.png" alt="Tempero Logo" className="h-15 max-[500px]:h-10 min-h-5 min-w-9 min" />
+              <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="Tempero Logo" className="h-15 max-[500px]:h-10 min-h-5 min-w-9 min" />
             </Link>
           </h1>
           

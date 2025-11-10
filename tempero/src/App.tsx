@@ -13,7 +13,7 @@ function NotFoundPage() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/Tempero">
       <Navbar />
       <Routes>
         <Route index element={<HomePage />} />
