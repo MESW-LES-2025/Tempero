@@ -24,14 +24,14 @@ function NotFoundPage() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/Tempero">
       <Navbar />
       <Routes>
         <Route index element={<HomePage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="skill-assessment" element={<AssessmentPage />} />
-        <Route path="/profile/:username" element={<ProfilePage />} />
+        <Route path="profile/:username" element={<ProfilePage />} />
         <Route path="profile/edit" element={<EditProfilePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
