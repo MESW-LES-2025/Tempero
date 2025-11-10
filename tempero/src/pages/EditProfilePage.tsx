@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Loader from "../components/Loader";
 import { supabase } from "../config/supabaseClient";
 
 type Profile = {
@@ -79,19 +80,14 @@ export default function EditProfilePage() {
     setSaving(false);
 
     if (error) {
-    setErr(error.message);
+      setErr(error.message);
     } else {
-    setInfo("Profile updated successfully!");
-    navigate(`/profile/${profile.username}`);
+      setInfo("Profile updated successfully!");
+      navigate(`/profile/${profile.username}`);
     }
-    }
+  }
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-amber-50">
-        Loading profile...
-      </div>
-    );
+  if (loading) return <Loader message="Fetching User To Edit..." />;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-amber-50 px-4">
@@ -111,11 +107,16 @@ export default function EditProfilePage() {
           </div>
         )}
 
-        <form onSubmit={handleSave} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-
+        <form
+          onSubmit={handleSave}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-6"
+        >
           {/* First name */}
           <div className="space-y-1">
-            <label htmlFor="first_name" className="text-lg font-heading text-dark">
+            <label
+              htmlFor="first_name"
+              className="text-lg font-heading text-dark"
+            >
               First name
             </label>
             <input
@@ -129,7 +130,10 @@ export default function EditProfilePage() {
 
           {/* Last name */}
           <div className="space-y-1">
-            <label htmlFor="last_name" className="text-lg font-heading text-dark">
+            <label
+              htmlFor="last_name"
+              className="text-lg font-heading text-dark"
+            >
               Last name
             </label>
             <input
