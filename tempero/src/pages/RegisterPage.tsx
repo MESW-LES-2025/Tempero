@@ -26,6 +26,13 @@ useEffect(() => {
 
   const raw = username.trim();
   if (!raw) return;
+  
+  // Check for uppercase characters
+  if (raw !== raw.toLowerCase()) {
+    setUsernameError("Username must be lowercase only.");
+    return;
+  }
+  
   if (raw.length < 4) {
     setUsernameError("Username must be at least 4 characters.");
     return;
@@ -38,7 +45,7 @@ useEffect(() => {
 
   const timeout = setTimeout(async () => {
     const { data, error } = await supabase.rpc("is_username_available", {
-      p_username: username,
+      p_username: raw.toLowerCase(),
     });
 
     if (!mounted) return;
@@ -102,7 +109,7 @@ useEffect(() => {
       password,
       options: {
         data: {
-          username: username.trim(),
+          username: username.trim().toLowerCase(),
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           profile_picture_url: null,
@@ -122,12 +129,15 @@ useEffect(() => {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-[url('/images/croissant-bg.jpg')] bg-cover bg-center ">
+    <div className="fixed  min-h-screen min-w-screen px-2 flex items-center justify-center bg-[url('/images/croissant-bg.jpg')] bg-cover bg-center ">
+      <div className="logo fixed top-1 left-1 z-10 ">
+        <img src="/images/logo.png" alt="Tempero Logo" className="h-16" />
+      </div>
       <div className="absolute inset-0  backdrop-blur-xs  pointer-events-none"></div>
       <div className="mx-auto mt-12 max-w-md ">
-        <div className="rounded-xl  bg-bright/90 p-6 shadow-sm relative z-10">
+        <div className="max-h-[85vh] flex flex-col rounded-xl bg-bright/90 p-6 shadow-sm bg-fixed bg-no-scroll relative z-10 overflow-visible">
             <h1 className="mb-4 text-3xl font-bold font-heading text-main text-center">Register</h1>
-          <p className="mb-10 text-sm text-gray-600">
+          <p className="mb-6 text-sm text-gray-600">
             Start your journey with Tempero: cook, review and level up.
           </p>
 
@@ -137,7 +147,11 @@ useEffect(() => {
             </div>
           )}
 
-          <form onSubmit={handleRegister} className="space-y-4" noValidate>
+          <form
+            onSubmit={handleRegister}
+            className="space-y-4 -mx-6 px-6 flex-1 min-h-0 w-full+6 overflow-y-auto overflow-x-visible custom-scroll"
+            noValidate
+          >
             <div className="space-y-1 mb-5">
               <label htmlFor="reg-email" className="text-lg font-heading text-dark">
                 Email
@@ -214,6 +228,38 @@ useEffect(() => {
                     placeholder="Enter your last name"
                   />
                 </div>
+                
+                <div className="space-y-0.5 mb-3">
+                  <label htmlFor="reg-firstname" className="text-lg font-heading text-dark">
+                    First Name
+                  </label>
+                  <input
+                    id="reg-firstname"
+                    type="text"
+                    autoComplete="given-name"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 outline-none shadow-xl bg-amber-50 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none  transition-all duration-200 ease-in-out"
+                    placeholder="Enter your first name"
+                  />
+                </div>
+
+                <div className="space-y-0.5 mb-3">
+                  <label htmlFor="reg-lastname" className="text-lg font-heading text-dark">
+                    Last Name
+                  </label>
+                  <input
+                    id="reg-lastname"
+                    type="text"
+                    autoComplete="family-name"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 outline-none shadow-xl bg-amber-50 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none  transition-all duration-200 ease-in-out"
+                    placeholder="Enter your last name"
+                  />
+                </div>
 
 
             <div className="space-y-1 ">
@@ -240,7 +286,7 @@ useEffect(() => {
                   {showPass ? "Hide" : "Show"}
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mt-4 mb-15">
+              <p className="text-xs text-gray-500 mt-4 mb-5">
                 Use at least 8 characters. Consider a mix of letters, numbers, and symbols.
               </p>
             </div>
