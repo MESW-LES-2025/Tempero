@@ -41,7 +41,7 @@ export default function Recipes() {
           <div className="p-4">
             <h3 className="text-lg font-semibold text-[#e57f22]">{r.title}</h3>
             <p className="mt-2 text-sm text-gray-700 leading-relaxed">
-              {r.instructions}
+              {r.short_description}
             </p>
           </div>
         </article>
