@@ -57,10 +57,8 @@ const active = "text-dark scale-110 border-b-1 border-dark/50 border-bright";
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
+    navigate("/search");
+    setShowMobileSearch(false);
   }
 
   return (
@@ -74,44 +72,24 @@ const active = "text-dark scale-110 border-b-1 border-dark/50 border-bright";
           </h1>
           
           {/* Desktop search form - hidden below 700px */}
-          <form onSubmit={handleSearch} className="relative hidden min-[700px]:block">
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search recipes..."
-              className="w-64 pl-10  rounded-lg bg-bright/10 px-4 py-2 text-sm text-bright placeholder-bright/50 outline-none focus:ring-2 focus:ring-bright/30 transition-all"
-              aria-label="Search recipes"
-            />
-            <button
-              type="submit"
-              className="absolute left-2 top-1/2 -translate-y-1/2 text-bright/70 hover:text-bright"
-              aria-label="Submit search"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 " viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </form>
-
-          {/* Mobile search icon - visible only below 700px */}
           <button
-            onClick={() => setShowMobileSearch(!showMobileSearch)}
-            className="min-[700px]:hidden text-bright/70 hover:text-bright p-2"
-            aria-label={showMobileSearch ? "Close search" : "Open search"}
+            onClick={() => navigate("/search")}
+            className="hidden min-[700px]:block text-bright/70 hover:text-bright p-2"
           >
-            {showMobileSearch ? (
-              /* Close (X) icon when mobile search is open */
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            ) : (
-              /* Search icon when closed */
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
                 <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
               </svg>
-            )}
+          </button>
+
+
+          {/* Mobile search icon - visible only below 700px */}
+          <button
+            onClick={() => navigate("/search")}
+            className="min-[700px]:hidden text-bright/70 hover:text-bright p-2"
+          >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
           </button>
         </div>
         

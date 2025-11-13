@@ -5,7 +5,7 @@ type Recipe = {
   id: number;
   title: string;
   description: string;
-  image: string;
+  image_url: string;
 };
 
 export default function Recipes() {
