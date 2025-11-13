@@ -21,6 +21,8 @@ type Profile = {
   last_name?: string | null;
   bio?: string | null;
   avatar_url?: string | null;
+  level?: number | null;
+  chef_type?: string | null;
 };
 
 export default function ProfilePage() {
@@ -101,7 +103,7 @@ export default function ProfilePage() {
                     {badges.map((b, i) => (
                       <span
                         key={i}
-                        className="inline-flex items-center gap-1 rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs sm:text-sm"
+                        className="inline-flex items-center gap-1 rounded-md  bg-orange-50 px-2.5 py-1 text-xs sm:text-sm"
                       >
                         <span aria-hidden>{b.icon}</span>
                         <span className="font-medium">{b.label}</span>
@@ -109,6 +111,12 @@ export default function ProfilePage() {
                     ))}
                   </div>
                 </div>
+                {profile?.level && profile?.chef_type && (
+                  <div className=" bg-orange-50 text-[#e57f22] text-xs sm:text-sm font-medium px-2 py-1 rounded-md shadow-sm w-36 lg:w-100 h-8">
+                    <span className="text-black">Level {profile.level}</span> ·{" "}
+                    {profile.chef_type}
+                  </div>
+                )}
               </div>
 
               <div className="my-4 border-t border-dashed border-gray-300" />
