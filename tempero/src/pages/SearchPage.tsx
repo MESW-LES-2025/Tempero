@@ -163,7 +163,11 @@ export default function SearchPage() {
         {/* Search input */}
         <div className="flex justify-center">
           <div className="relative w-full max-w-xl">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2">🔍</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+            </span>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
