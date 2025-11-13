@@ -93,7 +93,7 @@ export default function ProfilePage() {
                   className="h-24 w-24 sm:h-28 sm:w-28 rounded-lg object-cover ring-1 ring-black/10"
                 />
                 <div className="flex-1">
-                  <h1 className="text-2xl sm:text-3xl font-semibold text-[#e57f22]">
+                  <h1 className="text-2xl sm:text-3xl font-semibold text-main">
                     {displayName}
                   </h1>
 
@@ -119,12 +119,12 @@ export default function ProfilePage() {
             </>
           )}
           {/* Edit profile button */}
-          <button
-            className="mt-6 w-full bg-[#e57f22] hover:bg-[#cf6e1d] text-white text-sm sm:text-base font-medium py-2.5 rounded-md transition-colors"
+            <button
+            className="mt-6 w-full bg-main hover:bg-main/80 hover:cursor-pointer text-white text-sm sm:text-base font-medium py-2.5 rounded-md transition-colors"
             onClick={() => navigate("/profile/edit")}
-          >
+            >
             Edit Profile
-          </button>
+            </button>
         </article>
 
         {/* Right side: Tabs + content */}
@@ -134,7 +134,7 @@ export default function ProfilePage() {
               className={`pb-2 text-sm sm:text-base font-medium ${
                 tab === "recipes"
                   ? "text-[#e57f22] border-b-2 border-[#e57f22]"
-                  : "text-gray-600 hover:text-[#e57f22]"
+                  : "text-gray-600 hover:text-[#e57f22] hover:cursor-pointer"
               }`}
               onClick={() => setTab("recipes")}
             >
@@ -144,7 +144,7 @@ export default function ProfilePage() {
               className={`pb-2 text-sm sm:text-base font-medium ${
                 tab === "reviews"
                   ? "text-[#e57f22] border-b-2 border-[#e57f22]"
-                  : "text-gray-600 hover:text-[#e57f22]"
+                  : "text-gray-600 hover:text-[#e57f22] hover:cursor-pointer"
               }`}
               onClick={() => setTab("reviews")}
             >

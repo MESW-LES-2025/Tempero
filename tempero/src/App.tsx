@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import RegisterPage from "./pages/RegisterPage";
 import SearchPage from "./pages/SearchPage";
+import UploadRecipePage from "./pages/UploadRecipePage";
 
 function NotFoundPage() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="profile/:username" element={<ProfilePage />} />
         <Route path="profile/edit" element={<EditProfilePage />} />
         <Route path="search" element={<SearchPage />} />
+        <Route path="upload-recipe" element={<UploadRecipePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>

@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../config/supabaseClient";
+import type { RecipePreview } from "../types/Recipe";
+import  UploadRecipeButton from "../types/Recipe";
 import Loader from "./Loader";
-type Recipe = {
-  id: number;
-  title: string;
-  description: string;
-  image_url: string;
-};
+
 
 export default function Recipes() {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [recipes, setRecipes] = useState<RecipePreview[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,7 +16,7 @@ export default function Recipes() {
       if (error) {
         console.error("Error fetching recipes:", error);
       } else {
-        setRecipes(data as Recipe[]);
+        setRecipes(data as RecipePreview[]);
         setLoading(false);
       }
     };
@@ -46,6 +43,7 @@ export default function Recipes() {
           </div>
         </article>
       ))}
+      <UploadRecipeButton />
     </div>
   );
 }
