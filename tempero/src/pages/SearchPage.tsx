@@ -3,7 +3,7 @@ import { supabase } from "../config/supabaseClient";
 
 type Tab = "recipes" | "users";
 
-//id,authorId,title,short_description,image_url,prep_time,cook_time,servings,difficulty
+// id,authorId,title,short_description,image_url,prep_time,cook_time,servings,difficulty
 type Recipe = {
   id: string | number;
   title: string;
@@ -12,9 +12,10 @@ type Recipe = {
   prep_time?: number | null;
   cook_time?: number | null;
   servings?: number | null;
-  difficulty?: string | null;
+  difficulty?: number | string | null;
 };
 
+//auth_id,username,bio,profile_picture_url,first_name,last_name,followers_count,following_count,xp
 type Profile = {
   auth_id: string;
   username: string;
@@ -23,7 +24,7 @@ type Profile = {
   avatar_url?: string | null;
 };
 
-const ING_FILTERS = [1, 2, 3, 4, 5];
+const DIFFICULTY_FILTERS = [1, 2, 3, 4, 5];
 
 export default function SearchPage() {
   const [tab, setTab] = useState<Tab>("recipes");
@@ -35,7 +36,9 @@ export default function SearchPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
 
-  const [ingFilters, setIngFilters] = useState<Set<number>>(new Set());
+  const [difficultyFilters, setDifficultyFilters] = useState<Set<number>>(
+    new Set()
+  );
 
   const [debouncedQuery, setDebouncedQuery] = useState(query);
   useEffect(() => {
@@ -51,7 +54,7 @@ export default function SearchPage() {
 
       try {
         if (tab === "recipes") {
-          // fetch recipes; filtrar por title/short_description no servidor
+          // fetch recipes; filtrar por title/short_description
           let qb = supabase
             .from("recipes")
             .select(
@@ -72,10 +75,11 @@ export default function SearchPage() {
           setRecipes((data ?? []) as Recipe[]);
           setUsers([]); // limpar users
         } else {
- 
           let qb = supabase
             .from("profiles")
-            .select("auth_id,username,first_name,last_name,avatar_url:profile_picture_url")
+            .select(
+              "auth_id,username,first_name,last_name,avatar_url:profile_picture_url"
+            )
             .order("username", { ascending: true });
 
           if (debouncedQuery) {
@@ -103,17 +107,24 @@ export default function SearchPage() {
     };
   }, [tab, debouncedQuery]);
 
-
   const filteredRecipes = useMemo(() => {
-    if (ingFilters.size === 0) return recipes;
-    return recipes.filter((r) => {
-      const len = r.ingredients?.length ?? 0;
-      return ingFilters.has(len);
-    });
-  }, [recipes, ingFilters]);
+    if (difficultyFilters.size === 0) return recipes;
 
-  function toggleFilter(n: number) {
-    setIngFilters((prev) => {
+    return recipes.filter((r) => {
+      if (r.difficulty == null) return false;
+
+      const diffNum =
+        typeof r.difficulty === "string"
+          ? parseInt(r.difficulty, 10)
+          : r.difficulty;
+
+      if (!diffNum || Number.isNaN(diffNum)) return false;
+      return difficultyFilters.has(diffNum);
+    });
+  }, [recipes, difficultyFilters]);
+
+  function toggleDifficultyFilter(n: number) {
+    setDifficultyFilters((prev) => {
       const next = new Set(prev);
       if (next.has(n)) next.delete(n);
       else next.add(n);
@@ -123,7 +134,7 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen w-full bg-amber-50">
-      {/* Top nav*/}
+      {/* Top nav */}
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
         {/* Tabs */}
         <div className="flex gap-10 items-center mb-6">
@@ -149,6 +160,7 @@ export default function SearchPage() {
           </button>
         </div>
 
+        {/* Search input */}
         <div className="flex justify-center">
           <div className="relative w-full max-w-xl">
             <span className="absolute left-3 top-1/2 -translate-y-1/2">🔍</span>
@@ -163,7 +175,7 @@ export default function SearchPage() {
 
         {tab === "recipes" && (
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-gray-700">
-            {ING_FILTERS.map((n) => (
+            {DIFFICULTY_FILTERS.map((n) => (
               <label
                 key={n}
                 className="inline-flex items-center gap-2 cursor-pointer select-none"
@@ -171,12 +183,10 @@ export default function SearchPage() {
                 <input
                   type="checkbox"
                   className="h-4 w-4 accent-[#e57f22]"
-                  checked={ingFilters.has(n)}
-                  onChange={() => toggleFilter(n)}
+                  checked={difficultyFilters.has(n)}
+                  onChange={() => toggleDifficultyFilter(n)}
                 />
-                <span className="italic">
-                  {n} ingredient{n > 1 ? "s" : ""}
-                </span>
+                <span className="italic">Difficulty {n}</span>
               </label>
             ))}
           </div>
@@ -207,7 +217,7 @@ function RecipeGrid({ recipes }: { recipes: Recipe[] }) {
   if (!recipes.length)
     return (
       <div className="py-12 text-center text-gray-600">
-        No recipes found. Try adjusting your search or filters.
+        No recipes found. Try adjusting your search.
       </div>
     );
 
@@ -228,18 +238,34 @@ function RecipeGrid({ recipes }: { recipes: Recipe[] }) {
             <div className="w-full h-44 bg-gray-200" />
           )}
           <div className="p-4">
-            <h3 className="text-lg font-semibold text-[#e57f22]">{r.title}</h3>
-            {r.description && (
+            <h3 className="text-lg font-semibold text-[#e57f22]">
+              {r.title}
+            </h3>
+
+            {r.short_description && (
               <p className="mt-2 text-sm text-gray-700 leading-relaxed line-clamp-5">
-                {r.description}
+                {r.short_description}
               </p>
             )}
-            {typeof r.ingredients?.length === "number" && (
-              <p className="mt-2 text-xs text-gray-500">
-                {r.ingredients.length} ingredient
-                {r.ingredients.length === 1 ? "" : "s"}
-              </p>
-            )}
+
+            <div className="mt-3 text-xs text-gray-500 space-y-1">
+              {(r.prep_time || r.cook_time) && (
+                <p>
+                  ⏱ Prep: {r.prep_time ?? "-"} min · Cook:{" "}
+                  {r.cook_time ?? "-"} min
+                </p>
+              )}
+              {r.servings && <p>🍽 Servings: {r.servings}</p>}
+
+              {r.difficulty != null && (
+                <p>
+                  🎚 Difficulty:{" "}
+                  {typeof r.difficulty === "string"
+                    ? r.difficulty
+                    : `${r.difficulty}/5`}
+                </p>
+              )}
+            </div>
           </div>
         </article>
       ))}
@@ -259,7 +285,7 @@ function UserGrid({ users }: { users: Profile[] }) {
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {users.map((u) => {
         const display =
-          (u.first_name || u.last_name)
+          u.first_name || u.last_name
             ? `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim()
             : u.username;
         return (
