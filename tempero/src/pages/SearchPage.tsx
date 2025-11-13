@@ -3,12 +3,16 @@ import { supabase } from "../config/supabaseClient";
 
 type Tab = "recipes" | "users";
 
+//id,authorId,title,short_description,image_url,prep_time,cook_time,servings,difficulty
 type Recipe = {
   id: string | number;
   title: string;
-  description?: string | null;
+  short_description?: string | null;
   image_url?: string | null;
-  ingredients?: string[] | null;
+  prep_time?: number | null;
+  cook_time?: number | null;
+  servings?: number | null;
+  difficulty?: string | null;
 };
 
 type Profile = {
@@ -47,16 +51,17 @@ export default function SearchPage() {
 
       try {
         if (tab === "recipes") {
-
-        let qb = supabase
-          .from("recipes")
-          .select("id,title,description:instructions,image_url,ingredients")
-          .order("title", { ascending: true });
-
+          // fetch recipes; filtrar por title/short_description no servidor
+          let qb = supabase
+            .from("recipes")
+            .select(
+              "id,title,short_description,image_url,prep_time,cook_time,servings,difficulty"
+            )
+            .order("title", { ascending: true });
 
           if (debouncedQuery) {
             qb = qb.or(
-              `title.ilike.%${debouncedQuery}%,description.ilike.%${debouncedQuery}%`
+              `title.ilike.%${debouncedQuery}%,short_description.ilike.%${debouncedQuery}%`
             );
           }
 
@@ -65,7 +70,7 @@ export default function SearchPage() {
           if (error) throw error;
 
           setRecipes((data ?? []) as Recipe[]);
-          setUsers([]); // clear others
+          setUsers([]); // limpar users
         } else {
  
           let qb = supabase
