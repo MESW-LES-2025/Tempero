@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import type { ChangeEvent } from "react";
 import { UploadRecipeProvider, useUploadRecipe } from "../utils/UploadRecipeContext";
+import { supabase } from "../config/supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 function makeId() {
     return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -29,6 +31,78 @@ function DetailsStep() {
                     rows={3}
                 />
             </label>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <label className="block">
+                    <div className="font-heading mb-1">Preparation time (minutes)</div>
+                    <input
+                        type="number"
+                        min={0}
+                        value={form.preparation_time ?? ""}
+                        onChange={(e) =>
+                            setForm((p) => ({
+                                ...p,
+                                preparation_time: e.target.value ? parseInt(e.target.value, 10) : null,
+                            }))
+                        }
+                        className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
+                        placeholder="e.g. 15"
+                    />
+                </label>
+
+                <label className="block">
+                    <div className="font-heading mb-1">Cooking time (minutes)</div>
+                    <input
+                        type="number"
+                        min={0}
+                        value={form.cooking_time ?? ""}
+                        onChange={(e) =>
+                            setForm((p) => ({
+                                ...p,
+                                cooking_time: e.target.value ? parseInt(e.target.value, 10) : null,
+                            }))
+                        }
+                        className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
+                        placeholder="e.g. 30"
+                    />
+                </label>
+
+                <label className="block">
+                    <div className="font-heading mb-1">Servings</div>
+                    <input
+                        type="number"
+                        min={1}
+                        value={form.servings ?? ""}
+                        onChange={(e) =>
+                            setForm((p) => ({
+                                ...p,
+                                servings: e.target.value ? parseInt(e.target.value, 10) : null,
+                            }))
+                        }
+                        className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
+                        placeholder="e.g. 4"
+                    />
+                </label>
+
+                <label className="block">
+                    <div className="font-heading mb-1">Difficulty</div>
+                    <select
+                        value={form.difficulty ?? ""}
+                        onChange={(e) =>
+                            setForm((p) => ({
+                                ...p,
+                                difficulty: e.target.value ? parseInt(e.target.value, 10) : null,
+                            }))
+                        }
+                        className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
+                    >
+                        <option value="">Select</option>
+                        {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                            <option key={n} value={String(n)}>{n} {n===1? '— Very easy' : n===10? '— Very hard' : ''}</option>
+                        ))}
+                    </select>
+                </label>
+            </div>
         </div>
     );
 }
@@ -37,7 +111,8 @@ function IngredientsStep() {
     const { form, setForm } = useUploadRecipe();
 
     function addIngredient() {
-        setForm((p) => ({ ...p, ingredients: [...p.ingredients, { id: makeId(), name: "", amount: "", unit: "", note: "" }] }));
+        // amount is now a number | null
+        setForm((p) => ({ ...p, ingredients: [...p.ingredients, { id: makeId(), name: "", amount: 1, unit: "", note: "" }] }));
     }
     function updateIngredient(idx: number, patch: Partial<any>) {
         setForm((p) => {
@@ -63,9 +138,15 @@ function IngredientsStep() {
                                 placeholder="Ingredient"
                             />
                             <input
+                                type="number"
+                                min={0}
+                                step="any"
                                 className="w-20 rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
-                                value={ing.amount}
-                                onChange={(e) => updateIngredient(i, { amount: e.target.value })}
+                                value={ing.amount ?? ""}
+                                onChange={(e) => {
+                                    const v = e.target.value;
+                                    updateIngredient(i, { amount: v === "" ? null : parseFloat(v) });
+                                }}
                                 placeholder="Amt"
                             />
                             <input
@@ -81,7 +162,6 @@ function IngredientsStep() {
                             value={ing.note}
                             onChange={(e) => updateIngredient(i, { note: e.target.value })}
                             placeholder="Note (optional)"
-                            
                         />
                     </div>
                 ))}
@@ -168,10 +248,18 @@ function MediaStep() {
 
 function ReviewStep() {
     const { form } = useUploadRecipe();
+    const prep = form.preparation_time != null ? `${form.preparation_time} minutes` : "—";
+    const cook = form.cooking_time != null ? `${form.cooking_time} minutes` : "—";
+    const difficulty = form.difficulty != null ? `${form.difficulty}` : "—";
+
     return (
         <div className="space-y-3">
             <h3 className="font-medium">Preview</h3>
             <div className="text-sm text-gray-700"><strong>Title:</strong> {form.title || "—"}</div>
+            <div className="text-sm text-gray-700"><strong>Preparation time:</strong> {prep}</div>
+            <div className="text-sm text-gray-700"><strong>Cooking time:</strong> {cook}</div>
+            <div className="text-sm text-gray-700"><strong>Servings:</strong> {form.servings ?? "—"}</div>
+            <div className="text-sm text-gray-700"><strong>Difficulty:</strong> {difficulty}</div>
             <div className="text-sm text-gray-700"><strong>Ingredients:</strong> {form.ingredients.length} items</div>
             <div className="text-sm text-gray-700"><strong>Steps:</strong> {form.steps.length} steps</div>
             <div className="text-sm text-gray-700"><strong>Image:</strong> {form.imageFile ? form.imageFile.name : "None"}</div>
@@ -194,19 +282,43 @@ function UploadFormInner() {
     const [stepIndex, setStepIndex] = useState(0);
     const [errors, setErrors] = useState<string[]>([]);
     const StepComp = useMemo(() => STEPS[stepIndex].comp, [stepIndex]);
+    const navigate = useNavigate();
 
     function validateStep(index: number) {
         const msgs: string[] = [];
         if (index === 0) {
             if (!form.title || form.title.trim() === "") msgs.push("Title is required.");
-            if(!form.short_description || form.short_description.trim() === "") msgs.push("Short description is required.");
+            if (!form.short_description || form.short_description.trim() === "") msgs.push("Short description is required.");
+
+            // Preparation time validation
+            if (form.preparation_time === null || form.preparation_time === undefined || Number.isNaN(Number(form.preparation_time))) {
+                msgs.push("Preparation time is required.");
+            } else if (typeof form.preparation_time === "number" && form.preparation_time < 0) {
+                msgs.push("Preparation time must be a positive number.");
+            }
+
+            // Cooking time validation
+            if (form.cooking_time === null || form.cooking_time === undefined || Number.isNaN(Number(form.cooking_time))) {
+                msgs.push("Cooking time is required.");
+            } else if (typeof form.cooking_time === "number" && form.cooking_time < 0) {
+                msgs.push("Cooking time must be a positive number.");
+            }
+
+            // Difficulty validation
+            if (form.difficulty === null || form.difficulty === undefined || form.difficulty === "") {
+                msgs.push("Difficulty is required.");
+            } else if (typeof form.difficulty === "number" && (form.difficulty < 1 || form.difficulty > 10)) {
+                msgs.push("Difficulty must be between 1 and 10.");
+            }
         }
         if (index === 1) {
             if (!form.ingredients || form.ingredients.length === 0) msgs.push("Add at least one ingredient.");
             else {
                 form.ingredients.forEach((ing, i) => {
                     if (!ing.name || ing.name.trim() === "") msgs.push(`Ingredient ${i + 1}: name is required.`);
-                    if (!ing.amount || ing.amount.trim() === "") msgs.push(`Ingredient ${i + 1}: amount is required.`);
+                    // amount is numeric | null
+                    if (ing.amount === null || ing.amount === undefined || ing.amount <= 0) msgs.push(`Ingredient ${i + 1}: amount is required.`);
+                    else if (typeof ing.amount === "number" && Number.isNaN(ing.amount)) msgs.push(`Ingredient ${i + 1}: amount must be a number.`);
                 });
             }
         }
@@ -247,9 +359,75 @@ function UploadFormInner() {
             return;
         }
         setErrors([]);
-        // placeholder: implement upload
-        console.log("submit recipe", form);
+        try {
+    // Get current user from Supabase auth
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      setErrors(["You must be logged in to upload a recipe."]);
+      return;
     }
+    // 1) Build the payload that matches ONLY the recipes table columns
+    const recipePayload = {
+      title: form.title,
+      authorId: user.id, 
+      short_description: form.short_description ,
+      image_url: form.imageFile ?? null,
+      prep_time: form.preparation_time ,
+      cook_time: form.cooking_time ,
+      servings: form.servings,
+      difficulty: form.difficulty,
+    };
+
+    // 2) Insert into recipes and get the new recipe id back
+    const { data: inserted, error: recipeError } = await supabase
+      .from("recipes")
+      .insert([recipePayload])
+      .select("id")
+      .single();
+
+    if (recipeError) throw recipeError;
+
+    const recipeId = inserted.id;
+
+    // 3) Insert ingredients (if you have a recipe_ingredients table)
+    if (form.ingredients.length > 0) {
+      const ingredientRows = form.ingredients.map((ing) => ({
+        recipe_id: recipeId,
+        name: ing.name,
+        amount: ing.amount,
+        unit: ing.unit,
+        notes: ing.note ?? null,
+      }));
+
+      const { error: ingredientsError } = await supabase
+        .from("recipe-ingredients")
+        .insert(ingredientRows);
+
+      if (ingredientsError) throw ingredientsError;
+    }
+
+    // 4) Insert steps
+    if (form.steps.length > 0) {
+      const stepRows = form.steps.map((step, index) => ({
+        recipe_id: recipeId,
+        index: index+1,
+        text: step.description,
+      }));
+
+      const { error: stepsError } = await supabase
+        .from("recipe-steps")
+        .insert(stepRows);
+
+      if (stepsError) throw stepsError;
+    }
+    
+    // navigate to the newly created recipe page
+    navigate(`/recipes/${recipeId}`);
+     } catch (err: any) {
+         console.error(err);
+         setErrors(["Something went wrong while saving the recipe."]);
+     }
+     }
 
     return (
         <div className="rounded-lg bg-bright/90 p-4 shadow-sm flex flex-col min-h-90 max-h-[70vh]">
