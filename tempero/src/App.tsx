@@ -7,6 +7,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import RegisterPage from "./pages/RegisterPage";
+import SearchPage from "./pages/SearchPage";
 
 function NotFoundPage() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="skill-assessment" element={<AssessmentPage />} />
         <Route path="profile/:username" element={<ProfilePage />} />
         <Route path="profile/edit" element={<EditProfilePage />} />
+        <Route path="search" element={<SearchPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
