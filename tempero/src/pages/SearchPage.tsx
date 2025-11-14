@@ -63,9 +63,7 @@ export default function SearchPage() {
             .order("title", { ascending: true });
 
           if (debouncedQuery) {
-            qb = qb.or(
-              `title.ilike.%${debouncedQuery}%,short_description.ilike.%${debouncedQuery}%`
-            );
+            qb = qb.ilike("title", `%${debouncedQuery}%`);
           }
 
           const { data, error } = await qb;
@@ -171,7 +169,7 @@ export default function SearchPage() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={tab === "recipes" ? "Thai rice" : "Find a user"}
+              placeholder={tab === "recipes" ? "Find a recipe by name" : "Find a user by name or username"}
               className="w-full rounded-lg border border-gray-300 bg-white pl-9 pr-3 py-2 shadow-sm focus:ring-2 focus:ring-[#e57f22] outline-none"
             />
           </div>
