@@ -32,6 +32,8 @@ const COOKING_TIME_FILTERS = [
   { id: "long", label: "Cook time >120 min" },
 ];
 
+const PAGE_SIZE = 10;
+
 
 export default function SearchPage() {
   const [tab, setTab] = useState<Tab>("recipes");
@@ -49,6 +51,9 @@ export default function SearchPage() {
 
   const [cookFilters, setCookFilters] = useState<Set<string>>(new Set());
 
+  const [showAllRecipes, setShowAllRecipes] = useState(false);
+  const [showAllUsers, setShowAllUsers] = useState(false);
+
   const [debouncedQuery, setDebouncedQuery] = useState(query);
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query.trim()), 350);
@@ -57,6 +62,10 @@ export default function SearchPage() {
 
   useEffect(() => {
     let cancelled = false;
+
+    setShowAllRecipes(false);
+    setShowAllUsers(false);
+
     (async () => {
       setLoading(true);
       setErr(null);
@@ -142,6 +151,13 @@ export default function SearchPage() {
     });
   }, [recipes, difficultyFilters, cookFilters]);
 
+  const visibleRecipes =
+    showAllRecipes || !debouncedQuery
+      ? filteredRecipes
+      : filteredRecipes.slice(0, PAGE_SIZE);
+
+  const visibleUsers =
+    showAllUsers || !debouncedQuery ? users : users.slice(0, PAGE_SIZE);
 
   function toggleDifficultyFilter(n: number) {
     setDifficultyFilters((prev) => {
@@ -257,10 +273,41 @@ export default function SearchPage() {
         ) : err ? (
           <div className="py-12 text-center text-red-600">{err}</div>
         ) : tab === "recipes" ? (
-          <RecipeGrid recipes={filteredRecipes} />
+          <>
+            <RecipeGrid recipes={visibleRecipes} />
+
+            {debouncedQuery && filteredRecipes.length > PAGE_SIZE && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={() => setShowAllRecipes((v) => !v)}
+                  className="px-4 py-2 rounded-md border border-[#e57f22] text-[#e57f22] text-sm font-medium hover:bg-[#e57f22] hover:text-white transition"
+                >
+                  {showAllRecipes
+                    ? "Show less"
+                    : `Show all ${filteredRecipes.length} recipes`}
+                </button>
+              </div>
+            )}
+          </>
         ) : (
-          <UserGrid users={users} />
-        )}
+          <>
+            <UserGrid users={visibleUsers} />
+
+            {debouncedQuery && users.length > PAGE_SIZE && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={() => setShowAllUsers((v) => !v)}
+                  className="px-4 py-2 rounded-md border border-[#e57f22] text-[#e57f22] text-sm font-medium hover:bg-[#e57f22] hover:text-white transition"
+                >
+                  {showAllUsers
+                    ? "Show less"
+                    : `Show all ${users.length} users`}
+                </button>
+              </div>
+            )}
+          </>
+        )
+        }
       </div>
     </div>
   );
