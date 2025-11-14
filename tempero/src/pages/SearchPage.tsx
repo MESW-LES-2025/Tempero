@@ -26,6 +26,13 @@ type Profile = {
 
 const DIFFICULTY_FILTERS = [1, 2, 3, 4, 5];
 
+const COOKING_TIME_FILTERS = [
+  { id: "short", label: "Cook time <30 min" },
+  { id: "medium", label: "Cook time 30–120 min" },
+  { id: "long", label: "Cook time >120 min" },
+];
+
+
 export default function SearchPage() {
   const [tab, setTab] = useState<Tab>("recipes");
   const [query, setQuery] = useState("");
@@ -39,6 +46,8 @@ export default function SearchPage() {
   const [difficultyFilters, setDifficultyFilters] = useState<Set<number>>(
     new Set()
   );
+
+  const [cookFilters, setCookFilters] = useState<Set<string>>(new Set());
 
   const [debouncedQuery, setDebouncedQuery] = useState(query);
   useEffect(() => {
@@ -106,20 +115,33 @@ export default function SearchPage() {
   }, [tab, debouncedQuery]);
 
   const filteredRecipes = useMemo(() => {
-    if (difficultyFilters.size === 0) return recipes;
-
     return recipes.filter((r) => {
-      if (r.difficulty == null) return false;
+      // ----- Difficulty filter -----
+      if (difficultyFilters.size > 0) {
+        const diffNum =
+          typeof r.difficulty === "string"
+            ? parseInt(r.difficulty, 10)
+            : r.difficulty;
 
-      const diffNum =
-        typeof r.difficulty === "string"
-          ? parseInt(r.difficulty, 10)
-          : r.difficulty;
+        if (!diffNum || !difficultyFilters.has(diffNum)) return false;
+      }
 
-      if (!diffNum || Number.isNaN(diffNum)) return false;
-      return difficultyFilters.has(diffNum);
+      // ----- Cooking time filter -----
+      if (cookFilters.size > 0) {
+        const cook = r.cook_time ?? 0;
+
+        const matchesCook =
+          (cookFilters.has("short") && cook < 30) ||
+          (cookFilters.has("medium") && cook >= 30 && cook <= 120) ||
+          (cookFilters.has("long") && cook > 120);
+
+        if (!matchesCook) return false;
+      }
+
+      return true;
     });
-  }, [recipes, difficultyFilters]);
+  }, [recipes, difficultyFilters, cookFilters]);
+
 
   function toggleDifficultyFilter(n: number) {
     setDifficultyFilters((prev) => {
@@ -129,6 +151,16 @@ export default function SearchPage() {
       return next;
     });
   }
+
+  function toggleCookFilter(id: string) {
+    setCookFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
 
   return (
     <div className="min-h-screen w-full bg-amber-50">
@@ -176,21 +208,42 @@ export default function SearchPage() {
         </div>
 
         {tab === "recipes" && (
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-gray-700">
-            {DIFFICULTY_FILTERS.map((n) => (
-              <label
-                key={n}
-                className="inline-flex items-center gap-2 cursor-pointer select-none"
-              >
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 accent-[#e57f22]"
-                  checked={difficultyFilters.has(n)}
-                  onChange={() => toggleDifficultyFilter(n)}
-                />
-                <span className="italic">Difficulty {n}</span>
-              </label>
-            ))}
+          <div className="mt-6 flex flex-col items-center gap-4 text-gray-700">
+            {/*Difficulty */}
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+              {DIFFICULTY_FILTERS.map((n) => (
+                <label
+                  key={n}
+                  className="inline-flex items-center gap-2 cursor-pointer select-none"
+                >
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-[#e57f22]"
+                    checked={difficultyFilters.has(n)}
+                    onChange={() => toggleDifficultyFilter(n)}
+                  />
+                  <span className="italic">Difficulty {n}</span>
+                </label>
+              ))}
+            </div>
+
+            {/*Cook time */}
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+              {COOKING_TIME_FILTERS.map((f) => (
+                <label
+                  key={f.id}
+                  className="inline-flex items-center gap-2 cursor-pointer select-none"
+                >
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-[#e57f22]"
+                    checked={cookFilters.has(f.id)}
+                    onChange={() => toggleCookFilter(f.id)}
+                  />
+                  <span className="italic">{f.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
         )}
 
