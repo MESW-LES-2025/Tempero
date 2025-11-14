@@ -36,6 +36,8 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const [followLoading, setFollowLoading] = useState<boolean>(false);
+  const [followersCount, setFollowersCount] = useState<number>(0);
+  const [followingCount, setFollowingCount] = useState<number>(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,6 +73,23 @@ export default function ProfilePage() {
       }
       setProfile(data as Profile);
 
+      // Get follower count (people following this user)
+      const { count: followersCount } = await supabase
+        .from("followers")
+        .select("*", { count: "exact", head: true })
+        .eq("followed_id", data.auth_id);
+
+      // Get following count (people this user follows)
+      const { count: followingCount } = await supabase
+        .from("followers")
+        .select("*", { count: "exact", head: true })
+        .eq("follower_id", data.auth_id);
+
+      if (!cancelled) {
+        setFollowersCount(followersCount || 0);
+        setFollowingCount(followingCount || 0);
+      }
+
       // Check if current user is following this profile (only for other users)
       if (user && data && user.id !== data.auth_id) {
         const { data: followData } = await supabase
@@ -103,6 +122,7 @@ export default function ProfilePage() {
           .eq("follower_id", currentUser.id)
           .eq("followed_id", profile.auth_id);
         setIsFollowing(false);
+        setFollowersCount(prev => prev - 1);
       } else {
         // Follow
         await supabase
@@ -112,6 +132,7 @@ export default function ProfilePage() {
             followed_id: profile.auth_id
           });
         setIsFollowing(true);
+        setFollowersCount(prev => prev + 1);
       }
     } catch (error) {
       console.error("Follow error:", error);
@@ -163,11 +184,11 @@ export default function ProfilePage() {
                   {/* Follower/Following counts */}
                   <div className="mt-2 flex gap-22 justify-center">
                     <div className="text-center">
-                      <div className="text-base font-semibold text-[#e57f22]">127</div>
+                      <div className="text-base font-semibold text-[#e57f22]">{followersCount}</div>
                       <div className="text-xs text-gray-600">Followers</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-base font-semibold text-[#e57f22]">89</div>
+                      <div className="text-base font-semibold text-[#e57f22]">{followingCount}</div>
                       <div className="text-xs text-gray-600">Following</div>
                     </div>
                   </div>
