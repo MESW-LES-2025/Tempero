@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
 
 type Tab = "recipes" | "users";
@@ -391,9 +392,10 @@ function UserGrid({ users }: { users: Profile[] }) {
             ? `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim()
             : u.username;
         return (
-          <article
+          <Link
             key={u.auth_id}
-            className="rounded-lg overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition"
+            to={`/profile/${u.username}`}
+            className="block rounded-lg overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition"
           >
             {u.avatar_url ? (
               <img
@@ -410,7 +412,7 @@ function UserGrid({ users }: { users: Profile[] }) {
               </h3>
               <p className="mt-1 text-sm text-gray-600">@{u.username}</p>
             </div>
-          </article>
+          </Link>
         );
       })}
     </div>
