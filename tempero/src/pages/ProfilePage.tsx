@@ -24,6 +24,7 @@ type Profile = {
   avatar_url?: string | null;
   level?: number | null;
   chef_type?: string | null;
+  profile_picture_url?: string | null;
 };
 
 export default function ProfilePage() {
@@ -126,9 +127,9 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen w-full bg-amber-50 flex justify-center items-start py-10">
-      <section className="w-full flex flex-col lg:flex-row items-start justify-center gap-8 mt-10 px-4 sm:px-6 lg:px-10">
+      <section className="w-full flex flex-col lg:flex-row items-start justify-center gap-2 mt-10 px-4 sm:px-6 lg:px-10">
         {/* Left card */}
-        <article className="w-full lg:w-1/3 rounded-xl bg-white shadow-md ring-1 ring-black/5 p-5 sm:p-7">
+        <article className="w-full lg:w-1/3 rounded-xl bg-white shadow-md ring-1 ring-black/5 p-0 relative overflow-hidden">
           {loading ? (
             <div>
               <Loader message="Fetching User..." />
@@ -139,68 +140,88 @@ export default function ProfilePage() {
             <div>No profile to display.</div>
           ) : (
             <>
-              <div className="flex gap-4 sm:gap-6">
-                <img
-                  src={profile.profile_picture_url || chefImg}
-                  alt={displayName}
-                  className="h-24 w-24 sm:h-28 sm:w-28 rounded-lg object-cover ring-1 ring-black/10"
-                />
-                <div className="flex-1">
-                  <h1 className="text-2xl sm:text-3xl font-semibold text-[#e57f22]">
+              <div className="flex gap-2 sm:gap-3 h-full">
+                <div className="flex-shrink-0">
+                  <img
+                    src={profile.profile_picture_url || chefImg}
+                    alt={displayName}
+                    className="h-full w-40 sm:w-44 rounded-tl-xl rounded-br-xl object-cover ring-1 ring-black/10"
+                  />
+                </div>
+                <div className="flex-1 pt-2 pr-5 pb-5 pl-5 sm:pt-3 sm:pr-7 sm:pb-7 sm:pl-7 flex flex-col justify-between">
+                  <h1 className="text-xl sm:text-xl font-semibold text-[#e57f22]">
                     {displayName}
                   </h1>
-
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {badges.map((b, i) => (
-                      <span
-                        key={i}
-                        className="inline-flex items-center gap-1 rounded-md  bg-orange-50 px-2.5 py-1 text-xs sm:text-sm"
-                      >
-                        <span aria-hidden>{b.icon}</span>
-                        <span className="font-medium">{b.label}</span>
-                      </span>
-                    ))}
+                  
+                  {profile?.level && profile?.chef_type && (
+                    <div className="mt-2 bg-orange-50 text-[#e57f22] text-xs sm:text-sm font-medium rounded-md shadow-sm px-2 py-1">
+                      <span className="text-black">Level {profile.level}</span> ·{" "}
+                      {profile.chef_type}
+                    </div>
+                  )}
+                  
+                  {/* Follower/Following counts */}
+                  <div className="mt-2 flex gap-22 justify-center">
+                    <div className="text-center">
+                      <div className="text-base font-semibold text-[#e57f22]">127</div>
+                      <div className="text-xs text-gray-600">Followers</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-base font-semibold text-[#e57f22]">89</div>
+                      <div className="text-xs text-gray-600">Following</div>
+                    </div>
                   </div>
+                  
+                  {currentUser && profile?.auth_id !== currentUser.id && (
+                    <button
+                      className={`mt-3 w-full text-sm font-medium py-2 px-4 rounded-md transition-colors ${
+                        isFollowing
+                          ? "bg-gray-500 hover:bg-gray-600 text-white"
+                          : "bg-[#e57f22] hover:bg-[#cf6e1d] text-white"
+                      }`}
+                      onClick={handleFollow}
+                      disabled={followLoading}
+                    >
+                      {followLoading ? "..." : isFollowing ? "Unfollow" : "Follow"}
+                    </button>
+                  )}
+                  
                 </div>
-                {profile?.level && profile?.chef_type && (
-                  <div className=" bg-orange-50 text-[#e57f22] text-xs sm:text-sm font-medium px-2 py-1 rounded-md shadow-sm w-36 lg:w-100 h-8">
-                    <span className="text-black">Level {profile.level}</span> ·{" "}
-                    {profile.chef_type}
-                  </div>
-                )}
               </div>
 
-              <div className="my-4 border-t border-dashed border-gray-300" />
+              <div className="mx-5 sm:mx-7 my-4 border-t border-dashed border-gray-300" />
 
-              <p className="text-sm sm:text-base leading-7 text-slate-700">
+              <div className="px-5 sm:px-7 flex flex-wrap gap-2">
+                {badges.map((b, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1 rounded-md bg-orange-50 px-2.5 py-1 text-xs sm:text-sm"
+                  >
+                    <span aria-hidden>{b.icon}</span>
+                    <span className="font-medium">{b.label}</span>
+                  </span>
+                ))}
+              </div>
+
+              <div className="mx-5 sm:mx-7 my-4 border-t border-dashed border-gray-300" />
+
+              <p className="px-5 sm:px-7 pb-4 text-sm sm:text-base leading-7 text-slate-700">
                 {profile.bio?.trim() || "This user has not provided a bio yet."}
               </p>
             </>
           )}
           {/* Edit profile button - only show for own profile */}
           {currentUser && profile?.auth_id === currentUser.id && (
-            <button
-              className="mt-6 w-full bg-[#e57f22] hover:bg-[#cf6e1d] text-white text-sm sm:text-base font-medium py-2.5 rounded-md transition-colors"
-              onClick={() => navigate("/profile/edit")}
-            >
-              Edit Profile
-            </button>
+            <div className="px-5 sm:px-7 pb-5 sm:pb-7">
+              <button
+                className="mt-6 w-full bg-[#e57f22] hover:bg-[#cf6e1d] text-white text-sm sm:text-base font-medium py-2.5 rounded-md transition-colors"
+                onClick={() => navigate("/profile/edit")}
+              >
+                Edit Profile
+              </button>
+            </div>
           )}
-          
           {/* Follow button - only show for other users' profiles */}
-          {currentUser && profile?.auth_id !== currentUser.id && (
-            <button
-              className={`mt-6 w-full text-sm sm:text-base font-medium py-2.5 rounded-md transition-colors ${
-                isFollowing
-                  ? "bg-gray-500 hover:bg-gray-600 text-white"
-                  : "bg-[#e57f22] hover:bg-[#cf6e1d] text-white"
-              }`}
-              onClick={handleFollow}
-              disabled={followLoading}
-            >
-              {followLoading ? "..." : isFollowing ? "Unfollow" : "Follow"}
-            </button>
-          )}
         </article>
 
         {/* Right side: Tabs + content */}
