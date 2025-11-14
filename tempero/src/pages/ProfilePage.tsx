@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import type { User } from "@supabase/supabase-js";
 import chefImg from "../assets/febrian-zakaria-SiQgni-cqFg-unsplash.jpg";
 import Loader from "../components/Loader";
 import Recipes from "../components/Recipes";
@@ -29,8 +30,11 @@ export default function ProfilePage() {
   const { username } = useParams<{ username: string }>();
   const [tab, setTab] = useState<"recipes" | "reviews">("recipes");
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [followLoading, setFollowLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,6 +45,10 @@ export default function ProfilePage() {
     setError(null);
 
     (async () => {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!cancelled) setCurrentUser(user);
+
       const { data, error: fetchErr } = await supabase
         .from("profiles")
         .select("*")
@@ -61,12 +69,55 @@ export default function ProfilePage() {
         return;
       }
       setProfile(data as Profile);
+
+      // Check if current user is following this profile (only for other users)
+      if (user && data && user.id !== data.auth_id) {
+        const { data: followData } = await supabase
+          .from("followers")
+          .select("follower_id")
+          .eq("follower_id", user.id)
+          .eq("followed_id", data.auth_id)
+          .maybeSingle();
+        
+        if (!cancelled) setIsFollowing(!!followData);
+      }
     })();
 
     return () => {
       cancelled = true;
     };
   }, [username]);
+
+  async function handleFollow() {
+    if (!currentUser || !profile) return;
+    
+    setFollowLoading(true);
+    
+    try {
+      if (isFollowing) {
+        // Unfollow
+        await supabase
+          .from("followers")
+          .delete()
+          .eq("follower_id", currentUser.id)
+          .eq("followed_id", profile.auth_id);
+        setIsFollowing(false);
+      } else {
+        // Follow
+        await supabase
+          .from("followers")
+          .insert({
+            follower_id: currentUser.id,
+            followed_id: profile.auth_id
+          });
+        setIsFollowing(true);
+      }
+    } catch (error) {
+      console.error("Follow error:", error);
+    } finally {
+      setFollowLoading(false);
+    }
+  }
 
   const displayName =
     profile?.first_name || profile?.last_name
@@ -126,13 +177,30 @@ export default function ProfilePage() {
               </p>
             </>
           )}
-          {/* Edit profile button */}
-          <button
-            className="mt-6 w-full bg-[#e57f22] hover:bg-[#cf6e1d] text-white text-sm sm:text-base font-medium py-2.5 rounded-md transition-colors"
-            onClick={() => navigate("/profile/edit")}
-          >
-            Edit Profile
-          </button>
+          {/* Edit profile button - only show for own profile */}
+          {currentUser && profile?.auth_id === currentUser.id && (
+            <button
+              className="mt-6 w-full bg-[#e57f22] hover:bg-[#cf6e1d] text-white text-sm sm:text-base font-medium py-2.5 rounded-md transition-colors"
+              onClick={() => navigate("/profile/edit")}
+            >
+              Edit Profile
+            </button>
+          )}
+          
+          {/* Follow button - only show for other users' profiles */}
+          {currentUser && profile?.auth_id !== currentUser.id && (
+            <button
+              className={`mt-6 w-full text-sm sm:text-base font-medium py-2.5 rounded-md transition-colors ${
+                isFollowing
+                  ? "bg-gray-500 hover:bg-gray-600 text-white"
+                  : "bg-[#e57f22] hover:bg-[#cf6e1d] text-white"
+              }`}
+              onClick={handleFollow}
+              disabled={followLoading}
+            >
+              {followLoading ? "..." : isFollowing ? "Unfollow" : "Follow"}
+            </button>
+          )}
         </article>
 
         {/* Right side: Tabs + content */}
