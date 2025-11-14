@@ -26,6 +26,15 @@ type Profile = {
 
 const DIFFICULTY_FILTERS = [1, 2, 3, 4, 5];
 
+const COOKING_TIME_FILTERS = [
+  { id: "short", label: "Cook time <30 min" },
+  { id: "medium", label: "Cook time 30–120 min" },
+  { id: "long", label: "Cook time >120 min" },
+];
+
+const PAGE_SIZE = 10;
+
+
 export default function SearchPage() {
   const [tab, setTab] = useState<Tab>("recipes");
   const [query, setQuery] = useState("");
@@ -40,6 +49,11 @@ export default function SearchPage() {
     new Set()
   );
 
+  const [cookFilters, setCookFilters] = useState<Set<string>>(new Set());
+
+  const [showAllRecipes, setShowAllRecipes] = useState(false);
+  const [showAllUsers, setShowAllUsers] = useState(false);
+
   const [debouncedQuery, setDebouncedQuery] = useState(query);
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(query.trim()), 350);
@@ -48,6 +62,10 @@ export default function SearchPage() {
 
   useEffect(() => {
     let cancelled = false;
+
+    setShowAllRecipes(false);
+    setShowAllUsers(false);
+
     (async () => {
       setLoading(true);
       setErr(null);
@@ -63,9 +81,7 @@ export default function SearchPage() {
             .order("title", { ascending: true });
 
           if (debouncedQuery) {
-            qb = qb.or(
-              `title.ilike.%${debouncedQuery}%,short_description.ilike.%${debouncedQuery}%`
-            );
+            qb = qb.ilike("title", `%${debouncedQuery}%`);
           }
 
           const { data, error } = await qb;
@@ -108,20 +124,40 @@ export default function SearchPage() {
   }, [tab, debouncedQuery]);
 
   const filteredRecipes = useMemo(() => {
-    if (difficultyFilters.size === 0) return recipes;
-
     return recipes.filter((r) => {
-      if (r.difficulty == null) return false;
+      // ----- Difficulty filter -----
+      if (difficultyFilters.size > 0) {
+        const diffNum =
+          typeof r.difficulty === "string"
+            ? parseInt(r.difficulty, 10)
+            : r.difficulty;
 
-      const diffNum =
-        typeof r.difficulty === "string"
-          ? parseInt(r.difficulty, 10)
-          : r.difficulty;
+        if (!diffNum || !difficultyFilters.has(diffNum)) return false;
+      }
 
-      if (!diffNum || Number.isNaN(diffNum)) return false;
-      return difficultyFilters.has(diffNum);
+      // ----- Cooking time filter -----
+      if (cookFilters.size > 0) {
+        const cook = r.cook_time ?? 0;
+
+        const matchesCook =
+          (cookFilters.has("short") && cook < 30) ||
+          (cookFilters.has("medium") && cook >= 30 && cook <= 120) ||
+          (cookFilters.has("long") && cook > 120);
+
+        if (!matchesCook) return false;
+      }
+
+      return true;
     });
-  }, [recipes, difficultyFilters]);
+  }, [recipes, difficultyFilters, cookFilters]);
+
+  const visibleRecipes =
+    showAllRecipes || !debouncedQuery
+      ? filteredRecipes
+      : filteredRecipes.slice(0, PAGE_SIZE);
+
+  const visibleUsers =
+    showAllUsers || !debouncedQuery ? users : users.slice(0, PAGE_SIZE);
 
   function toggleDifficultyFilter(n: number) {
     setDifficultyFilters((prev) => {
@@ -131,6 +167,16 @@ export default function SearchPage() {
       return next;
     });
   }
+
+  function toggleCookFilter(id: string) {
+    setCookFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
 
   return (
     <div className="min-h-screen w-full bg-amber-50">
@@ -171,28 +217,49 @@ export default function SearchPage() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={tab === "recipes" ? "Thai rice" : "Find a user"}
+              placeholder={tab === "recipes" ? "Find a recipe by name" : "Find a user by name or username"}
               className="w-full rounded-lg border border-gray-300 bg-white pl-9 pr-3 py-2 shadow-sm focus:ring-2 focus:ring-[#e57f22] outline-none"
             />
           </div>
         </div>
 
         {tab === "recipes" && (
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-gray-700">
-            {DIFFICULTY_FILTERS.map((n) => (
-              <label
-                key={n}
-                className="inline-flex items-center gap-2 cursor-pointer select-none"
-              >
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 accent-[#e57f22]"
-                  checked={difficultyFilters.has(n)}
-                  onChange={() => toggleDifficultyFilter(n)}
-                />
-                <span className="italic">Difficulty {n}</span>
-              </label>
-            ))}
+          <div className="mt-6 flex flex-col items-center gap-4 text-gray-700">
+            {/*Difficulty */}
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+              {DIFFICULTY_FILTERS.map((n) => (
+                <label
+                  key={n}
+                  className="inline-flex items-center gap-2 cursor-pointer select-none"
+                >
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-[#e57f22]"
+                    checked={difficultyFilters.has(n)}
+                    onChange={() => toggleDifficultyFilter(n)}
+                  />
+                  <span className="italic">Difficulty {n}</span>
+                </label>
+              ))}
+            </div>
+
+            {/*Cook time */}
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+              {COOKING_TIME_FILTERS.map((f) => (
+                <label
+                  key={f.id}
+                  className="inline-flex items-center gap-2 cursor-pointer select-none"
+                >
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-[#e57f22]"
+                    checked={cookFilters.has(f.id)}
+                    onChange={() => toggleCookFilter(f.id)}
+                  />
+                  <span className="italic">{f.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
         )}
 
@@ -206,10 +273,41 @@ export default function SearchPage() {
         ) : err ? (
           <div className="py-12 text-center text-red-600">{err}</div>
         ) : tab === "recipes" ? (
-          <RecipeGrid recipes={filteredRecipes} />
+          <>
+            <RecipeGrid recipes={visibleRecipes} />
+
+            {debouncedQuery && filteredRecipes.length > PAGE_SIZE && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={() => setShowAllRecipes((v) => !v)}
+                  className="px-4 py-2 rounded-md border border-[#e57f22] text-[#e57f22] text-sm font-medium hover:bg-[#e57f22] hover:text-white transition"
+                >
+                  {showAllRecipes
+                    ? "Show less"
+                    : `Show all ${filteredRecipes.length} recipes`}
+                </button>
+              </div>
+            )}
+          </>
         ) : (
-          <UserGrid users={users} />
-        )}
+          <>
+            <UserGrid users={visibleUsers} />
+
+            {debouncedQuery && users.length > PAGE_SIZE && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={() => setShowAllUsers((v) => !v)}
+                  className="px-4 py-2 rounded-md border border-[#e57f22] text-[#e57f22] text-sm font-medium hover:bg-[#e57f22] hover:text-white transition"
+                >
+                  {showAllUsers
+                    ? "Show less"
+                    : `Show all ${users.length} users`}
+                </button>
+              </div>
+            )}
+          </>
+        )
+        }
       </div>
     </div>
   );
