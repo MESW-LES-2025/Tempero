@@ -3,6 +3,7 @@ import type { ChangeEvent } from "react";
 import { UploadRecipeProvider, useUploadRecipe } from "../utils/UploadRecipeContext";
 import { supabase } from "../config/supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { Units } from "../utils/Units";
 
 function makeId() {
     return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -149,12 +150,19 @@ function IngredientsStep() {
                                 }}
                                 placeholder="Amt"
                             />
-                            <input
-                                className="w-20 rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
-                                value={ing.unit}
+                            {/* unit select using predefined Units */}
+                            <select
+                                className="w-28 rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
+                                value={ing.unit ?? ""}
                                 onChange={(e) => updateIngredient(i, { unit: e.target.value })}
-                                placeholder="Unit"
-                            />
+                            >
+                                <option value="">Unit</option>
+                                {Units.map((u) => (
+                                <option key={u.name} value={u.name}>
+                                    {u.name}
+                                </option>
+                                ))}
+                            </select>
                             <button type="button" onClick={() => removeIngredient(i)} className="px-3 py-1 text-red-600 hover:bg-red-50 rounded">✕</button>
                         </div>
                         <input
