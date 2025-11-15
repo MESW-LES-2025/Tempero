@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import type { ChangeEvent } from "react";
 import { UploadRecipeProvider, useUploadRecipe } from "../utils/UploadRecipeContext";
 import { supabase } from "../config/supabaseClient";
@@ -97,8 +97,8 @@ function DetailsStep() {
                         className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
                     >
                         <option value="">Select</option>
-                        {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-                            <option key={n} value={String(n)}>{n} {n===1? '— Very easy' : n===10? '— Very hard' : ''}</option>
+                        {Array.from({ length: 5 }, (_, i) => i + 1).map((n) => (
+                            <option key={n} value={String(n)}>{n} {n===1? '— Very easy' : n===5? '— Very hard' : ''}</option>
                         ))}
                     </select>
                 </label>
@@ -247,13 +247,92 @@ function MediaStep() {
 }
 
 function ReviewStep() {
-    const { form } = useUploadRecipe();
+    const { form, setForm } = useUploadRecipe();
+    const [tagInput, setTagInput] = useState("");
+    const [suggestions, setSuggestions] = useState<{ id: number; name: string }[]>([]);
+    const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+    const debounceRef = useRef<number | null>(null);
     const prep = form.preparation_time != null ? `${form.preparation_time} minutes` : "—";
     const cook = form.cooking_time != null ? `${form.cooking_time} minutes` : "—";
     const difficulty = form.difficulty != null ? `${form.difficulty}` : "—";
 
+    // fetch suggestions from tags table matching input (debounced)
+    useEffect(() => {
+        if (debounceRef.current) window.clearTimeout(debounceRef.current);
+        if (!tagInput || tagInput.trim() === "") {
+            setSuggestions([]);
+            return;
+        }
+        setLoadingSuggestions(true);
+        // debounce 250ms
+        debounceRef.current = window.setTimeout(async () => {
+            const q = tagInput.trim();
+
+            // try RPC that uses pg_trgm first (faster / more tolerant)
+            try {
+                const { data, error } = await supabase.rpc("search_tags_trgm", { q });
+                if (!error && Array.isArray(data)) {
+                    setSuggestions(data as any);
+                    setLoadingSuggestions(false);
+                    return;
+                }
+            } catch (e) {
+                // ignore and fallback
+            }
+
+            // fallback to ilike if RPC unavailable or errored
+            try {
+                const { data, error } = await supabase
+                    .from("tags")
+                    .select("id,name")
+                    .ilike("name", `%${q}%`)
+                    .limit(10);
+                if (!error && Array.isArray(data)) setSuggestions(data as any);
+                else setSuggestions([]);
+            } catch (e) {
+                setSuggestions([]);
+            } finally {
+                setLoadingSuggestions(false);
+            }
+        }, 250);
+        return () => {
+            if (debounceRef.current) window.clearTimeout(debounceRef.current);
+        };
+    }, [tagInput]);
+
+    function addTag(name?: string) {
+        const t = (name ?? tagInput).trim();
+        if (!t) return;
+        setForm((p) => ({
+            ...p,
+            tags: Array.from(
+                new Set([...(p.tags ?? []).map((x: any) => x.name), t])
+            ).map((n) => ({ name: n })),
+        }));
+        setTagInput("");
+        setSuggestions([]);
+    }
+
+    function onTagKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            // if there's a top suggestion, use it
+            if (suggestions.length > 0) addTag(suggestions[0].name);
+            else addTag();
+        }
+        if (e.key === "ArrowDown" && suggestions.length > 0) {
+            // focus first suggestion by clicking it programmatically (simple UX)
+            const el = document.querySelector<HTMLInputElement>(".tag-suggestion-item");
+            if (el) el.focus();
+        }
+    }
+
+    function removeTag(tagToRemove: string) {
+        setForm((p) => ({ ...p, tags: (p.tags ?? []).filter((t: any) => t.name !== tagToRemove) }));
+    }
+
     return (
-        <div className="space-y-3">
+        <div className="space-y-3 relative">
             <h3 className="font-medium">Preview</h3>
             <div className="text-sm text-gray-700"><strong>Title:</strong> {form.title || "—"}</div>
             <div className="text-sm text-gray-700"><strong>Preparation time:</strong> {prep}</div>
@@ -262,6 +341,65 @@ function ReviewStep() {
             <div className="text-sm text-gray-700"><strong>Difficulty:</strong> {difficulty}</div>
             <div className="text-sm text-gray-700"><strong>Ingredients:</strong> {form.ingredients.length} items</div>
             <div className="text-sm text-gray-700"><strong>Steps:</strong> {form.steps.length} steps</div>
+
+            <div className="space-y-2">
+                <div className="text-sm font-medium">Tags</div>
+                <div className="relative">
+                    <div className="flex gap-2 items-center">
+                        <input
+                            value={tagInput}
+                            onChange={(e) => setTagInput(e.target.value)}
+                            onKeyDown={onTagKeyDown}
+                            placeholder="Add tag and press Enter"
+                            className="rounded-lg border px-3 py-2 outline-none shadow-sm bg-white/70 focus:ring-1 focus:ring-main transition-all duration-150 w-full"
+                        />
+                        <button type="button" onClick={() => addTag()} className="px-3 py-2 bg-main text-bright rounded">Add</button>
+                    </div>
+
+                    {/* suggestions dropdown */}
+                    {tagInput.trim() !== "" && (
+                        <div className="absolute z-20 mt-1 w-full bg-bright/95 border rounded shadow-lg max-h-48 overflow-auto">
+                            {loadingSuggestions ? (
+                                <div className="p-2 text-sm text-gray-500">Loading...</div>
+                            ) : suggestions.length === 0 ? (
+                                <div className="p-2 text-sm text-gray-500">No suggestions</div>
+                            ) : (
+                                suggestions.map((s) => (
+                                    <button
+                                        key={s.id}
+                                        type="button"
+                                        onClick={() => addTag(s.name)}
+                                        className="tag-suggestion-item w-full text-left px-3 py-2 hover:bg-gray-100 text-sm"
+                                    >
+                                        {s.name}
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex flex-wrap gap-2 mt-2">
+                    {(form.tags ?? []).length === 0 ? (
+                        <div className="text-sm text-gray-500">No tags</div>
+                    ) : (
+                        (form.tags ?? []).map((t: { name: string }) => (
+                            <span key={t.name} className="inline-flex items-center gap-2 bg-gray-100 text-sm px-2 py-1 rounded">
+                                <span>{t.name}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => removeTag(t.name)}
+                                    aria-label={`Remove tag ${t.name}`}
+                                    className="text-red-600 hover:bg-red-50 rounded px-1"
+                                >
+                                    ✕
+                                </button>
+                            </span>
+                        ))
+                    )}
+                </div>
+            </div>
+
             <div className="text-sm text-gray-700"><strong>Image:</strong> {form.imageFile ? form.imageFile.name : "None"}</div>
 
             <p className="text-xs text-gray-500 mt-2">Use Publish to send to the server.</p>
@@ -307,8 +445,8 @@ function UploadFormInner() {
             // Difficulty validation
             if (form.difficulty === null || form.difficulty === undefined || form.difficulty === "") {
                 msgs.push("Difficulty is required.");
-            } else if (typeof form.difficulty === "number" && (form.difficulty < 1 || form.difficulty > 10)) {
-                msgs.push("Difficulty must be between 1 and 10.");
+            } else if (typeof form.difficulty === "number" && (form.difficulty < 1 || form.difficulty > 5)) {
+                msgs.push("Difficulty must be between 1 and 5.");
             }
         }
         if (index === 1) {
@@ -360,74 +498,104 @@ function UploadFormInner() {
         }
         setErrors([]);
         try {
-    // Get current user from Supabase auth
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      setErrors(["You must be logged in to upload a recipe."]);
-      return;
+            // Get current user from Supabase auth
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            if (userError || !user) {
+                setErrors(["You must be logged in to upload a recipe."]);
+                return;
+            }
+            // 1) Build the payload that matches ONLY the recipes table columns
+            const recipePayload = {
+                title: form.title,
+                authorId: user.id, 
+                short_description: form.short_description ,
+                image_url: form.imageFile ?? null,
+                prep_time: form.preparation_time ,
+                cook_time: form.cooking_time ,
+                servings: form.servings,
+                difficulty: form.difficulty,
+            };
+
+            // 2) Insert into recipes and get the new recipe id back
+            const { data: inserted, error: recipeError } = await supabase
+                .from("recipes")
+                .insert([recipePayload])
+                .select("id")
+                .single();
+
+            if (recipeError) throw recipeError;
+
+            const recipeId = inserted.id;
+
+            // 3) Insert ingredients (if you have a recipe_ingredients table)
+            if (form.ingredients.length > 0) {
+                const ingredientRows = form.ingredients.map((ing) => ({
+                    recipe_id: recipeId,
+                    name: ing.name,
+                    amount: ing.amount,
+                    unit: ing.unit,
+                    notes: ing.note ?? null,
+                }));
+
+                const { error: ingredientsError } = await supabase
+                    .from("recipe-ingredients")
+                    .insert(ingredientRows);
+
+                if (ingredientsError) throw ingredientsError;
+            }
+
+            // 4) Insert steps
+            if (form.steps.length > 0) {
+                const stepRows = form.steps.map((step, index) => ({
+                    recipe_id: recipeId,
+                    index: index+1,
+                    text: step.description,
+                }));
+
+                const { error: stepsError } = await supabase
+                    .from("recipe-steps")
+                    .insert(stepRows);
+
+                if (stepsError) throw stepsError;
+            }
+
+            // 5) Insert tags and recipe-tags relationships
+            if (form.tags && form.tags.length > 0) {
+                // Upsert all tags (avoid duplicates) and get their ids back
+                const tagNames = form.tags.map((t: { name: string }) => t.name.trim()).filter(Boolean);
+                if (tagNames.length > 0) {
+                    const upsertRows = tagNames.map((name) => ({ name }));
+                    const { data: upsertedTags, error: upsertError } = await supabase
+                        .from("tags")
+                        .upsert(upsertRows, { onConflict: "name" })
+                        .select("id,name");
+                    if (upsertError) throw upsertError;
+
+                    // Build map name -> id
+                    const tagIdMap = new Map<string, number>();
+                    (upsertedTags ?? []).forEach((t: any) => tagIdMap.set(t.name, t.id));
+
+                    // Insert recipe-tag relations (batch)
+                    const recipeTagRows = tagNames
+                        .map((name) => ({ recipe_id: recipeId, tag_id: tagIdMap.get(name) }))
+                        .filter((r) => r.tag_id != null);
+
+                    if (recipeTagRows.length > 0) {
+                        const { error: recipeTagsError } = await supabase
+                            .from("recipe-tags")
+                            .insert(recipeTagRows);
+                        if (recipeTagsError) throw recipeTagsError;
+                    }
+                }
+            }
+            
+            // navigate to the newly created recipe page
+            navigate(`/recipes/${recipeId}`);
+        } catch (err: any) {
+            console.error(err);
+            setErrors(["Something went wrong while saving the recipe."]);
+        }
     }
-    // 1) Build the payload that matches ONLY the recipes table columns
-    const recipePayload = {
-      title: form.title,
-      authorId: user.id, 
-      short_description: form.short_description ,
-      image_url: form.imageFile ?? null,
-      prep_time: form.preparation_time ,
-      cook_time: form.cooking_time ,
-      servings: form.servings,
-      difficulty: form.difficulty,
-    };
-
-    // 2) Insert into recipes and get the new recipe id back
-    const { data: inserted, error: recipeError } = await supabase
-      .from("recipes")
-      .insert([recipePayload])
-      .select("id")
-      .single();
-
-    if (recipeError) throw recipeError;
-
-    const recipeId = inserted.id;
-
-    // 3) Insert ingredients (if you have a recipe_ingredients table)
-    if (form.ingredients.length > 0) {
-      const ingredientRows = form.ingredients.map((ing) => ({
-        recipe_id: recipeId,
-        name: ing.name,
-        amount: ing.amount,
-        unit: ing.unit,
-        notes: ing.note ?? null,
-      }));
-
-      const { error: ingredientsError } = await supabase
-        .from("recipe-ingredients")
-        .insert(ingredientRows);
-
-      if (ingredientsError) throw ingredientsError;
-    }
-
-    // 4) Insert steps
-    if (form.steps.length > 0) {
-      const stepRows = form.steps.map((step, index) => ({
-        recipe_id: recipeId,
-        index: index+1,
-        text: step.description,
-      }));
-
-      const { error: stepsError } = await supabase
-        .from("recipe-steps")
-        .insert(stepRows);
-
-      if (stepsError) throw stepsError;
-    }
-    
-    // navigate to the newly created recipe page
-    navigate(`/recipes/${recipeId}`);
-     } catch (err: any) {
-         console.error(err);
-         setErrors(["Something went wrong while saving the recipe."]);
-     }
-     }
 
     return (
         <div className="rounded-lg bg-bright/90 p-4 shadow-sm flex flex-col min-h-90 max-h-[70vh]">
