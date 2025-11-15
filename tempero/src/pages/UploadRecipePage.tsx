@@ -606,13 +606,13 @@ function UploadFormInner() {
     }
 
     return (
-        <div className="rounded-lg bg-bright/90 p-4 shadow-sm flex flex-col min-h-90 max-h-[70vh]">
-            <div className="mb-3">
+        <div className="rounded-lg bg-bright/90 p-4 shadow-sm flex flex-col min-h-90 max-h-[70vh] overflow-x-visible">
+            <div className="mb-3 overflow-x-visible">
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-medium">{STEPS[stepIndex].title}</h2>
                     <div className="text-sm text-gray-500">Step {stepIndex + 1} / {STEPS.length}</div>
                 </div>
-                <div className="h-2 bg-gray-200 rounded-full mt-3 overflow-hidden">
+                <div className="h-2 bg-gray-200 rounded-full mt-3 overflow-hidden ">
                     <div className="h-full bg-main transition-all duration-300 ease-in-out" style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }} />
                 </div>
                 {errors.length > 0 && (
@@ -626,7 +626,7 @@ function UploadFormInner() {
                 )}
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto custom-scroll py-2 ">
+            <div className="flex-1 min-h-0 overflow-x-visible overflow-y-scroll custom-scroll py-2 ">
                 <StepComp />
             </div>
 
@@ -655,7 +655,7 @@ function UploadFormInner() {
 export default function UploadRecipePage() {
     return (
         <UploadRecipeProvider>
-            <div className="min-h-screen bg-bright/5">
+            <div className="min-h-screen bg-bright/5 ">
                 <main className="max-w-4xl mx-auto px-4 py-8">
                     <h1 className="text-2xl font-heading-styled text-main mb-4">Upload a recipe</h1>
                     <UploadFormInner />
