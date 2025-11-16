@@ -4,6 +4,8 @@ import { UploadRecipeProvider, useUploadRecipe } from "../utils/UploadRecipeCont
 import { supabase } from "../config/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { Units } from "../utils/Units";
+import { compressImage } from "../utils/CompressImage";
+import { uploadImage } from "../utils/UploadImage";
 
 function makeId() {
     return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -38,7 +40,7 @@ function DetailsStep() {
                     <div className="font-heading mb-1">Preparation time (minutes)</div>
                     <input
                         type="number"
-                        min={0}
+                        min={1}
                         value={form.preparation_time ?? ""}
                         onChange={(e) =>
                             setForm((p) => ({
@@ -55,7 +57,7 @@ function DetailsStep() {
                     <div className="font-heading mb-1">Cooking time (minutes)</div>
                     <input
                         type="number"
-                        min={0}
+                        min={1}
                         value={form.cooking_time ?? ""}
                         onChange={(e) =>
                             setForm((p) => ({
@@ -231,27 +233,77 @@ function StepsStep() {
 }
 
 function MediaStep() {
-    const { form, setForm } = useUploadRecipe();
+  const { form, setForm } = useUploadRecipe();
+  const [uploading, setUploading] = useState(false);
 
-    function onFile(e: ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0] ?? null;
-        setForm((p) => ({ ...p, imageFile: file }));
+  async function onFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Local preview
+    setForm((p) => ({ ...p, imageFile: file }));
+
+    try {
+      setUploading(true);
+
+      // 1. (optional) HEIC guard
+      if (
+        file.type === "image/heic" ||
+        file.type === "image/heif" ||
+        file.name.toLowerCase().endsWith(".heic") ||
+        file.name.toLowerCase().endsWith(".heif")
+      ) {
+        alert("HEIC images are not supported. Please upload JPG or PNG.");
+        return;
+      }
+
+      // 2. compress
+      const compressed = await compressImage(file);
+
+      // 3. upload directly to recipes/
+      const storagePath = await uploadImage(compressed);
+
+      // 4. save path in form
+      setForm((p) => ({
+        ...p,
+        imagePath: storagePath,
+      }));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload image.");
+    } finally {
+      setUploading(false);
     }
+  }
 
-    return (
-        <div className="space-y-3">
-            <label className="block">
-                <div className="text-sm font-medium">Cover image</div>
-                <input type="file" accept="image/*" onChange={onFile} className="mt-2" />
-            </label>
+  return (
+    <div className="space-y-3">
+      <label className="block">
+        <div className="text-sm font-medium">Cover image</div>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={onFile}
+          className="mt-2 text-main underline hover:cursor-pointer"
+          disabled={uploading}
+        />
+      </label>
 
-            {form.imageFile && (
-                <div className="mt-2">
-                    <img src={URL.createObjectURL(form.imageFile)} alt="preview" className="max-h-48 rounded" />
-                </div>
-            )}
+      {form.imageFile && (
+        <div className="mt-2">
+          <img
+            src={URL.createObjectURL(form.imageFile)}
+            alt="preview"
+            className="max-h-48 rounded"
+          />
         </div>
-    );
+      )}
+
+      {uploading && (
+        <div className="text-sm text-gray-500">Uploading...</div>
+      )}
+    </div>
+  );
 }
 
 function ReviewStep() {
@@ -492,118 +544,130 @@ function UploadFormInner() {
         if (stepIndex > 0) setStepIndex((s) => s - 1);
     }
 
-    async function submit() {
-        // full validation across required steps
-        const allMsgs: { index: number; msgs: string[] }[] = [];
-        for (let i = 0; i <= 2; i++) {
-            const msgs = validateStep(i);
-            if (msgs.length > 0) allMsgs.push({ index: i, msgs });
-        }
-        if (allMsgs.length > 0) {
-            setErrors(allMsgs[0].msgs);
-            setStepIndex(allMsgs[0].index);
+async function submit() {
+    // full validation across required steps
+    const allMsgs: { index: number; msgs: string[] }[] = [];
+    for (let i = 0; i <= 2; i++) {
+        const msgs = validateStep(i);
+        if (msgs.length > 0) allMsgs.push({ index: i, msgs });
+    }
+    if (allMsgs.length > 0) {
+        setErrors(allMsgs[0].msgs);
+        setStepIndex(allMsgs[0].index);
+        return;
+    }
+    setErrors([]);
+
+    try {
+        // 1) Get current user from Supabase auth
+        const {
+            data: { user },
+            error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+            setErrors(["You must be logged in to upload a recipe."]);
             return;
         }
-        setErrors([]);
-        try {
-            // Get current user from Supabase auth
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
-            if (userError || !user) {
-                setErrors(["You must be logged in to upload a recipe."]);
-                return;
-            }
-            // 1) Build the payload that matches ONLY the recipes table columns
-            const recipePayload = {
-                title: form.title,
-                authorId: user.id, 
-                short_description: form.short_description ,
-                image_url: form.imageFile ?? null,
-                prep_time: form.preparation_time ,
-                cook_time: form.cooking_time ,
-                servings: form.servings,
-                difficulty: form.difficulty,
-            };
 
-            // 2) Insert into recipes and get the new recipe id back
-            const { data: inserted, error: recipeError } = await supabase
-                .from("recipes")
-                .insert([recipePayload])
-                .select("id")
-                .single();
+        // 2) Insert recipe (image_url comes directly from form.imagePath)
+        const recipePayload = {
+            title: form.title,
+            authorId: user.id,
+            short_description: form.short_description,
+            image_url: form.imagePath ?? null, // <-- already uploaded path
+            prep_time: form.preparation_time,
+            cook_time: form.cooking_time,
+            servings: form.servings,
+            difficulty: form.difficulty,
+        };
 
-            if (recipeError) throw recipeError;
+        const { data: inserted, error: recipeError } = await supabase
+            .from("recipes")
+            .insert([recipePayload])
+            .select("id")
+            .single();
 
-            const recipeId = inserted.id;
+        if (recipeError) throw recipeError;
 
-            // 3) Insert ingredients (if you have a recipe_ingredients table)
-            if (form.ingredients.length > 0) {
-                const ingredientRows = form.ingredients.map((ing) => ({
-                    recipe_id: recipeId,
-                    name: ing.name,
-                    amount: ing.amount,
-                    unit: ing.unit,
-                    notes: ing.note ?? null,
-                }));
+        const recipeId = inserted.id;
 
-                const { error: ingredientsError } = await supabase
-                    .from("recipe-ingredients")
-                    .insert(ingredientRows);
+        // 3) Insert ingredients
+        if (form.ingredients.length > 0) {
+            const ingredientRows = form.ingredients.map((ing) => ({
+                recipe_id: recipeId,
+                name: ing.name,
+                amount: ing.amount,
+                unit: ing.unit,
+                notes: ing.note ?? null,
+            }));
 
-                if (ingredientsError) throw ingredientsError;
-            }
+            const { error: ingredientsError } = await supabase
+                .from("recipe-ingredients")
+                .insert(ingredientRows);
 
-            // 4) Insert steps
-            if (form.steps.length > 0) {
-                const stepRows = form.steps.map((step, index) => ({
-                    recipe_id: recipeId,
-                    index: index+1,
-                    text: step.description,
-                }));
+            if (ingredientsError) throw ingredientsError;
+        }
 
-                const { error: stepsError } = await supabase
-                    .from("recipe-steps")
-                    .insert(stepRows);
+        // 4) Insert steps
+        if (form.steps.length > 0) {
+            const stepRows = form.steps.map((step, index) => ({
+                recipe_id: recipeId,
+                index: index + 1,
+                text: step.description,
+            }));
 
-                if (stepsError) throw stepsError;
-            }
+            const { error: stepsError } = await supabase
+                .from("recipe-steps")
+                .insert(stepRows);
 
-            // 5) Insert tags and recipe-tags relationships
-            if (form.tags && form.tags.length > 0) {
-                // Upsert all tags (avoid duplicates) and get their ids back
-                const tagNames = form.tags.map((t: { name: string }) => t.name.trim()).filter(Boolean);
-                if (tagNames.length > 0) {
-                    const upsertRows = tagNames.map((name) => ({ name }));
-                    const { data: upsertedTags, error: upsertError } = await supabase
-                        .from("tags")
-                        .upsert(upsertRows, { onConflict: "name" })
-                        .select("id,name");
-                    if (upsertError) throw upsertError;
+            if (stepsError) throw stepsError;
+        }
 
-                    // Build map name -> id
-                    const tagIdMap = new Map<string, number>();
-                    (upsertedTags ?? []).forEach((t: any) => tagIdMap.set(t.name, t.id));
+        // 5) Insert tags and recipe-tags relationships
+        if (form.tags && form.tags.length > 0) {
+            const tagNames = form.tags
+                .map((t: { name: string }) => t.name.trim())
+                .filter(Boolean);
 
-                    // Insert recipe-tag relations (batch)
-                    const recipeTagRows = tagNames
-                        .map((name) => ({ recipe_id: recipeId, tag_id: tagIdMap.get(name) }))
-                        .filter((r) => r.tag_id != null);
+            if (tagNames.length > 0) {
+                // upsert tags by name
+                const upsertRows = tagNames.map((name) => ({ name }));
+                const { data: upsertedTags, error: upsertError } = await supabase
+                    .from("tags")
+                    .upsert(upsertRows, { onConflict: "name" })
+                    .select("id,name");
 
-                    if (recipeTagRows.length > 0) {
-                        const { error: recipeTagsError } = await supabase
-                            .from("recipe-tags")
-                            .insert(recipeTagRows);
-                        if (recipeTagsError) throw recipeTagsError;
-                    }
+                if (upsertError) throw upsertError;
+
+                // Build name -> id map
+                const tagIdMap = new Map<string, number>();
+                (upsertedTags ?? []).forEach((t: any) => tagIdMap.set(t.name, t.id));
+
+                // Insert recipe-tag relations
+                const recipeTagRows = tagNames
+                    .map((name) => ({
+                        recipe_id: recipeId,
+                        tag_id: tagIdMap.get(name),
+                    }))
+                    .filter((r) => r.tag_id != null);
+
+                if (recipeTagRows.length > 0) {
+                    const { error: recipeTagsError } = await supabase
+                        .from("recipe-tags")
+                        .insert(recipeTagRows);
+                    if (recipeTagsError) throw recipeTagsError;
                 }
             }
-            
-            // navigate to the newly created recipe page
-            navigate(`/recipes/${recipeId}`);
-        } catch (err: any) {
-            console.error(err);
-            setErrors(["Something went wrong while saving the recipe."]);
         }
+
+        // 6) Navigate to the newly created recipe page
+        navigate(`/recipes/${recipeId}`);
+    } catch (err) {
+        console.error(err);
+        setErrors(["Something went wrong while saving the recipe."]);
     }
+}
 
     return (
         <div className="rounded-lg bg-bright/90 p-4 shadow-sm flex flex-col min-h-90 max-h-[70vh] overflow-x-visible">
