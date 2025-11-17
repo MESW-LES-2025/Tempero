@@ -38,7 +38,7 @@ export default function Recipes() {
             className="rounded-lg overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition"
           >
             {imgUrl && (
-              <div className="w-full aspect-[4/3] overflow-hidden rounded-lg">
+              <div className="w-full aspect-4/3 overflow-hidden rounded-lg">
                 <img
                   src={imgUrl}
                   alt={r.title}
