@@ -246,17 +246,15 @@ function MediaStep() {
     try {
       setUploading(true);
 
-      // 1. (optional) HEIC guard
-      if (
-        file.type === "image/heic" ||
-        file.type === "image/heif" ||
-        file.name.toLowerCase().endsWith(".heic") ||
-        file.name.toLowerCase().endsWith(".heif")
-      ) {
-        alert("HEIC images are not supported. Please upload JPG or PNG.");
-        return;
+      // enforce JPEG only
+      const isJpeg =
+      file.type === "image/jpeg" ||
+      file.name.toLowerCase().endsWith(".jpg") ||
+      file.name.toLowerCase().endsWith(".jpeg");    
+      if (!isJpeg) {
+      alert("Only JPG/JPEG images are supported. Please upload a .jpg or .jpeg file.");
+      return;
       }
-
       // 2. compress
       const compressed = await compressImage(file);
 
