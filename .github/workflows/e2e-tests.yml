@@ -35,19 +35,15 @@ jobs:
       run: npm run build
       working-directory: ./tempero
     
-    - name: Start application
+    - name: Start application and verify
       run: |
         npm run preview -- --host 0.0.0.0 &
         SERVER_PID=$!
         echo "Server started with PID: $SERVER_PID"
         sleep 10
-        echo "Checking if server is still running..."
-        ps aux | grep $SERVER_PID || echo "Server process not found"
-        curl -f http://localhost:4173/Tempero/ || echo "Server not responding"
-      working-directory: ./tempero
-    
-    - name: Wait for application
-      run: npx wait-on http://localhost:4173/Tempero --timeout 30000
+        echo "Verifying server is responding..."
+        curl -f http://localhost:4173/Tempero/ > /dev/null
+        echo "Server is ready!"
       working-directory: ./tempero
     
     - name: Run E2E tests
