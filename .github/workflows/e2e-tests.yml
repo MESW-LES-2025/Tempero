@@ -38,7 +38,12 @@ jobs:
     - name: Start application
       run: |
         npm run preview -- --host 0.0.0.0 &
-        sleep 5
+        SERVER_PID=$!
+        echo "Server started with PID: $SERVER_PID"
+        sleep 10
+        echo "Checking if server is still running..."
+        ps aux | grep $SERVER_PID || echo "Server process not found"
+        curl -f http://localhost:4173/Tempero/ || echo "Server not responding"
       working-directory: ./tempero
     
     - name: Wait for application
