@@ -13,9 +13,20 @@ type RecipeInPlaylist = {
   } | null;
 };
 
+type Playlist = {
+  title: string;
+  description: string | null;
+  visibility: string;
+  profiles: {
+    first_name: string | null;
+    last_name: string | null;
+    username: string | null;
+  };
+};
+
 export default function PlaylistDetailPage() {
   const { playlistId } = useParams<{ playlistId: string }>();
-  const [playlist, setPlaylist] = useState<any>(null);
+  const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [recipes, setRecipes] = useState<RecipeInPlaylist[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,8 +38,8 @@ export default function PlaylistDetailPage() {
 
     fetchPlaylistWithRecipes(playlistId)
       .then(({ playlist, recipes }) => {
-        setPlaylist(playlist);
-        setRecipes(recipes);
+        setPlaylist(playlist as unknown as Playlist);
+        setRecipes(recipes as unknown as RecipeInPlaylist[]);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));

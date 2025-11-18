@@ -16,7 +16,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
         cache: 'npm'
         cache-dependency-path: tempero/package-lock.json
     
@@ -25,7 +25,7 @@ jobs:
       working-directory: ./tempero
     
     - name: Install Playwright browsers
-      run: npx playwright install --with-deps
+      run: npx playwright install chromium --with-deps
       working-directory: ./tempero
     
     - name: Install wait-on
@@ -36,11 +36,13 @@ jobs:
       working-directory: ./tempero
     
     - name: Start application
-      run: npm run preview &
+      run: |
+        npm run preview -- --host 0.0.0.0 &
+        sleep 5
       working-directory: ./tempero
     
     - name: Wait for application
-      run: npx wait-on http://localhost:4173
+      run: npx wait-on http://localhost:4173/Tempero --timeout 30000
       working-directory: ./tempero
     
     - name: Run E2E tests

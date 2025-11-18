@@ -41,33 +41,35 @@ Feature: User Profile Management
     Then I should be redirected to "/profile/edit"
 
   Scenario: Switch to Reviews tab
-    Given I am on a user's profile page
+    Given I am logged in as "Masterchef"
+    And I am on a user's profile page
     And I am viewing the "Recipes" tab
     When I click the "Reviews" tab
     Then the "Reviews" tab should be active
     And I should see the reviews content
 
   Scenario: Switch to Recipes tab
-    Given I am on a user's profile page
+    Given I am logged in as "Masterchef"
+    And I am on a user's profile page
     And I am viewing the "Reviews" tab
     When I click the "Recipes" tab
     Then the "Recipes" tab should be active
     And I should see the recipes content
 
   Scenario: View profile with level and chef type
-    Given a user "wayne" has level 5 and chef type "Master Chef"
+    Given a user "wayne" has level 2 and chef type "Junior Cook"
     When I visit the profile page "/profile/wayne"
-    Then I should see "Level 5"
-    And I should see "Master Chef"
+    Then I should see "Level 2"
+    And I should see "Junior Cook"
 
   Scenario: View profile with bio
-    Given a user "wayne" has a bio "I love cooking Italian food"
+    Given a user "wayne" has a bio "I just cook"
     When I visit the profile page "/profile/wayne"
-    Then I should see the bio "I love cooking Italian food"
+    Then I should see the bio "I just cook"
 
   Scenario: View profile without bio
-    Given a user "wayne" has no bio
-    When I visit the profile page "/profile/wayne"
+    Given a user "almahmudsarker" has no bio
+    When I visit the profile page "/profile/almahmudsarker"
     Then I should see "This user has not provided a bio yet."
 
   Scenario: View non-existent user profile

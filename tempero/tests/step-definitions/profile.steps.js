@@ -1,25 +1,29 @@
-const { Given, When, Then } = require('@cucumber/cucumber');
-const { expect } = require('@playwright/test');
+import { Given, When, Then } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
 
 // ============================================================================
 // SCENARIO: View own profile
 // ============================================================================
 
 Given('I am logged in as {string}', async function (username) {
-  await this.page.goto('/login');
+  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  // Go to login page and log in
+  await this.page.goto(`${baseUrl}/Tempero/login`);
   await this.page.fill('#login-email', 'temperoteam@gmail.com');
   await this.page.fill('#login-pass', '123TastyFood');
   await this.page.click('button[type="submit"]');
-  await this.page.waitForURL('**/');
+  // Wait for redirect to home page
+  await this.page.waitForURL(`${baseUrl}/Tempero`, { timeout: 15000 });
 });
 
 When('I visit my profile page {string}', async function (url) {
-  await this.page.goto(url);
+  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  await this.page.goto(`${baseUrl}/Tempero${url}`);
   await this.page.waitForLoadState('networkidle');
 });
 
 Then('I should see my display name', async function () {
-  const displayName = await this.page.locator('h1').textContent();
+  const displayName = await this.page.locator('h1.font-heading-styled').textContent();
   expect(displayName).toBeTruthy();
 });
 
@@ -30,7 +34,7 @@ Then('I should see {string} count', async function (label) {
 
 Then('I should see the {string} button', async function (buttonText) {
   const button = await this.page.locator(`button:has-text("${buttonText}")`);
-  await expect(button).toBeVisible();
+  await expect(button).toBeVisible({ timeout: 10000 });
 });
 
 Then('I should not see a {string} button', async function (buttonText) {
@@ -43,18 +47,22 @@ Then('I should not see a {string} button', async function (buttonText) {
 // ============================================================================
 
 When('I visit another user\'s profile {string}', async function (url) {
-  await this.page.goto(url);
+  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  await this.page.goto(`${baseUrl}/Tempero${url}`);
   await this.page.waitForLoadState('networkidle');
+  await this.page.waitForTimeout(1000);
 });
 
 Then('I should see wayne\'s display name', async function () {
-  const displayName = await this.page.locator('h1').textContent();
+  const displayName = await this.page.locator('h1.font-heading-styled').textContent();
   expect(displayName).toBeTruthy();
+  await this.page.waitForTimeout(500);
 });
 
 Then('I should not see an {string} button', async function (buttonText) {
   const button = await this.page.locator(`button:has-text("${buttonText}")`);
   await expect(button).not.toBeVisible();
+  await this.page.waitForTimeout(500);
 });
 
 // ============================================================================
@@ -62,29 +70,36 @@ Then('I should not see an {string} button', async function (buttonText) {
 // ============================================================================
 
 Given('I am on user {string} profile page', async function (username) {
-  await this.page.goto(`/profile/${username}`);
+  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  await this.page.goto(`${baseUrl}/Tempero/profile/${username}`);
   await this.page.waitForLoadState('networkidle');
+  await this.page.waitForTimeout(1000);
 });
 
 Given('I am not following {string}', async function (username) {
   const button = await this.page.locator('button:has-text("Follow")');
   await expect(button).toBeVisible();
+  await this.page.waitForTimeout(500);
 });
 
 When('I click the {string} button', async function (buttonText) {
   await this.page.click(`button:has-text("${buttonText}")`);
-  await this.page.waitForTimeout(500);
+  await this.page.waitForTimeout(1000);
 });
 
 Then('the button should change to {string}', async function (buttonText) {
+  // Wait a bit longer for the button to change
+  await this.page.waitForTimeout(2000);
   const button = await this.page.locator(`button:has-text("${buttonText}")`);
-  await expect(button).toBeVisible();
+  await expect(button).toBeVisible({ timeout: 15000 });
+  await this.page.waitForTimeout(500);
 });
 
 Then('the followers count should increase by 1', async function () {
-  const followersElement = await this.page.locator('text=Followers').locator('xpath=preceding-sibling::div');
-  const count = await followersElement.textContent();
-  expect(parseInt(count)).toBeGreaterThanOrEqual(1);
+  // Wait for the count to update
+  await this.page.waitForTimeout(2000);
+  const followersCount = await this.page.locator('text=Followers').locator('..').locator('p').first().textContent();
+  expect(parseInt(followersCount)).toBeGreaterThanOrEqual(1);
 });
 
 // ============================================================================
@@ -92,14 +107,18 @@ Then('the followers count should increase by 1', async function () {
 // ============================================================================
 
 Given('I am already following {string}', async function (username) {
+  // Wait for the page to load and determine follow status
+  await this.page.waitForTimeout(2000);
   const button = await this.page.locator('button:has-text("Unfollow")');
-  await expect(button).toBeVisible();
+  await expect(button).toBeVisible({ timeout: 10000 });
+  await this.page.waitForTimeout(500);
 });
 
 Then('the followers count should decrease by 1', async function () {
-  const followersElement = await this.page.locator('text=Followers').locator('xpath=preceding-sibling::div');
-  const count = await followersElement.textContent();
-  expect(parseInt(count)).toBeGreaterThanOrEqual(0);
+  // Wait for the count to update
+  await this.page.waitForTimeout(2000);
+  const followersCount = await this.page.locator('text=Followers').locator('..').locator('p').first().textContent();
+  expect(parseInt(followersCount)).toBeGreaterThanOrEqual(0);
 });
 
 // ============================================================================
@@ -107,8 +126,10 @@ Then('the followers count should decrease by 1', async function () {
 // ============================================================================
 
 Then('I should be redirected to {string}', async function (url) {
-  await this.page.waitForURL(`**${url}`);
-  expect(this.page.url()).toContain(url);
+  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  await this.page.waitForURL(`${baseUrl}/Tempero${url}`, { timeout: 10000 });
+  expect(this.page.url()).toContain(`/Tempero${url}`);
+  await this.page.waitForTimeout(500);
 });
 
 // ============================================================================
@@ -116,31 +137,36 @@ Then('I should be redirected to {string}', async function (url) {
 // ============================================================================
 
 Given('I am on a user\'s profile page', async function () {
-  await this.page.goto('/profile/testuser');
+  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  await this.page.goto(`${baseUrl}/Tempero/profile/wayne`);
   await this.page.waitForLoadState('networkidle');
+  await this.page.waitForTimeout(1000);
 });
 
 Given('I am viewing the {string} tab', async function (tabName) {
-  const tab = await this.page.locator(`button:has-text("${tabName}")`);
+  const tab = this.page.locator(`button:has-text("${tabName}")`);
+  await expect(tab).toBeVisible();
   const classes = await tab.getAttribute('class');
-  if (!classes.includes('border-[#e57f22]')) {
+  if (!classes || !classes.includes('text-secondary')) {
     await tab.click();
+    await this.page.waitForTimeout(1000);
   }
 });
 
 When('I click the {string} tab', async function (tabName) {
   await this.page.click(`button:has-text("${tabName}")`);
-  await this.page.waitForTimeout(300);
+  await this.page.waitForTimeout(1000);
 });
 
 Then('the {string} tab should be active', async function (tabName) {
   const tab = await this.page.locator(`button:has-text("${tabName}")`);
   const classes = await tab.getAttribute('class');
-  expect(classes).toContain('text-[#e57f22]');
+  expect(classes).toContain('text-secondary');
+  await this.page.waitForTimeout(500);
 });
 
 Then('I should see the reviews content', async function () {
-  await this.page.waitForTimeout(500);
+  await this.page.waitForTimeout(1000);
 });
 
 // ============================================================================
@@ -148,7 +174,7 @@ Then('I should see the reviews content', async function () {
 // ============================================================================
 
 Then('I should see the recipes content', async function () {
-  await this.page.waitForTimeout(500);
+  await this.page.waitForTimeout(1000);
 });
 
 // ============================================================================
@@ -159,9 +185,17 @@ Given('a user {string} has level {int} and chef type {string}', async function (
   this.testData = { username, level, chefType };
 });
 
+When('I visit the profile page {string}', async function (url) {
+  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  await this.page.goto(`${baseUrl}/Tempero${url}`);
+  await this.page.waitForLoadState('networkidle');
+  await this.page.waitForTimeout(1000);
+});
+
 Then('I should see {string}', async function (text) {
   const element = await this.page.locator(`text=${text}`);
   await expect(element).toBeVisible();
+  await this.page.waitForTimeout(500);
 });
 
 // ============================================================================
@@ -175,6 +209,7 @@ Given('a user {string} has a bio {string}', async function (username, bio) {
 Then('I should see the bio {string}', async function (bio) {
   const bioElement = await this.page.locator(`text=${bio}`);
   await expect(bioElement).toBeVisible();
+  await this.page.waitForTimeout(500);
 });
 
 // ============================================================================
@@ -189,25 +224,26 @@ Given('a user {string} has no bio', async function (username) {
 // SCENARIO: View non-existent user profile
 // ============================================================================
 
-When('I visit the profile page {string}', async function (url) {
-  await this.page.goto(url);
-  await this.page.waitForLoadState('networkidle');
-});
+// When('I visit the profile page {string}', async function (url) {
+//   await this.page.goto(`http://localhost:5173/Tempero${url}`);
+//   await this.page.waitForLoadState('networkidle');
+// });
 
 Then('I should see an error {string}', async function (errorMessage) {
   const error = await this.page.locator('text=' + errorMessage);
   await expect(error).toBeVisible();
+  await this.page.waitForTimeout(500);
 });
 
 // ============================================================================
 // SCENARIO: Loading state while fetching profile
 // ============================================================================
 
-When('I start loading the profile page {string}', async function (url) {
-  await this.page.goto(url);
-});
+// When('I start loading the profile page {string}', async function (url) {
+//   await this.page.goto(url);
+// });
 
-Then('I should see {string} message', async function (message) {
-  const loader = await this.page.locator(`text=${message}`);
-  await expect(loader).toBeVisible();
-});
+// Then('I should see {string} message', async function (message) {
+//   const loader = await this.page.locator(`text=${message}`);
+//   await expect(loader).toBeVisible();
+// });

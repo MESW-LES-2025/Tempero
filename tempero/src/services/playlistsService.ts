@@ -42,7 +42,7 @@ export async function fetchAllPublicPlaylists(): Promise<Playlist[]> {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return (data ?? []) as Playlist[];
+  return (data ?? []) as unknown as Playlist[];
 }
 
 export async function fetchUserPlaylists(
@@ -71,7 +71,7 @@ export async function fetchUserPlaylists(
 
   const { data, error } = await query;
   if (error) throw error;
-  return (data ?? []) as Playlist[];
+  return (data ?? []) as unknown as Playlist[];
 }
 
 export async function fetchPlaylistWithRecipes(playlistId: string) {

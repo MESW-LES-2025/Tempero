@@ -6,15 +6,23 @@ type Recipe = {
   title: string;
   description: string;
   image_url: string;
+  instructions: string;
 };
 
-export default function Recipes() {
+type RecipesProps = {
+  userId?: string;
+  username?: string;
+};
+
+export default function Recipes({ userId }: RecipesProps) {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchRecipes = async () => {
-      const { data, error } = await supabase.from("recipes").select("*");
+      let query = supabase.from("recipes").select("*");
+      if (userId) query = query.eq("author_id", userId);
+      const { data, error } = await query;
       console.log(data);
       if (error) {
         console.error("Error fetching recipes:", error);
@@ -25,7 +33,7 @@ export default function Recipes() {
     };
 
     fetchRecipes();
-  }, []);
+  }, [userId]);
 
   if (loading) return <Loader message="Fetching recipes..." />;
 

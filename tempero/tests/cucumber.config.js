@@ -1,9 +1,13 @@
-module.exports = {
+export default {
   default: {
-    require: ['tests/step-definitions/**/*.js', 'tests/support/**/*.js'],
+    import: ['tests/support/world.js', 'tests/step-definitions/*.js'],
+    format: ['progress'],
+    paths: ['tests/features/*.feature']
+  },
+  ci: {
+    import: ['tests/support/world.js', 'tests/step-definitions/*.js'],
     format: ['progress', 'json:reports/cucumber-report.json'],
-    paths: ['tests/features/**/*.feature'],
-    parallel: 2
+    paths: ['tests/features/*.feature']
   }
 };
 
