@@ -5,7 +5,9 @@ import AssessmentPage from "./pages/AssessmentPage";
 import EditProfilePage from "./pages/EditProfilePage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
+import PlaylistDetailPage from "./pages/PlaylistDetailPage";
 import ProfilePage from "./pages/ProfilePage";
+import PublicPlaylistsPage from "./pages/PublicPlaylistsPage";
 import RegisterPage from "./pages/RegisterPage";
 import SearchPage from "./pages/SearchPage";
 
@@ -29,6 +31,8 @@ export default function App() {
       <Navbar />
       <Routes>
         <Route index element={<HomePage />} />
+        <Route path="lists" element={<PublicPlaylistsPage />} />
+        <Route path="lists/:playlistId" element={<PlaylistDetailPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="skill-assessment" element={<AssessmentPage />} />
