@@ -24,6 +24,7 @@ type Profile = {
   avatar_url?: string | null;
   level?: number | null;
   chef_type?: string | null;
+  profile_picture_url?: string | null;
 };
 
 export default function ProfilePage() {
@@ -94,32 +95,21 @@ export default function ProfilePage() {
     <div className="min-h-screen w-full bg-bright flex justify-center items-start py-10">
       <section className="w-full max-w-7xl flex flex-col lg:flex-row items-start justify-center gap-10 px-4 sm:px-6 lg:px-10">
         {/* LEFT CARD */}
-        {/* LEFT CARD */}
-        <article
-          className="
-    relative w-full lg:w-1/3 bg-white border border-secondary/30 
-    rounded-xl shadow-sm px-4 sm:px-6 py-6
-    flex flex-col items-center
-  "
-        >
-          {/* Avatar overlapping card - stays where you placed it */}
+        <article className="relative w-full lg:w-1/3 bg-white border border-secondary/30 rounded-xl shadow-sm px-4 sm:px-6 py-6 flex flex-col items-center">
+          {/* Avatar */}
+
           <img
             src={profile?.avatar_url || chefImg}
             alt={displayName}
             className="
-      absolute left-0 sm:left-0 -top-0
-      h-44 w-32 sm:h-48 sm:w-32 object-cover rounded-tl-lg rounded-br-lg
-    "
+              absolute left-0 sm:left-0 -top-0
+              h-44 w-32 sm:h-48 sm:w-32 
+              object-cover rounded-tl-lg rounded-br-lg
+            "
           />
 
-          {/* RIGHT SIDE OF AVATAR CONTENT */}
-          <div
-            className="
-      w-full max-w-[320px]
-      mt-2 sm:mt-6 
-      mx-auto text-center flex flex-col items-end
-    "
-          >
+          {/* Content */}
+          <div className="w-full max-w-[320px] mt-2 sm:mt-6 mx-auto text-center flex flex-col items-end">
             {/* Name */}
             <h1 className="font-heading-styled text-3xl text-secondary mb-2">
               {displayName}
@@ -138,7 +128,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* Followers / Following */}
+            {/* Followers counts (STATIC FOR NOW — NO FOLLOW FEATURE) */}
             <div className="flex items-center justify-center gap-10 text-center font-body text-dark my-2">
               <div>
                 <p className="text-lg text-main font-heading-styled font-semibold">
@@ -155,31 +145,15 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Follow button */}
-            {!isOwnProfile && (
-              <button className="mt-3 bg-dark text-bright px-5 py-1.5 rounded-lg font-heading-styled font-semibold hover:bg-secondary transition">
-                Unfollow
-              </button>
-            )}
-
             {/* Dotted separator */}
             <div className="border-t border-dotted border-dark/40 w-full my-5"></div>
 
             {/* Badges */}
-            <div
-              className="
-        w-full max-w-[300px]
-        flex flex-wrap gap-3 justify-center 
-        bg-white rounded-xl p-3 shadow-sm
-      "
-            >
+            <div className="w-full max-w-[300px] flex flex-wrap gap-3 justify-center bg-white rounded-xl p-3 shadow-sm">
               {badges.map((b, i) => (
                 <span
                   key={i}
-                  className="
-            inline-flex items-center gap-2 px-3 py-1 rounded-md 
-            bg-bright font-body text-dark text-sm
-          "
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-bright font-body text-dark text-sm"
                 >
                   {b.icon} {b.label}
                 </span>
@@ -203,14 +177,10 @@ export default function ProfilePage() {
               )}
             </p>
 
-            {/* Edit button */}
+            {/* Edit */}
             {isOwnProfile && (
               <button
-                className="
-          my-6 w-full max-w-[460px] 
-          bg-main hover:bg-secondary transition 
-          text-bright font-heading-styled py-2.5 rounded-lg items-start
-        "
+                className="my-6 w-full max-w-[460px] bg-main hover:bg-secondary transition text-bright font-heading-styled py-2.5 rounded-lg items-start"
                 onClick={() => navigate("/profile/edit")}
               >
                 Edit Profile
@@ -221,7 +191,6 @@ export default function ProfilePage() {
 
         {/* RIGHT SIDE */}
         <div className="w-full lg:w-2/3">
-          {/* Tabs */}
           <div className="flex gap-6 mb-5 border-b border-dark/10 font-heading text-lg">
             <button
               className={`pb-2 ${
@@ -247,17 +216,16 @@ export default function ProfilePage() {
 
             <button
               className={`pb-2 ${
-                tab === "playlists"
+                tab === "lists"
                   ? "text-secondary border-b-2 border-secondary"
                   : "text-dark/60 hover:text-secondary"
               }`}
-              onClick={() => setTab("playlists")}
+              onClick={() => setTab("lists")}
             >
               Lists
             </button>
           </div>
 
-          {/* Content */}
           {tab === "recipes" ? (
             <Recipes userId={profile?.auth_id} username={profile?.username} />
           ) : tab === "reviews" ? (
