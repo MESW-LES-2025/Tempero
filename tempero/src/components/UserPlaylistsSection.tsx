@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "../config/supabaseClient";
 import type { Playlist } from "../services/playlistsService";
 import { fetchUserPlaylists } from "../services/playlistsService";
 import Loader from "./Loader";
 import PlaylistCard from "./PlaylistCard";
+import Toast from "./Toast";
 
 type Props = {
   userId?: string;
@@ -13,11 +16,13 @@ export default function UserPlaylistsSection({ userId, isOwnProfile }: Props) {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type?: string } | null>(
+    null
+  );
 
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
-    setError(null);
 
     fetchUserPlaylists(userId, isOwnProfile)
       .then(setPlaylists)
@@ -25,25 +30,53 @@ export default function UserPlaylistsSection({ userId, isOwnProfile }: Props) {
       .finally(() => setLoading(false));
   }, [userId, isOwnProfile]);
 
+  async function handleDelete(listId: string) {
+    await supabase.from("lists").delete().eq("id", listId);
+
+    setPlaylists((prev) => prev.filter((l) => l.id !== listId));
+
+    setToast({ message: "List removed", type: "success" });
+  }
+
   if (!userId) return <p className="text-sm text-slate-500">No user.</p>;
   if (loading) return <Loader message="Loading playlists…" />;
   if (error) return <p className="text-sm text-red-600">{error}</p>;
 
-  if (!playlists.length) {
-    return (
-      <p className="text-sm text-slate-500">
-        {isOwnProfile
-          ? "You don’t have any playlists yet."
-          : "This user has no public playlists yet."}
-      </p>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      {playlists.map((p) => (
-        <PlaylistCard key={p.id} playlist={p} />
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {playlists.map((p) => (
+          <PlaylistCard
+            key={p.id}
+            playlist={p}
+            isOwnProfile={isOwnProfile}
+            onDelete={handleDelete}
+          />
+        ))}
+
+        {isOwnProfile && (
+          <Link
+            to="/lists/new"
+            className="
+              flex flex-col items-center justify-center
+              rounded-xl border-2 border-dashed border-main/40
+              bg-bright text-main h-40
+              hover:border-main hover:bg-main/5 transition
+            "
+          >
+            <span className="text-3xl font-bold">＋</span>
+            <span className="mt-1 font-heading text-lg">Thematic List</span>
+          </Link>
+        )}
+      </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </>
   );
 }

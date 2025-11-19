@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ErrorImage from "./assets/404.png";
 import Navbar from "./components/Navbar";
 import AssessmentPage from "./pages/AssessmentPage";
+import CreatePlaylistPage from "./pages/CreatePlaylistPage";
 import EditProfilePage from "./pages/EditProfilePage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
@@ -32,6 +33,7 @@ export default function App() {
       <Navbar />
       <Routes>
         <Route index element={<HomePage />} />
+        <Route path="/lists/new" element={<CreatePlaylistPage />} />
         <Route path="lists" element={<PublicPlaylistsPage />} />
         <Route path="lists/:playlistId" element={<PlaylistDetailPage />} />
         <Route path="register" element={<RegisterPage />} />
