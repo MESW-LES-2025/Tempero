@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "../components/Navbar";
 import HomePage from "../pages/HomePage";
 import RegisterPage from "../pages/RegisterPage";
-import UploadRecipePage from "../pages/UploadRecipePage";
 
 function NotFoundPage() {
   return (

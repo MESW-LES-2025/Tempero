@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import type { ChangeEvent } from "react";
-import { UploadRecipeProvider, useUploadRecipe } from "../utils/UploadRecipeContext";
+import { UploadRecipeProvider, useUploadRecipe, type UploadIngredient } from "../utils/UploadRecipeContext";
 import { supabase } from "../config/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { Units } from "../utils/Units";
@@ -117,7 +117,7 @@ function IngredientsStep() {
         // amount is now a number | null
         setForm((p) => ({ ...p, ingredients: [...p.ingredients, { id: makeId(), name: "", amount: 1, unit: "", note: "" }] }));
     }
-    function updateIngredient(idx: number, patch: Partial<any>) {
+    function updateIngredient(idx: number, patch: Partial<UploadIngredient>) {
         setForm((p) => {
             const ingredients = [...p.ingredients];
             ingredients[idx] = { ...ingredients[idx], ...patch };
@@ -330,11 +330,11 @@ function ReviewStep() {
             try {
                 const { data, error } = await supabase.rpc("search_tags_trgm", { q });
                 if (!error && Array.isArray(data)) {
-                    setSuggestions(data as any);
+                    setSuggestions(data as { id: number; name: string }[]);
                     setLoadingSuggestions(false);
                     return;
                 }
-            } catch (e) {
+            } catch {
                 // ignore and fallback
             }
 
@@ -345,9 +345,9 @@ function ReviewStep() {
                     .select("id,name")
                     .ilike("name", `%${q}%`)
                     .limit(10);
-                if (!error && Array.isArray(data)) setSuggestions(data as any);
+                if (!error && Array.isArray(data)) setSuggestions(data as { id: number; name: string }[]);
                 else setSuggestions([]);
-            } catch (e) {
+            } catch {
                 setSuggestions([]);
             } finally {
                 setLoadingSuggestions(false);
@@ -364,7 +364,7 @@ function ReviewStep() {
         setForm((p) => ({
             ...p,
             tags: Array.from(
-                new Set([...(p.tags ?? []).map((x: any) => x.name), t])
+                new Set([...(p.tags ?? []).map((x: { name: string }) => x.name), t])
             ).map((n) => ({ name: n })),
         }));
         setTagInput("");
@@ -386,7 +386,7 @@ function ReviewStep() {
     }
 
     function removeTag(tagToRemove: string) {
-        setForm((p) => ({ ...p, tags: (p.tags ?? []).filter((t: any) => t.name !== tagToRemove) }));
+        setForm((p) => ({ ...p, tags: (p.tags ?? []).filter((t: { name: string }) => t.name !== tagToRemove) }));
     }
 
     return (
@@ -501,7 +501,7 @@ function UploadFormInner() {
             }
 
             // Difficulty validation
-            if (form.difficulty === null || form.difficulty === undefined || form.difficulty === "") {
+            if (form.difficulty === null || form.difficulty === undefined) {
                 msgs.push("Difficulty is required.");
             } else if (typeof form.difficulty === "number" && (form.difficulty < 1 || form.difficulty > 5)) {
                 msgs.push("Difficulty must be between 1 and 5.");
@@ -595,7 +595,7 @@ async function submit() {
             const ingredientRows = form.ingredients.map((ing) => ({
                 recipe_id: recipeId,
                 name: ing.name,
-                amount: ing.amount,
+                amount: ing.amount ?? undefined,
                 unit: ing.unit,
                 notes: ing.note ?? null,
             }));
@@ -640,7 +640,7 @@ async function submit() {
 
                 // Build name -> id map
                 const tagIdMap = new Map<string, number>();
-                (upsertedTags ?? []).forEach((t: any) => tagIdMap.set(t.name, t.id));
+                (upsertedTags ?? []).forEach((t: { name: string; id: number }) => tagIdMap.set(t.name, t.id));
 
                 // Insert recipe-tag relations
                 const recipeTagRows = tagNames

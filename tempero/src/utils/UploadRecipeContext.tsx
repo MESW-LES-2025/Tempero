@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from "react";
 
-export type UploadIngredient = { id?: string; name: string; amount: number; unit?: string; note?: string };
+export type UploadIngredient = { id?: string; name: string; amount: number | null; unit?: string; note?: string };
 export type UploadStep = { id?: string; index: number; description: string };
 export type UploadTag = { id?: string; name: string };
 export type UploadForm = {
