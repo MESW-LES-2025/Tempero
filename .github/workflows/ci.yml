@@ -1,0 +1,47 @@
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [ main, staging ]
+  pull_request:
+    branches: [ main, staging ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: tempero/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./tempero
+
+      - name: Set env vars per branch (Supabase)
+        run: |
+          BRANCH="${GITHUB_REF##*/}"
+          echo "Branch is $BRANCH"
+          if [ "$BRANCH" = "staging" ]; then
+            echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL_STAGING }}" >> $GITHUB_ENV
+            echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY_STAGING }}" >> $GITHUB_ENV
+          else
+            echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL_PROD }}" >> $GITHUB_ENV
+            echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY_PROD }}" >> $GITHUB_ENV
+          fi
+
+      - name: Run unit tests
+        run: npm test -- --watch=false || npm test -- --run
+        working-directory: ./tempero
+
+      - name: Build app
+        run: npm run build
+        working-directory: ./tempero
