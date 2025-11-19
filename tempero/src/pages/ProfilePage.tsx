@@ -32,9 +32,12 @@ export default function ProfilePage() {
   const [tab, setTab] = useState<"recipes" | "reviews" | "lists">("recipes");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [profileNotFound, setProfileNotFound] = useState<boolean>(false);
   const [showFullBio, setShowFullBio] = useState(false);
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [followLoading, setFollowLoading] = useState<boolean>(false);
+  const [followersCount, setFollowersCount] = useState<number>(0);
+  const [followingCount, setFollowingCount] = useState<number>(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,8 +54,6 @@ export default function ProfilePage() {
     if (!username) return;
 
     let cancelled = false;
-    setLoading(true);
-    setError(null);
 
     (async () => {
       const { data, error: fetchErr } = await supabase
@@ -62,25 +63,80 @@ export default function ProfilePage() {
         .maybeSingle();
 
       if (cancelled) return;
-      setLoading(false);
 
-      if (fetchErr) {
-        setError(fetchErr.message);
+      if (fetchErr || !data) {
         setProfile(null);
+        setProfileNotFound(true);
         return;
       }
-      if (!data) {
-        setError("User not found.");
-        setProfile(null);
-        return;
-      }
+      setProfileNotFound(false);
       setProfile(data as Profile);
+
+      // Get follower count
+      const { count: followersCount } = await supabase
+        .from("followers")
+        .select("*", { count: "exact", head: true })
+        .eq("followed_id", data.auth_id);
+
+      // Get following count
+      const { count: followingCount } = await supabase
+        .from("followers")
+        .select("*", { count: "exact", head: true })
+        .eq("follower_id", data.auth_id);
+
+      if (!cancelled) {
+        setFollowersCount(followersCount || 0);
+        setFollowingCount(followingCount || 0);
+      }
+
+      // Check if current user is following this profile
+      if (currentUser && data && currentUser.id !== data.auth_id) {
+        const { data: followData } = await supabase
+          .from("followers")
+          .select("follower_id")
+          .eq("follower_id", currentUser.id)
+          .eq("followed_id", data.auth_id)
+          .maybeSingle();
+        
+        if (!cancelled) setIsFollowing(!!followData);
+      }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [username]);
+  }, [username, currentUser]);
+
+  async function handleFollow() {
+    if (!currentUser || !profile) return;
+    
+    setFollowLoading(true);
+    
+    try {
+      if (isFollowing) {
+        await supabase
+          .from("followers")
+          .delete()
+          .eq("follower_id", currentUser.id)
+          .eq("followed_id", profile.auth_id);
+        setIsFollowing(false);
+        setFollowersCount(prev => prev - 1);
+      } else {
+        await supabase
+          .from("followers")
+          .insert({
+            follower_id: currentUser.id,
+            followed_id: profile.auth_id
+          });
+        setIsFollowing(true);
+        setFollowersCount(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error("Follow error:", error);
+    } finally {
+      setFollowLoading(false);
+    }
+  }
 
   const displayName =
     profile?.first_name || profile?.last_name
@@ -90,6 +146,18 @@ export default function ProfilePage() {
   const bioText = profile?.bio || "";
   const shortBio = bioText.slice(0, 120);
   const shouldCollapse = bioText.length > 120;
+
+  // Show error message if profile not found
+  if (profileNotFound) {
+    return (
+      <div className="min-h-screen w-full bg-bright flex justify-center items-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-heading-styled text-secondary mb-4">User not found.</h1>
+          <p className="text-gray-600">The profile you're looking for doesn't exist.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-bright flex justify-center items-start py-10">
@@ -128,22 +196,37 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* Followers counts (STATIC FOR NOW — NO FOLLOW FEATURE) */}
+            {/* Followers counts */}
             <div className="flex items-center justify-center gap-10 text-center font-body text-dark my-2">
               <div>
                 <p className="text-lg text-main font-heading-styled font-semibold">
-                  {profile?.followers_count ?? 0}
+                  {followersCount}
                 </p>
                 <p className="text-sm font-heading-styled">Followers</p>
               </div>
 
               <div>
                 <p className="text-lg text-main font-heading-styled font-semibold">
-                  {profile?.following_count ?? 0}
+                  {followingCount}
                 </p>
                 <p className="text-sm font-heading-styled">Following</p>
               </div>
             </div>
+
+            {/* Follow button */}
+            {currentUser && profile?.auth_id !== currentUser.id && (
+              <button
+                className={`mt-3 w-full max-w-[460px] font-heading-styled py-2.5 rounded-lg transition ${
+                  isFollowing
+                    ? "bg-gray-500 hover:bg-gray-600 text-white"
+                    : "bg-main hover:bg-secondary text-bright"
+                }`}
+                onClick={handleFollow}
+                disabled={followLoading}
+              >
+                {followLoading ? "..." : isFollowing ? "Unfollow" : "Follow"}
+              </button>
+            )}
 
             {/* Dotted separator */}
             <div className="border-t border-dotted border-dark/40 w-full my-5"></div>
@@ -165,15 +248,23 @@ export default function ProfilePage() {
 
             {/* BIO */}
             <p className="font-body text-dark leading-7 text-left">
-              {showFullBio ? bioText : shortBio}
-              {shouldCollapse && !showFullBio && "... "}
-              {shouldCollapse && (
-                <button
-                  onClick={() => setShowFullBio(!showFullBio)}
-                  className="text-main font-semibold ml-1"
-                >
-                  {showFullBio ? "Show less" : "Read more"}
-                </button>
+              {bioText ? (
+                <>
+                  {showFullBio ? bioText : shortBio}
+                  {shouldCollapse && !showFullBio && "... "}
+                  {shouldCollapse && (
+                    <button
+                      onClick={() => setShowFullBio(!showFullBio)}
+                      className="text-main font-semibold ml-1"
+                    >
+                      {showFullBio ? "Show less" : "Read more"}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <span className="text-gray-500 italic">
+                  This user has not provided a bio yet.
+                </span>
               )}
             </p>
 
