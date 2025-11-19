@@ -49,7 +49,7 @@ jobs:
       - name: Set PROD env vars for build
         run: |
           echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL_PROD }}" >> $GITHUB_ENV
-          echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY_PROD }}" >> $GITHUB_ENV
+          echo "VITE_SUPABASE_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY_PROD }}" >> $GITHUB_ENV
 
       - name: Build app
         run: npm run build
