@@ -11,10 +11,10 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
     "test:e2e": "cucumber-js tests/features/*.feature --import tests/support/world.js --import tests/step-definitions/*.js",
-    "test:e2e:ci": "CI=true cucumber-js tests/features/*.feature --import tests/support/world.js --import tests/step-definitions/*.js --format json:reports/cucumber-report.json"
+    "test:e2e:ci": "CI=true cucumber-js tests/features/*.feature --import tests/support/world.js --import tests/step-definitions/*.js --format json:reports/cucumber-report.json",
+    "test": "vitest",
+    "test:watch": "vitest --watch"
   },
   "dependencies": {
     "@playwright/test": "^1.56.1",
@@ -46,8 +46,8 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
     "vite": "^7.1.7",
-    "vitest": "^4.0.10",
-    "wait-on": "^8.0.1"
+    "wait-on": "^8.0.1",
+    "vitest": "^4.0.10"
   },
   "homepage": "https://MESW-LES-2025.github.io/Tempero"
 }
