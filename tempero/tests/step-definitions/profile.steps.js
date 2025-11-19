@@ -6,7 +6,7 @@ import { expect } from '@playwright/test';
 // ============================================================================
 
 Given('I am logged in as {string}', async function (username) {
-  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
   // Go to login page and log in
   await this.page.goto(`${baseUrl}/Tempero/login`);
   await this.page.fill('#login-email', 'temperoteam@gmail.com');
@@ -17,7 +17,7 @@ Given('I am logged in as {string}', async function (username) {
 });
 
 When('I visit my profile page {string}', async function (url) {
-  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
   await this.page.goto(`${baseUrl}/Tempero${url}`);
   await this.page.waitForLoadState('networkidle');
 });
@@ -47,7 +47,7 @@ Then('I should not see a {string} button', async function (buttonText) {
 // ============================================================================
 
 When('I visit another user\'s profile {string}', async function (url) {
-  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
   await this.page.goto(`${baseUrl}/Tempero${url}`);
   await this.page.waitForLoadState('networkidle');
   await this.page.waitForTimeout(1000);
@@ -70,7 +70,7 @@ Then('I should not see an {string} button', async function (buttonText) {
 // ============================================================================
 
 Given('I am on user {string} profile page', async function (username) {
-  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
   await this.page.goto(`${baseUrl}/Tempero/profile/${username}`);
   await this.page.waitForLoadState('networkidle');
   await this.page.waitForTimeout(1000);
@@ -126,7 +126,7 @@ Then('the followers count should decrease by 1', async function () {
 // ============================================================================
 
 Then('I should be redirected to {string}', async function (url) {
-  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
   await this.page.waitForURL(`${baseUrl}/Tempero${url}`, { timeout: 10000 });
   expect(this.page.url()).toContain(`/Tempero${url}`);
   await this.page.waitForTimeout(500);
@@ -137,7 +137,7 @@ Then('I should be redirected to {string}', async function (url) {
 // ============================================================================
 
 Given('I am on a user\'s profile page', async function () {
-  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
   await this.page.goto(`${baseUrl}/Tempero/profile/wayne`);
   await this.page.waitForLoadState('networkidle');
   await this.page.waitForTimeout(1000);
@@ -186,7 +186,7 @@ Given('a user {string} has level {int} and chef type {string}', async function (
 });
 
 When('I visit the profile page {string}', async function (url) {
-  const baseUrl = process.env.BASE_URL || 'http://localhost:4173';
+  const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
   await this.page.goto(`${baseUrl}/Tempero${url}`);
   await this.page.waitForLoadState('networkidle');
   await this.page.waitForTimeout(1000);
