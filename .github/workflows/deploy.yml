@@ -24,8 +24,11 @@ jobs:
         run: npm ci
         working-directory: ./tempero
 
-      - name: Install Supabase CLI
-        run: npm install -g supabase
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
 
       - name: Apply Supabase migrations to PROD
         working-directory: ./tempero
