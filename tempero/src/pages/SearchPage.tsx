@@ -112,8 +112,8 @@ export default function SearchPage() {
           setUsers((data ?? []) as Profile[]);
           setRecipes([]); // clear others
         }
-      } catch (e: any) {
-        if (!cancelled) setErr(e?.message ?? "Failed to fetch results.");
+      } catch (e: unknown) {
+        if (!cancelled) setErr(e instanceof Error ? e.message : "Failed to fetch results.");
       } finally {
         if (!cancelled) setLoading(false);
       }

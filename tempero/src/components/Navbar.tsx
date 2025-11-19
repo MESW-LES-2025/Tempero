@@ -43,8 +43,8 @@ export default function Navbar() {
   const profileHref = username ? `/profile/${username}` : (user ? "/profile" : "/login");
   const profileLabel = username ?? (user ? "Profile" : "Guest");
 
-//Active link highlight
-const active = "text-dark scale-110 border-b-1 border-dark/50 border-bright";
+  //Active link highlight
+  const active = "text-dark scale-110 border-b-1 border-dark/50 border-bright";
 
   async function handleSignOut() {
     try {
@@ -63,7 +63,7 @@ const active = "text-dark scale-110 border-b-1 border-dark/50 border-bright";
 
   return (
     <>
-  <nav className="navbar text-bright text-lg max-[500px]:text-sm font-heading flex flex-row w-screen-2 justify-between bg-main px-3 py-4 m-2 rounded-lg shadow-lg items-center">
+  <nav className="fixed top-0 left-0 right-0 z-50 navbar text-bright text-lg max-[500px]:text-sm font-heading flex flex-row justify-between bg-main px-4 py-3 shadow-lg items-center">
         <div className="flex items-center gap-4">
           <h1 className="logo">
             <Link to="/">
@@ -137,10 +137,13 @@ const active = "text-dark scale-110 border-b-1 border-dark/50 border-bright";
         </div>
          </ul>
       </nav>
-
-      {/* Mobile search overlay - shown below navbar on small screens */}
-      {showMobileSearch && (
-        <div className="min-[700px]:hidden fixed left-0 right-0 top-22 z-40 mx-2 rounded-lg bg-main px-4 py-3 shadow-lg">
+ 
+       {/* spacer to avoid content being hidden under the fixed navbar */}
+       <div className="h-16 md:h-20" />
+ 
+       {/* Mobile search overlay - shown below navbar on small screens */}
+       {showMobileSearch && (
+         <div className="min-[700px]:hidden fixed left-0 right-0 top-22 z-40 mx-2 rounded-lg bg-main px-4 py-3 shadow-lg">
           <form onSubmit={handleSearch} className="relative">
             <input
               type="search"

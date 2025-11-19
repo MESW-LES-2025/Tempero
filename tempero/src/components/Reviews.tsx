@@ -4,29 +4,43 @@ import Loader from "./Loader";
 
 type Review = {
   id: number;
-  author: string;
-  rating: number;
-  comment: string;
+  author_id: string;
+  profiles: {
+    first_name: string;
+    last_name: string;
+  };
+  review: number;
+  description: string;
+  recipe_id: number;
+  recipes: {
+    title: string;
+  };
 };
 
-export default function Reviews() {
+type ReviewsProps = {
+  userId?: string;
+  username?: string;
+};
+
+export default function Reviews({ userId }: ReviewsProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchReviews = async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("reviews")
         .select(
           `id,author_id,profiles(first_name, last_name),review,description,recipe_id,recipes(title)`
-        )
-        .order("id", { ascending: false });
+        );
+      if (userId) query = query.eq("author_id", userId);
+      const { data, error } = await query.order("id", { ascending: false });
       if (error) console.error("Error fetching reviews:", error);
-      else setReviews(data as Review[]);
+      else setReviews(data as unknown as Review[]);
       setLoading(false);
     };
     fetchReviews();
-  }, []);
+  }, [userId]);
 
   if (loading) return <Loader message="Fetching reviews..." />;
 
