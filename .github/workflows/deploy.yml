@@ -55,9 +55,10 @@ jobs:
         run: npm run build
         working-directory: ./tempero
 
-      - name: Deploy to GitHub Pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }},
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npm run deploy
-        working-directory: ./tempero
+      -  name: Deploy to GitHub Pages
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+           REPO: ${{ github.repository }}  # e.g. MESW-LES-2025/Tempero
+         run: |
+           npx gh-pages -d dist -r https://x-access-token:${GITHUB_TOKEN}@github.com/$REPO.git
+         working-directory: ./tempero
