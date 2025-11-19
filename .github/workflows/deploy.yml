@@ -29,14 +29,19 @@ jobs:
         with:
           version: latest
 
-
-      - name: Apply Supabase migrations to PROD
+      - name: Link Supabase PROD project
         working-directory: ./tempero
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROD_REF: ${{ secrets.SUPABASE_PROD_REF }}
         run: |
-          supabase db push --project-ref $SUPABASE_PROD_REF
+          supabase link --project-ref $SUPABASE_PROD_REF
+
+      - name: Apply Supabase migrations to PROD
+        working-directory: ./tempero
+        run: |
+          supabase db push
+
 
       - name: Set PROD env vars for build
         run: |
