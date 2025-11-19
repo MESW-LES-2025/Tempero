@@ -38,6 +38,8 @@ jobs:
           supabase link --project-ref $SUPABASE_PROD_REF
 
       - name: Apply Supabase migrations to PROD
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         working-directory: ./tempero
         run: |
           supabase db push
