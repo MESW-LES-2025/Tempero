@@ -264,6 +264,22 @@ export default function RecipePage() {
               </article>
             ))}
         </section>
+
+        {/* Created / Last edited notes */}
+        <div className="mt-6 text-xs text-dark/60 flex flex-col sm:flex-row sm:justify-end gap-2">
+          <span>
+            Created at{" "}
+            {recipe.created_at
+              ? new Date(recipe.created_at).toLocaleString()
+              : "--"}
+          </span>
+          <span>
+            Last edited at{" "}
+            {recipe.updated_at
+              ? new Date(recipe.updated_at).toLocaleString()
+              : "--"}
+          </span>
+        </div>
       </div>
     </div>
   );
