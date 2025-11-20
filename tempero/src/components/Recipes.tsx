@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
 import type { RecipePreview } from "../types/Recipe";
 import UploadRecipeButton from "../types/Recipe";
@@ -62,7 +63,12 @@ export default function Recipes({ userId }: RecipesProps) {
             )}
 
             <div className="p-4">
-              <h3 className="text-lg font-semibold text-[#e57f22]">{r.title}</h3>
+              <Link
+                to={`/recipe/${r.id}`}
+                className="text-lg font-semibold text-[#e57f22] hover:text-[#c96411] transition-colors inline-block"
+              >
+                {r.title}
+              </Link>
               <p className="mt-2 text-sm text-gray-700 leading-relaxed">
                 {r.short_description}
               </p>
