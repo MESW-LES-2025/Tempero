@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Loader from "../components/Loader";
 import { fetchPlaylistWithRecipes } from "../services/playlistsService";
+import RecipeCard from "../components/RecipeCard";
 
 type RecipeInPlaylist = {
   added_at: string;
@@ -10,6 +11,10 @@ type RecipeInPlaylist = {
     title: string;
     short_description: string | null;
     image_url: string | null;
+    prep_time?: number | null;
+    cook_time?: number | null;
+    servings?: number | null;
+    difficulty?: number | null;
   } | null;
 };
 
@@ -124,29 +129,21 @@ export default function PlaylistDetailPage() {
           <div className="space-y-3">
             {recipes.map((item) =>
               item.recipes ? (
-                <article
+                <RecipeCard
                   key={item.recipes.id}
-                  className="flex gap-3 rounded-xl bg-white border border-off-white
-                    p-2 shadow-sm hover:shadow-md transition-shadow duration-150"
-                >
-                  {item.recipes.image_url && (
-                    <img
-                      src={item.recipes.image_url}
-                      alt={item.recipes.title}
-                      className="h-20 w-20 flex-shrink-0 rounded-lg object-cover"
-                    />
-                  )}
-                  <div className="flex-1">
-                    <h2 className="text-sm font-heading text-secondary">
-                      {item.recipes.title}
-                    </h2>
-                    {item.recipes.short_description && (
-                      <p className="mt-1 text-xs text-dark/70 font-body leading-5 line-clamp-2">
-                        {item.recipes.short_description}
-                      </p>
-                    )}
-                  </div>
-                </article>
+                  variant="list"
+                  addedAt={item.added_at}
+                  recipe={{
+                    id: item.recipes.id,
+                    title: item.recipes.title,
+                    short_description: item.recipes.short_description,
+                    image_url: item.recipes.image_url,
+                    prep_time: item.recipes.prep_time,
+                    cook_time: item.recipes.cook_time,
+                    servings: item.recipes.servings,
+                    difficulty: item.recipes.difficulty,
+                  }}
+                />
               ) : null
             )}
           </div>
