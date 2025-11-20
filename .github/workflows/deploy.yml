@@ -55,6 +55,12 @@ jobs:
         run: npm run build
         working-directory: ./tempero
 
+      - name: Set up Git user
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+
       -  name: Deploy to GitHub Pages
          env:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
