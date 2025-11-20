@@ -49,11 +49,17 @@ jobs:
       - name: Set PROD env vars for build
         run: |
           echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL_PROD }}" >> $GITHUB_ENV
-          echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY_PROD }}" >> $GITHUB_ENV
+          echo "VITE_SUPABASE_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY_PROD }}" >> $GITHUB_ENV
 
       - name: Build app
         run: npm run build
         working-directory: ./tempero
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
 
       -  name: Deploy to GitHub Pages
          env:
