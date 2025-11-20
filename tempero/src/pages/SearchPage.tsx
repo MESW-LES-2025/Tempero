@@ -23,9 +23,11 @@ type Profile = {
   first_name?: string | null;
   last_name?: string | null;
   avatar_url?: string | null;
+  level?: number | null;
 };
 
 const DIFFICULTY_FILTERS = [1, 2, 3, 4, 5];
+const LEVEL_FILTERS = [1, 2, 3, 4, 5];
 
 const COOKING_TIME_FILTERS = [
   { id: "short", label: "Cook time <30 min" },
@@ -49,6 +51,8 @@ export default function SearchPage() {
   const [difficultyFilters, setDifficultyFilters] = useState<Set<number>>(
     new Set()
   );
+
+  const [levelFilters, setLevelFilters] = useState<Set<number>>(new Set());
 
   const [cookFilters, setCookFilters] = useState<Set<string>>(new Set());
 
@@ -95,7 +99,7 @@ export default function SearchPage() {
           let qb = supabase
             .from("profiles")
             .select(
-              "auth_id,username,first_name,last_name,avatar_url:profile_picture_url"
+              "auth_id,username,first_name,last_name,avatar_url:profile_picture_url,level"
             )
             .order("username", { ascending: true });
 
@@ -157,8 +161,21 @@ export default function SearchPage() {
       ? filteredRecipes
       : filteredRecipes.slice(0, PAGE_SIZE);
 
+  const filteredUsers = useMemo(() => {
+    return users.filter(u => {
+      if (levelFilters.size > 0) {
+        const level = (u as any).level ?? null;
+        if (!level || !levelFilters.has(level)) return false;
+      }
+      return true;
+    });
+  }, [users, levelFilters]);
+
   const visibleUsers =
-    showAllUsers || !debouncedQuery ? users : users.slice(0, PAGE_SIZE);
+    showAllUsers || !debouncedQuery
+      ? filteredUsers
+      : filteredUsers.slice(0, PAGE_SIZE);
+
 
   function toggleDifficultyFilter(n: number) {
     setDifficultyFilters((prev) => {
@@ -178,6 +195,14 @@ export default function SearchPage() {
     });
   }
 
+  function toggleLevelFilter(n: number) {
+    setLevelFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(n)) next.delete(n);
+      else next.add(n);
+      return next;
+    });
+  }
 
   return (
     <div className="min-h-screen w-full bg-amber-50">
@@ -261,6 +286,30 @@ export default function SearchPage() {
                 </label>
               ))}
             </div>
+          </div>
+        )}
+
+        {tab === "users" && (
+          <div className="mt-6 flex flex-col items-center gap-4 text-gray-700">
+
+            {/* LEVEL filter */}
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+              {LEVEL_FILTERS.map((n) => (
+                <label
+                  key={n}
+                  className="inline-flex items-center gap-2 cursor-pointer select-none"
+                >
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-[#e57f22]"
+                    checked={levelFilters.has(n)}
+                    onChange={() => toggleLevelFilter(n)}
+                  />
+                  <span className="italic">Level {n}</span>
+                </label>
+              ))}
+            </div>
+
           </div>
         )}
 
