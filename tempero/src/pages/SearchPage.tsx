@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
-import RecipeCard from "../components/RecipeCard";
+//import RecipeCard from "../components/RecipeCard";
 
 type Tab = "recipes" | "users";
 
@@ -195,7 +195,7 @@ export default function SearchPage() {
     });
   }
 
-    function mapToCardData(r: Recipe) {
+/*    function mapToCardData(r: Recipe) {
     return {
       id: String(r.id),
       title: r.title,
@@ -206,7 +206,8 @@ export default function SearchPage() {
       servings: r.servings,
       difficulty: r.difficulty,
     };
-  }
+  }*/
+
   function toggleLevelFilter(n: number) {
     setLevelFilters(prev => {
       const next = new Set(prev);
