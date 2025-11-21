@@ -108,7 +108,11 @@ export async function fetchPlaylistWithRecipes(playlistId: string) {
         id,
         title,
         short_description,
-        image_url
+        image_url,
+        prep_time,
+        cook_time,
+        servings,
+        difficulty
       )
     `
     )

@@ -7,7 +7,7 @@ export default mergeConfig(
     test: {
       environment: 'jsdom',
       globals: true,
-      include: ['tests/**/*.test.ts?(x)'], // procura testes na pasta tests
+      include: ['tests/unit_tests/**/*.test.ts?(x)']
     },
   }),
 )
