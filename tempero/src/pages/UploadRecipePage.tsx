@@ -478,7 +478,6 @@ function UploadFormInner() {
     const { form, setForm, reset } = useUploadRecipe();
     const [stepIndex, setStepIndex] = useState(0);
     const [errors, setErrors] = useState<string[]>([]);
-    const [loadingExisting, setLoadingExisting] = useState(false);
     const [editError, setEditError] = useState<string | null>(null);
     const StepComp = useMemo(() => STEPS[stepIndex].comp, [stepIndex]);
     const navigate = useNavigate();
@@ -520,12 +519,10 @@ function UploadFormInner() {
         if (!recipeId) {
             reset();
             setEditError(null);
-            setLoadingExisting(false);
             return;
         }
 
         let cancelled = false;
-        setLoadingExisting(true);
         setEditError(null);
 
         (async () => {
@@ -596,8 +593,6 @@ function UploadFormInner() {
             } catch (err) {
                 console.error("Failed to load recipe for edit", err);
                 setEditError("Unexpected error loading recipe.");
-            } finally {
-                if (!cancelled) setLoadingExisting(false);
             }
         })();
 
@@ -725,7 +720,7 @@ async function submit() {
                 .single());
         }
 
-        if (recipeError) throw recipeError;
+        if (recipeError || !inserted) throw recipeError || new Error("Failed to create recipe");
 
         const recipeId = inserted.id;
 
@@ -816,6 +811,11 @@ async function submit() {
                 <div className="h-2 bg-gray-200 rounded-full mt-3 overflow-y-hidden overflow-x-visible">
                     <div className="h-full bg-main transition-all duration-300 ease-in-out" style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }} />
                 </div>
+                {editError && (
+                    <div className="mt-3 p-3 bg-danger/20 text-danger rounded">
+                        <p className="text-sm">{editError}</p>
+                    </div>
+                )}
                 {errors.length > 0 && (
                     <div className="mt-3 p-3 bg-danger/20  text-danger rounded">
                         <ul className="list-disc pl-5 text-sm">

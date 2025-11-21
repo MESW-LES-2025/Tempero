@@ -44,7 +44,7 @@ export default function PublicListsPage() {
 
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {playlists.map((playlist) => (
-            <ListCard key={playlist.id} playlist={playlist} />
+            <ListCard key={playlist.id} playlist={playlist} isOwnProfile={false} onDelete={() => {}} />
           ))}
         </div>
       </section>

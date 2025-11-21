@@ -16,7 +16,7 @@ export default function UserListsSection({ userId, isOwnProfile }: Props) {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type?: string } | null>(
+  const [toast, setToast] = useState<{ message: string; type?: "error" | "success" } | null>(
     null
   );
 

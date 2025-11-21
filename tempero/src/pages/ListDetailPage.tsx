@@ -4,7 +4,7 @@ import AddRecipeModal from "../components/AddRecipeModal";
 import Loader from "../components/Loader";
 import RecipeCard from "../components/RecipeCard";
 import Toast from "../components/Toast";
-import { supabase } from "../config/supabaseClient";
+// import { supabase } from "../config/supabaseClient";
 import { fetchPlaylistWithRecipes } from "../services/playlistsService";
 
 type RecipeInPlaylist = {
@@ -39,25 +39,25 @@ export default function ListDetailPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type?: string } | null>(
+  const [toast, setToast] = useState<{ message: string; type?: "error" | "success" } | null>(
     null
   );
 
-  async function handleRemove(recipeId: string) {
-    if (!playlistId) return;
+  // async function handleRemove(recipeId: string) {
+  //   if (!playlistId) return;
 
-    await supabase
-      .from("list_recipes")
-      .delete()
-      .eq("list_id", playlistId)
-      .eq("recipe_id", recipeId);
+  //   await supabase
+  //     .from("list_recipes")
+  //     .delete()
+  //     .eq("list_id", playlistId)
+  //     .eq("recipe_id", recipeId);
 
-    // Update UI without reloading
-    setRecipes((prev) => prev.filter((r) => r.recipes?.id !== recipeId));
+  //   // Update UI without reloading
+  //   setRecipes((prev) => prev.filter((r) => r.recipes?.id !== recipeId));
 
-    // Toast
-    setToast({ message: "Recipe removed from list", type: "success" });
-  }
+  //   // Toast
+  //   setToast({ message: "Recipe removed from list", type: "success" });
+  // }
 
   useEffect(() => {
     if (!playlistId) return;
@@ -192,7 +192,7 @@ export default function ListDetailPage() {
           onAdded={() => {
             // refresh recipe list
             fetchPlaylistWithRecipes(playlistId!).then(({ recipes }) => {
-              setRecipes(recipes);
+              setRecipes(recipes as unknown as RecipeInPlaylist[]);
               setToast({ message: "Recipe added to list", type: "success" });
             });
           }}
@@ -201,7 +201,7 @@ export default function ListDetailPage() {
       {toast && (
         <Toast
           message={toast.message}
-          type={toast.type as any}
+          type={toast.type}
           onClose={() => setToast(null)}
         />
       )}
