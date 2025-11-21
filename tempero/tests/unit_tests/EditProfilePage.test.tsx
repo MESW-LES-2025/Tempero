@@ -1,6 +1,6 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import EditProfilePage from "./EditProfilePage";
-import { supabase } from "../config/supabaseClient";
+import EditProfilePage from "../../src/pages/EditProfilePage";
+import { supabase } from "../../src/config/supabaseClient";
 import { MemoryRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
@@ -16,14 +16,14 @@ vi.mock("react-router-dom", async () => {
 
 
 //Mock Loader
-vi.mock("../components/Loader", () => ({
+vi.mock("../../src/components/Loader", () => ({
   default: ({ message }: { message: string }) => (
     <div data-testid="loader">{message}</div>
   ),
 }));
 
 //Mock Supabase
-vi.mock("../config/supabaseClient", () => {
+vi.mock("../../src/config/supabaseClient", () => {
   const mockSelect = vi.fn();
   const mockUpdate = vi.fn();
 

@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import RegisterPage from "./RegisterPage";
-import { supabase } from "../config/supabaseClient";
+import RegisterPage from "../../src/pages/RegisterPage";
+import { supabase } from "../../src/config/supabaseClient";
 
 const mockNavigate = vi.fn();
 
@@ -17,7 +17,7 @@ vi.mock("react-router-dom", async () => {
 });
 
 // mock global do supabase
-vi.mock("../config/supabaseClient", () => {
+vi.mock("../../src/config/supabaseClient", () => {
   const rpc = vi.fn().mockResolvedValue({ data: true, error: null });
 
   return {

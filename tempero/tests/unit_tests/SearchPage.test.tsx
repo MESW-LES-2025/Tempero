@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import SearchPage from "./SearchPage";
-import { supabase } from "../config/supabaseClient";
+import SearchPage from "../../src/pages/SearchPage";
+import { supabase } from "../../src/config/supabaseClient";
 
 // Mock react-router-dom Link
 vi.mock("react-router-dom", async () => {
@@ -13,7 +13,7 @@ vi.mock("react-router-dom", async () => {
 });
 
 // Mock Supabase client
-vi.mock("../config/supabaseClient", () => ({
+vi.mock("../../src/config/supabaseClient", () => ({
   supabase: {
     from: vi.fn(),
   },

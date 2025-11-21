@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import UploadRecipePage from "./UploadRecipePage";
-import { supabase } from "../config/supabaseClient";
+import UploadRecipePage from "../../src/pages/UploadRecipePage";
+import { supabase } from "../../src/config/supabaseClient";
 import { MemoryRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
@@ -16,16 +16,16 @@ vi.mock("react-router-dom", async () => {
 });
 
 /*Mock image helpers*/
-vi.mock("../utils/CompressImage", () => ({
+vi.mock("../../src/utils/CompressImage", () => ({
   compressImage: vi.fn(async (file: File) => file),
 }));
 
-vi.mock("../utils/UploadImage", () => ({
+vi.mock("../../src/utils/UploadImage", () => ({
   uploadImage: vi.fn(async () => "recipes/fake-image.jpg"),
 }));
 
 /*Mock Supabase*/
-vi.mock("../config/supabaseClient", () => {
+vi.mock("../../src/config/supabaseClient", () => {
   const mockAuthGetUser = vi.fn();
   const mockFrom = vi.fn((table: string) => {
     switch (table) {
@@ -45,6 +45,7 @@ vi.mock("../config/supabaseClient", () => {
       case "recipe-tags":
         return {
           insert: vi.fn().mockResolvedValue({ error: null }),
+          upsert: vi.fn().mockResolvedValue({ error: null }),
         };
       case "tags":
         return {
@@ -274,7 +275,7 @@ describe("UploadRecipePage", () => {
     );
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/recipes/recipe-1");
+      expect(mockNavigate).toHaveBeenCalledWith("/recipe/recipe-1");
     });
   });
 

@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import LoginPage from "./LoginPage";
-import { supabase } from "../config/supabaseClient";
+import LoginPage from "../../src/pages/LoginPage";
+import { supabase } from "../../src/config/supabaseClient";
 
 // mock react-router-dom
 const mockNavigate = vi.fn();
@@ -17,7 +17,7 @@ vi.mock("react-router-dom", async () => {
 });
 
 // mock supabase client
-vi.mock("../config/supabaseClient", () => ({
+vi.mock("../../src/config/supabaseClient", () => ({
   supabase: {
     auth: {
       signInWithPassword: vi.fn(),
