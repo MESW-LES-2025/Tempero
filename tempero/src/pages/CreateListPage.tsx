@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
 
-export default function CreatePlaylistPage() {
+export default function CreateListPage() {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");

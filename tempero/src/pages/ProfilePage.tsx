@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import chefImg from "../assets/febrian-zakaria-SiQgni-cqFg-unsplash.jpg";
 import Recipes from "../components/Recipes";
 import Reviews from "../components/Reviews";
-import UserPlaylistsSection from "../components/UserPlaylistsSection";
+import UserListsSection from "../components/UserListsSection";
 import { supabase } from "../config/supabaseClient";
 
 type Badge = { label: string; icon: string };
@@ -97,7 +97,7 @@ export default function ProfilePage() {
           .eq("follower_id", currentUser.id)
           .eq("followed_id", data.auth_id)
           .maybeSingle();
-        
+
         if (!cancelled) setIsFollowing(!!followData);
       }
     })();
@@ -109,9 +109,9 @@ export default function ProfilePage() {
 
   async function handleFollow() {
     if (!currentUser || !profile) return;
-    
+
     setFollowLoading(true);
-    
+
     try {
       if (isFollowing) {
         await supabase
@@ -120,16 +120,14 @@ export default function ProfilePage() {
           .eq("follower_id", currentUser.id)
           .eq("followed_id", profile.auth_id);
         setIsFollowing(false);
-        setFollowersCount(prev => prev - 1);
+        setFollowersCount((prev) => prev - 1);
       } else {
-        await supabase
-          .from("followers")
-          .insert({
-            follower_id: currentUser.id,
-            followed_id: profile.auth_id
-          });
+        await supabase.from("followers").insert({
+          follower_id: currentUser.id,
+          followed_id: profile.auth_id,
+        });
         setIsFollowing(true);
-        setFollowersCount(prev => prev + 1);
+        setFollowersCount((prev) => prev + 1);
       }
     } catch (error) {
       console.error("Follow error:", error);
@@ -152,8 +150,12 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen w-full bg-bright flex justify-center items-center">
         <div className="text-center">
-          <h1 className="text-2xl font-heading-styled text-secondary mb-4">User not found.</h1>
-          <p className="text-gray-600">The profile you're looking for doesn't exist.</p>
+          <h1 className="text-2xl font-heading-styled text-secondary mb-4">
+            User not found.
+          </h1>
+          <p className="text-gray-600">
+            The profile you're looking for doesn't exist.
+          </p>
         </div>
       </div>
     );
@@ -322,7 +324,7 @@ export default function ProfilePage() {
           ) : tab === "reviews" ? (
             <Reviews userId={profile?.auth_id} username={profile?.username} />
           ) : (
-            <UserPlaylistsSection
+            <UserListsSection
               userId={profile?.auth_id}
               isOwnProfile={isOwnProfile}
             />

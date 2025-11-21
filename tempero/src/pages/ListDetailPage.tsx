@@ -27,7 +27,7 @@ type Playlist = {
   };
 };
 
-export default function PlaylistDetailPage() {
+export default function ListDetailPage() {
   const { playlistId } = useParams<{ playlistId: string }>();
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [recipes, setRecipes] = useState<RecipeInPlaylist[]>([]);

@@ -2,13 +2,13 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ErrorImage from "./assets/404.png";
 import Navbar from "./components/Navbar";
 import AssessmentPage from "./pages/AssessmentPage";
-import CreatePlaylistPage from "./pages/CreatePlaylistPage";
+import CreateListPage from "./pages/CreateListPage";
 import EditProfilePage from "./pages/EditProfilePage";
 import HomePage from "./pages/HomePage";
+import ListDetailPage from "./pages/ListDetailPage";
 import LoginPage from "./pages/LoginPage";
-import PlaylistDetailPage from "./pages/PlaylistDetailPage";
 import ProfilePage from "./pages/ProfilePage";
-import PublicPlaylistsPage from "./pages/PublicPlaylistsPage";
+import PublicListsPage from "./pages/PublicListsPage";
 import RegisterPage from "./pages/RegisterPage";
 import SearchPage from "./pages/SearchPage";
 import UploadRecipePage from "./pages/UploadRecipePage";
@@ -33,9 +33,9 @@ export default function App() {
       <Navbar />
       <Routes>
         <Route index element={<HomePage />} />
-        <Route path="/lists/new" element={<CreatePlaylistPage />} />
-        <Route path="lists" element={<PublicPlaylistsPage />} />
-        <Route path="lists/:playlistId" element={<PlaylistDetailPage />} />
+        <Route path="/lists/new" element={<CreateListPage />} />
+        <Route path="lists" element={<PublicListsPage />} />
+        <Route path="lists/:playlistId" element={<ListDetailPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="skill-assessment" element={<AssessmentPage />} />
