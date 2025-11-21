@@ -64,6 +64,27 @@ export default function RecipePage() {
   const navigate = useNavigate();
   const [recipe, setRecipe] = useState<RecipeDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!mounted) return;
+      setCurrentUserId(data?.user?.id ?? null);
+    })();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_, session) => {
+      setCurrentUserId(session?.user?.id ?? null);
+    });
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -148,6 +169,39 @@ export default function RecipePage() {
     [recipe?.image_url]
   );
 
+  const isAuthor = !!recipe && currentUserId === recipe.authorId;
+
+  const handleEdit = () => {
+    if (!recipe) return;
+    navigate(`/upload-recipe?recipeId=${recipe.id}`);
+  };
+
+  const handleDelete = async () => {
+    if (!recipe || !isAuthor || !currentUserId) return;
+
+    const confirmed = window.confirm(
+      "Delete this recipe? This action cannot be undone."
+    );
+    if (!confirmed) return;
+
+    try {
+      setIsDeleting(true);
+      const { error } = await supabase
+        .from("recipes")
+        .delete()
+        .eq("id", recipe.id)
+        .eq("authorId", currentUserId);
+
+      if (error) throw error;
+      navigate("/");
+    } catch (err) {
+      console.error("Failed to delete recipe", err);
+      alert("Couldn't delete the recipe. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (loading) return <Loader message="Whisking the recipe..." />;
   if (!recipe)
     return (
@@ -171,24 +225,46 @@ export default function RecipePage() {
       <div className="pt-24 pb-16 px-4 sm:px-10 max-w-6xl mx-auto">
         {/* Header */}
         <header className="flex flex-col gap-4 mb-10">
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="inline-flex items-center rounded-lg bg-main/10 text-main border border-main px-4 py-1 font-heading">
-              Level {recipe.difficulty ?? 1}
-            </span>
-            <div className="flex gap-2 flex-wrap">
-              {recipe.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-3 py-1.5 rounded-lg border border-secondary/40 text-secondary text-sm font-heading"
-                >
-                  {tag}
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="flex-1 min-w-[260px] space-y-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="inline-flex items-center rounded-lg bg-main/10 text-main border border-main px-4 py-1 font-heading">
+                  Level {recipe.difficulty ?? 1}
                 </span>
-              ))}
+                <div className="flex gap-2 flex-wrap">
+                  {recipe.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-3 py-1.5 rounded-lg border border-secondary/40 text-secondary text-sm font-heading"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <h1 className="text-4xl sm:text-5xl font-heading-styled text-secondary mt-8">
+                {recipe.title}
+              </h1>
             </div>
+
+            {isAuthor && (
+              <div className="flex gap-2 self-start">
+                <button
+                  onClick={handleEdit}
+                  className="inline-flex items-center gap-2 rounded-lg border border-secondary px-4 py-1 font-heading text-secondary hover:bg-secondary hover:text-bright transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="inline-flex items-center gap-2 rounded-lg bg-danger/80 px-4 py-1 font-heading text-bright hover:bg-danger focus:ring-none  disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isDeleting ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            )}
           </div>
-          <h1 className="text-4xl sm:text-5xl font-heading-styled text-secondary">
-            {recipe.title}
-          </h1>
           <p className="text-dark/70 font-body max-w-2xl">
             {recipe.short_description}
           </p>
