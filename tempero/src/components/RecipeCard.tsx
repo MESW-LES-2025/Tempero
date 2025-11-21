@@ -9,7 +9,7 @@ type RecipeCardData = {
   prep_time?: number | null;
   cook_time?: number | null;
   servings?: number | null;
-  difficulty?: number | null;
+  difficulty?: number | string | null; // <- para suportar "3/5" ou similar se quiseres
 };
 
 type RecipeCardProps = {
@@ -23,13 +23,20 @@ export default function RecipeCard({
   variant = "grid",
   addedAt,
 }: RecipeCardProps) {
-  const imgSrc = resolveImage(recipe.image_url, variant === "grid" ? 600 : 360);
+  const imgSrc = resolveImage(
+    recipe.image_url,
+    variant === "grid" ? 600 : 360
+  );
 
+  // --- LIST VARIANT (mantido como tinhas) ---
   if (variant === "list") {
     return (
       <article className="flex gap-4 rounded-xl bg-white border border-off-white p-3 shadow-sm hover:shadow-md transition-shadow duration-150">
         {imgSrc && (
-          <Link to={`/recipe/${recipe.id}`} className="relative block h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg">
+          <Link
+            to={`/recipe/${recipe.id}`}
+            className="relative block h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg"
+          >
             <img
               src={imgSrc}
               alt={recipe.title}
@@ -60,36 +67,80 @@ export default function RecipeCard({
           )}
 
           <div className="mt-3 flex flex-wrap gap-3 text-xs font-heading text-dark/70">
-            <MetaPill label="Prep" value={formatValue(recipe.prep_time, "min")} />
-            <MetaPill label="Cook" value={formatValue(recipe.cook_time, "min")} />
-            <MetaPill label="Servings" value={recipe.servings?.toString()} />
-            <MetaPill label="Difficulty" value={recipe.difficulty?.toString()} />
+            <MetaPill
+              label="Prep"
+              value={formatValue(recipe.prep_time, "min")}
+            />
+            <MetaPill
+              label="Cook"
+              value={formatValue(recipe.cook_time, "min")}
+            />
+            <MetaPill
+              label="Servings"
+              value={recipe.servings?.toString()}
+            />
+            <MetaPill
+              label="Difficulty"
+              value={
+                typeof recipe.difficulty === "string"
+                  ? recipe.difficulty
+                  : recipe.difficulty?.toString()
+              }
+            />
           </div>
         </div>
       </article>
     );
   }
 
+  // --- GRID VARIANT (igual ao RecipeGrid) ---
   return (
-    <article className="rounded-lg   overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition">
-      {imgSrc && (
-        <Link to={`/recipe/${recipe.id}`} className="w-full aspect-4/3 overflow-hidden block">
-          <img src={imgSrc} alt={recipe.title} className="w-full h-full object-cover" />
+    <article className="rounded-lg overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition">
+      {imgSrc ? (
+        <Link to={`/recipe/${recipe.id}`}>
+          <img
+            src={imgSrc}
+            alt={recipe.title}
+            className="w-full h-44 object-cover"
+          />
         </Link>
+      ) : (
+        <div className="w-full h-44 bg-gray-200" />
       )}
 
-      <div className="p-4  pb-overflow-clip ">
+      <div className="p-4">
         <Link
           to={`/recipe/${recipe.id}`}
-          className="text-lg font-semibold text-[#e57f22] hover:text-[#c96411] transition-colors inline-block"
+          className="text-lg font-semibold text-[#e57f22] hover:text-[#c96411] transition-colors"
         >
           {recipe.title}
         </Link>
+
         {recipe.short_description && (
-          <p className="mt-2 text-sm text-gray-700 leading-relaxed max-h-35  overflow-hidden">
+          <p className="mt-2 text-sm text-gray-700 leading-relaxed line-clamp-5">
             {recipe.short_description}
           </p>
         )}
+
+        <div className="mt-3 text-xs text-gray-500 space-y-1">
+          {(recipe.prep_time || recipe.cook_time) && (
+            <p>
+              ⏱ Prep: {recipe.prep_time ?? "-"} min · Cook:{" "}
+              {recipe.cook_time ?? "-"} min
+            </p>
+          )}
+
+          {recipe.servings && <p>🍽 Servings: {recipe.servings}</p>}
+
+          {recipe.difficulty != null && (
+            <p>
+              🎚 Difficulty:{" "}
+              {typeof recipe.difficulty === "string"
+                ? recipe.difficulty
+                : `${recipe.difficulty}/5`}
+            </p>
+          )}
+        </div>
       </div>
     </article>
   );

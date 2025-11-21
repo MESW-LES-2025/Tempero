@@ -336,7 +336,25 @@ export default function SearchPage() {
           <div className="py-12 text-center text-red-600">{err}</div>
         ) : tab === "recipes" ? (
           <>
-            <RecipeGrid recipes={visibleRecipes} />
+            <div className="mt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {recipes && recipes.length > 0 ? (
+                  recipes.map((r: any) => (
+                    <RecipeCard
+                      key={r.id}
+                      recipe={mapToCardData(r)}
+                      variant="grid"
+                      addedAt={r.created_at ?? null}
+                    />
+                  ))
+                ) : (
+                  <p className="col-span-full text-center text-sm text-dark/60">
+                    No results
+                  </p>
+                )}
+              </div>
+            </div>
+
 
             {debouncedQuery && filteredRecipes.length > PAGE_SIZE && (
               <div className="mt-6 flex justify-center">
