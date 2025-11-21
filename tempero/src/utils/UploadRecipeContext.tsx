@@ -15,6 +15,7 @@ export type UploadForm = {
   tags: UploadTag[] | [];
   imageFile?: File | null;
   imagePath?: string | null;
+  id?: string | null;
 };
 
 type Context = {

@@ -2,10 +2,11 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import type { ChangeEvent } from "react";
 import { UploadRecipeProvider, useUploadRecipe, type UploadIngredient } from "../utils/UploadRecipeContext";
 import { supabase } from "../config/supabaseClient";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Units } from "../utils/Units";
 import { compressImage } from "../utils/CompressImage";
 import { uploadImage } from "../utils/UploadImage";
+import type { Recipe } from "../types/Recipe";
 
 function makeId() {
     return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -14,7 +15,7 @@ function makeId() {
 function DetailsStep() {
     const { form, setForm } = useUploadRecipe();
     return (
-        <div className="space-y-3">
+        <div className="space-y-3 ">
             <label className="block">
                 <div className=" font-heading mb-1">Title</div>
                 <input
@@ -474,11 +475,137 @@ const STEPS = [
 ];
 
 function UploadFormInner() {
-    const { form } = useUploadRecipe();
+    const { form, setForm, reset } = useUploadRecipe();
     const [stepIndex, setStepIndex] = useState(0);
     const [errors, setErrors] = useState<string[]>([]);
+    const [loadingExisting, setLoadingExisting] = useState(false);
+    const [editError, setEditError] = useState<string | null>(null);
     const StepComp = useMemo(() => STEPS[stepIndex].comp, [stepIndex]);
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const recipeId = searchParams.get("recipeId");
+    const isEditing = Boolean(recipeId);
+
+    type ExistingRecipeRow = Pick<
+        Recipe,
+        | "id"
+        | "title"
+        | "short_description"
+        | "image_url"
+        | "difficulty"
+        | "servings"
+    > & {
+        authorId: string;
+        prep_time: number | null;
+        cook_time: number | null;
+        preparation_time?: number | null;
+        cooking_time?: number | null;
+        recipe_ingredients?: Array<{
+            id: number;
+            name: string;
+            amount: number | null;
+            unit: string | null;
+            notes: string | null;
+        }>;
+        recipe_steps?: Array<{
+            index: number;
+            text: string;
+        }>;
+        recipe_tags?: Array<{
+            tags: { name: string };
+        }>;
+    };
+
+    useEffect(() => {
+        if (!recipeId) {
+            reset();
+            setEditError(null);
+            setLoadingExisting(false);
+            return;
+        }
+
+        let cancelled = false;
+        setLoadingExisting(true);
+        setEditError(null);
+
+        (async () => {
+            try {
+                const { data: auth } = await supabase.auth.getUser();
+                const userId = auth?.user?.id ?? null;
+                if (!userId) {
+                    setEditError("You must be logged in to edit a recipe.");
+                    return;
+                }
+
+                const { data, error } = await supabase
+                    .from("recipes")
+                    .select(
+                        `id,title,short_description,image_url,authorId,prep_time,cook_time,servings,difficulty,
+                        recipe_ingredients:recipe-ingredients(id,name,amount,unit,notes),
+                        recipe_steps:recipe-steps(index,text),
+                        recipe_tags:recipe-tags(tags(name))`
+                    )
+                    .eq("id", recipeId)
+                    .single<ExistingRecipeRow>();
+
+                if (error || !data) {
+                    setEditError("Could not load recipe for editing.");
+                    return;
+                }
+
+                if (data.authorId !== userId) {
+                    setEditError("You can only edit your own recipes.");
+                    return;
+                }
+
+                if (cancelled) return;
+
+                setForm(() => ({
+                    title: data.title ?? "",
+                    short_description: data.short_description ?? "",
+                    preparation_time: data.prep_time ?? null,
+                    cooking_time: data.cook_time ?? null,
+                    servings: data.servings ?? null,
+                    difficulty: data.difficulty ?? null,
+                    ingredients:
+                        data.recipe_ingredients?.map((ing) => ({
+                            id: String(ing.id),
+                            name: ing.name ?? "",
+                            amount: ing.amount ?? null,
+                            unit: ing.unit ?? "",
+                            note: ing.notes ?? "",
+                        })) ?? [],
+                    steps:
+                        data.recipe_steps
+                            ?.sort((a, b) => a.index - b.index)
+                            .map((s, idx) => ({
+                                id: s.index ? `step-${s.index}` : makeId(),
+                                index: idx + 1,
+                                description: s.text ?? "",
+                            })) ?? [],
+                    tags:
+                        data.recipe_tags
+                            ?.map((t) => t.tags?.name)
+                            .filter(Boolean)
+                            .map((name) => ({ name: name as string })) ?? [],
+                    imageFile: null,
+                    imagePath: data.image_url ?? null,
+                    // store the existing recipe id so we can include it on upsert/update
+                    id: data.id,
+                }));
+            } catch (err) {
+                console.error("Failed to load recipe for edit", err);
+                setEditError("Unexpected error loading recipe.");
+            } finally {
+                if (!cancelled) setLoadingExisting(false);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+        // We intentionally only depend on recipeId to avoid reloading while typing.
+    }, [recipeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
     function validateStep(index: number) {
         const msgs: string[] = [];
@@ -568,8 +695,8 @@ async function submit() {
             return;
         }
 
-        // 2) Insert recipe (image_url comes directly from form.imagePath)
-        const recipePayload = {
+        // 2) Insert or update recipe (image_url comes directly from form.imagePath)
+        const basePayload = {
             title: form.title,
             authorId: user.id,
             short_description: form.short_description,
@@ -580,11 +707,23 @@ async function submit() {
             difficulty: form.difficulty,
         };
 
-        const { data: inserted, error: recipeError } = await supabase
-            .from("recipes")
-            .insert([recipePayload])
-            .select("id")
-            .single();
+        let inserted;
+        let recipeError = null;
+        if (form.id) {
+            // editing: include id and upsert (or update)
+            ({ data: inserted, error: recipeError } = await supabase
+                .from("recipes")
+                .upsert([{ id: form.id, ...basePayload }])
+                .select("id")
+                .single());
+        } else {
+            // creating new: DO NOT include id so Supabase/Postgres will generate it
+            ({ data: inserted, error: recipeError } = await supabase
+                .from("recipes")
+                .insert([basePayload])
+                .select("id")
+                .single());
+        }
 
         if (recipeError) throw recipeError;
 
@@ -602,7 +741,7 @@ async function submit() {
 
             const { error: ingredientsError } = await supabase
                 .from("recipe-ingredients")
-                .insert(ingredientRows);
+                .upsert(ingredientRows);
 
             if (ingredientsError) throw ingredientsError;
         }
@@ -617,7 +756,7 @@ async function submit() {
 
             const { error: stepsError } = await supabase
                 .from("recipe-steps")
-                .insert(stepRows);
+                .upsert(stepRows);
 
             if (stepsError) throw stepsError;
         }
@@ -653,14 +792,14 @@ async function submit() {
                 if (recipeTagRows.length > 0) {
                     const { error: recipeTagsError } = await supabase
                         .from("recipe-tags")
-                        .insert(recipeTagRows);
+                        .upsert(recipeTagRows);
                     if (recipeTagsError) throw recipeTagsError;
                 }
             }
         }
 
         // 6) Navigate to the newly created recipe page
-        navigate(`/recipes/${recipeId}`);
+        navigate(`/recipe/${recipeId}`);
     } catch (err) {
         console.error(err);
         setErrors(["Something went wrong while saving the recipe."]);
@@ -670,11 +809,11 @@ async function submit() {
     return (
         <div className="rounded-lg bg-bright/90 p-4 shadow-sm flex flex-col min-h-90 max-h-[70vh] overflow-x-visible">
             <div className="mb-3 overflow-x-visible">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-medium">{STEPS[stepIndex].title}</h2>
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-medium">{STEPS[stepIndex].title}</h2>
                     <div className="text-sm text-gray-500">Step {stepIndex + 1} / {STEPS.length}</div>
                 </div>
-                <div className="h-2 bg-gray-200 rounded-full mt-3 overflow-hidden ">
+                <div className="h-2 bg-gray-200 rounded-full mt-3 overflow-y-hidden overflow-x-visible">
                     <div className="h-full bg-main transition-all duration-300 ease-in-out" style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }} />
                 </div>
                 {errors.length > 0 && (
@@ -706,7 +845,7 @@ async function submit() {
                     {stepIndex < STEPS.length - 1 ? (
                         <button type="button" onClick={next} className="px-4 py-2 rounded bg-secondary hover:-translate-y-1 hover:opacity-80 transition-all duration-200  text-bright text-sm">Next</button>
                     ) : (
-                        <button type="button" onClick={submit} className="px-4 py-2 rounded bg-main hover:-translate-y-1 hover:opacity-80 transition-all duration-200  text-bright text-sm">Publish</button>
+                        <button type="button" onClick={submit} className="px-4 py-2 rounded bg-main hover:-translate-y-1 hover:opacity-80 transition-all duration-200  text-bright text-sm">{isEditing ? "Update" : "Publish"}</button>
                     )}
                 </div>
             </div>
@@ -715,11 +854,14 @@ async function submit() {
 }
 
 export default function UploadRecipePage() {
+    const [searchParams] = useSearchParams();
+    const isEditing = Boolean(searchParams.get("recipeId"));
+
     return (
         <UploadRecipeProvider>
             <div className="min-h-screen bg-bright/5 ">
                 <main className="max-w-4xl mx-auto px-4 py-8">
-                    <h1 className="text-2xl font-heading-styled text-main mb-4">Upload a recipe</h1>
+                    <h1 className="text-2xl font-heading-styled text-main mb-4">{isEditing ? "Edit recipe" : "Upload a recipe"}</h1>
                     <UploadFormInner />
                 </main>
             </div>
