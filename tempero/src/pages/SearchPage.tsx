@@ -117,10 +117,7 @@ export default function SearchPage() {
           setRecipes([]); // clear others
         }
       } catch (e: unknown) {
-        if (!cancelled)
-          setErr(
-            e instanceof Error ? e.message : "Failed to fetch results."
-          );
+        if (!cancelled) setErr(e instanceof Error ? e.message : "Failed to fetch results.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -190,7 +187,7 @@ export default function SearchPage() {
   }
 
   function toggleCookFilter(id: string) {
-    setCookFilters((prev) => {
+    setCookFilters(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -198,7 +195,7 @@ export default function SearchPage() {
     });
   }
 
-  function mapToCardData(r: any) {
+    function mapToCardData(r: any) {
     return {
       id: r.id,
       title: r.title,
@@ -209,6 +206,7 @@ export default function SearchPage() {
       servings: r.servings,
       difficulty: r.difficulty,
     };
+  }
   function toggleLevelFilter(n: number) {
     setLevelFilters(prev => {
       const next = new Set(prev);
@@ -250,28 +248,14 @@ export default function SearchPage() {
         <div className="flex justify-center">
           <div className="relative w-full max-w-xl">
             <span className="absolute left-3 top-1/2 -translate-y-1/2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clipRule="evenodd"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
               </svg>
             </span>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={
-                tab === "recipes"
-                  ? "Find a recipe by name"
-                  : "Find a user by name or username"
-              }
+              placeholder={tab === "recipes" ? "Find a recipe by name" : "Find a user by name or username"}
               className="w-full rounded-lg border border-gray-300 bg-white pl-9 pr-3 py-2 shadow-sm focus:ring-2 focus:ring-[#e57f22] outline-none"
             />
           </div>
@@ -352,24 +336,7 @@ export default function SearchPage() {
           <div className="py-12 text-center text-red-600">{err}</div>
         ) : tab === "recipes" ? (
           <>
-            <div className="mt-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recipes && recipes.length > 0 ? (
-                  recipes.map((r: any) => (
-                    <RecipeCard
-                      key={r.id}
-                      recipe={mapToCardData(r)}
-                      variant="grid"
-                      addedAt={r.created_at ?? null}
-                    />
-                  ))
-                ) : (
-                  <p className="col-span-full text-center text-sm text-dark/60">
-                    No results
-                  </p>
-                )}
-              </div>
-            </div>
+            <RecipeGrid recipes={visibleRecipes} />
 
             {debouncedQuery && filteredRecipes.length > PAGE_SIZE && (
               <div className="mt-6 flex justify-center">
@@ -401,7 +368,8 @@ export default function SearchPage() {
               </div>
             )}
           </>
-        )}
+        )
+        }
       </div>
     </div>
   );
