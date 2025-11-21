@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import AddRecipeModal from "../components/AddRecipeModal";
 import Loader from "../components/Loader";
-import { fetchPlaylistWithRecipes } from "../services/playlistsService";
 import RecipeCard from "../components/RecipeCard";
+import Toast from "../components/Toast";
+import { supabase } from "../config/supabaseClient";
+import { fetchPlaylistWithRecipes } from "../services/playlistsService";
 
 type RecipeInPlaylist = {
   added_at: string;
@@ -29,12 +32,32 @@ type Playlist = {
   };
 };
 
-export default function PlaylistDetailPage() {
+export default function ListDetailPage() {
   const { playlistId } = useParams<{ playlistId: string }>();
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [recipes, setRecipes] = useState<RecipeInPlaylist[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type?: string } | null>(
+    null
+  );
+
+  async function handleRemove(recipeId: string) {
+    if (!playlistId) return;
+
+    await supabase
+      .from("list_recipes")
+      .delete()
+      .eq("list_id", playlistId)
+      .eq("recipe_id", recipeId);
+
+    // Update UI without reloading
+    setRecipes((prev) => prev.filter((r) => r.recipes?.id !== recipeId));
+
+    // Toast
+    setToast({ message: "Recipe removed from list", type: "success" });
+  }
 
   useEffect(() => {
     if (!playlistId) return;
@@ -114,6 +137,19 @@ export default function PlaylistDetailPage() {
             </span>
           </div>
 
+          {!loading && playlist && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="
+      mt-4 bg-main hover:bg-secondary 
+      text-bright font-heading-styled 
+      px-4 py-2 rounded-lg transition
+    "
+            >
+              + Add Recipes
+            </button>
+          )}
+
           {playlist.description && (
             <p className="mt-3 text-sm text-dark/80 font-body">
               {playlist.description}
@@ -149,6 +185,26 @@ export default function PlaylistDetailPage() {
           </div>
         )}
       </section>
+      {showAddModal && (
+        <AddRecipeModal
+          listId={playlistId!}
+          onClose={() => setShowAddModal(false)}
+          onAdded={() => {
+            // refresh recipe list
+            fetchPlaylistWithRecipes(playlistId!).then(({ recipes }) => {
+              setRecipes(recipes);
+              setToast({ message: "Recipe added to list", type: "success" });
+            });
+          }}
+        />
+      )}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type as any}
+          onClose={() => setToast(null)}
+        />
+      )}
     </main>
   );
 }
