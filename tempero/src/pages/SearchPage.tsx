@@ -156,10 +156,10 @@ export default function SearchPage() {
     });
   }, [recipes, difficultyFilters, cookFilters]);
 
-  // const visibleRecipes =
-  //   showAllRecipes || !debouncedQuery
-  //     ? filteredRecipes
-  //     : filteredRecipes.slice(0, PAGE_SIZE);
+   const visibleRecipes =
+     showAllRecipes || !debouncedQuery
+       ? filteredRecipes
+       : filteredRecipes.slice(0, PAGE_SIZE);
 
   const filteredUsers = useMemo(() => {
     return users.filter(u => {
@@ -336,24 +336,7 @@ export default function SearchPage() {
           <div className="py-12 text-center text-red-600">{err}</div>
         ) : tab === "recipes" ? (
           <>
-            <div className="mt-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recipes && recipes.length > 0 ? (
-                  recipes.map((r) => (
-                    <RecipeCard
-                      key={r.id}
-                      recipe={mapToCardData(r)}
-                      variant="grid"
-                      addedAt={null}
-                    />
-                  ))
-                ) : (
-                  <p className="col-span-full text-center text-sm text-dark/60">
-                    No results
-                  </p>
-                )}
-              </div>
-            </div>
+            <RecipeGrid recipes={visibleRecipes} />
 
 
             {debouncedQuery && filteredRecipes.length > PAGE_SIZE && (
@@ -395,65 +378,65 @@ export default function SearchPage() {
 
 /* ---------- UI PARTIALS ---------- */
 
-// function RecipeGrid({ recipes }: { recipes: Recipe[] }) {
-//   if (!recipes.length)
-//     return (
-//       <div className="py-12 text-center text-gray-600">
-//         No recipes found. Try adjusting your search.
-//       </div>
-//     );
+function RecipeGrid({ recipes }: { recipes: Recipe[] }) {
+  if (!recipes.length)
+    return (
+      <div className="py-12 text-center text-gray-600">
+        No recipes found. Try adjusting your search.
+      </div>
+    );
 
-//   return (
-//     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-//       {recipes.map((r) => (
-//         <article
-//           key={r.id}
-//           className="rounded-lg overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition"
-//         >
-//           {r.image_url ? (
-//             <img
-//               src={r.image_url}
-//               alt={r.title}
-//               className="w-full h-44 object-cover"
-//             />
-//           ) : (
-//             <div className="w-full h-44 bg-gray-200" />
-//           )}
-//           <div className="p-4">
-//             <h3 className="text-lg font-semibold text-[#e57f22]">
-//               {r.title}
-//             </h3>
+  return (
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {recipes.map((r) => (
+        <article
+          key={r.id}
+          className="rounded-lg overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition"
+        >
+          {r.image_url ? (
+            <img
+              src={r.image_url}
+              alt={r.title}
+              className="w-full h-44 object-cover"
+            />
+          ) : (
+            <div className="w-full h-44 bg-gray-200" />
+          )}
+          <div className="p-4">
+            <h3 className="text-lg font-semibold text-[#e57f22]">
+              {r.title}
+            </h3>
 
-//             {r.short_description && (
-//               <p className="mt-2 text-sm text-gray-700 leading-relaxed line-clamp-5">
-//                 {r.short_description}
-//               </p>
-//             )}
+            {r.short_description && (
+              <p className="mt-2 text-sm text-gray-700 leading-relaxed line-clamp-5">
+                {r.short_description}
+              </p>
+            )}
 
-//             <div className="mt-3 text-xs text-gray-500 space-y-1">
-//               {(r.prep_time || r.cook_time) && (
-//                 <p>
-//                   ⏱ Prep: {r.prep_time ?? "-"} min · Cook:{" "}
-//                   {r.cook_time ?? "-"} min
-//                 </p>
-//               )}
-//               {r.servings && <p>🍽 Servings: {r.servings}</p>}
+            <div className="mt-3 text-xs text-gray-500 space-y-1">
+              {(r.prep_time || r.cook_time) && (
+                <p>
+                  ⏱ Prep: {r.prep_time ?? "-"} min · Cook:{" "}
+                  {r.cook_time ?? "-"} min
+                </p>
+              )}
+              {r.servings && <p>🍽 Servings: {r.servings}</p>}
 
-//               {r.difficulty != null && (
-//                 <p>
-//                   🎚 Difficulty:{" "}
-//                   {typeof r.difficulty === "string"
-//                     ? r.difficulty
-//                     : `${r.difficulty}/5`}
-//                 </p>
-//               )}
-//             </div>
-//           </div>
-//         </article>
-//       ))}
-//     </div>
-//   );
-// }
+              {r.difficulty != null && (
+                <p>
+                  🎚 Difficulty:{" "}
+                  {typeof r.difficulty === "string"
+                    ? r.difficulty
+                    : `${r.difficulty}/5`}
+                </p>
+              )}
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
 
 function UserGrid({ users }: { users: Profile[] }) {
   if (!users.length)
