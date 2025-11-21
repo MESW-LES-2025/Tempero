@@ -695,10 +695,8 @@ async function submit() {
             return;
         }
 
-        // 2) Insert recipe (image_url comes directly from form.imagePath)
-        const recipePayload = {
-            // include id when editing so upsert updates existing row (or use update flow)
-            id: form.id ?? undefined,
+        // 2) Insert or update recipe (image_url comes directly from form.imagePath)
+        const basePayload = {
             title: form.title,
             authorId: user.id,
             short_description: form.short_description,
@@ -708,11 +706,24 @@ async function submit() {
             servings: form.servings,
             difficulty: form.difficulty,
         };
-        const { data: inserted, error: recipeError } = await supabase
-            .from("recipes")
-            .upsert([recipePayload])
-            .select("id")
-            .single();
+
+        let inserted;
+        let recipeError = null;
+        if (form.id) {
+            // editing: include id and upsert (or update)
+            ({ data: inserted, error: recipeError } = await supabase
+                .from("recipes")
+                .upsert([{ id: form.id, ...basePayload }])
+                .select("id")
+                .single());
+        } else {
+            // creating new: DO NOT include id so Supabase/Postgres will generate it
+            ({ data: inserted, error: recipeError } = await supabase
+                .from("recipes")
+                .insert([basePayload])
+                .select("id")
+                .single());
+        }
 
         if (recipeError) throw recipeError;
 
