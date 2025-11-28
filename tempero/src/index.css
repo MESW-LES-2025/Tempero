@@ -45,3 +45,7 @@
 .custom-scroll::-webkit-scrollbar-thumb:focus {
   outline: none;
 }
+
+.text-gradient-to-r {
+  @apply bg-linear-to-r from-main to-orange-900 bg-clip-text text-transparent;
+}

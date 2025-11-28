@@ -43,18 +43,9 @@ export default function Recipes({ userId }: RecipesProps) {
 
 
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
       {recipes.map((r) => (
-        <RecipeCard
-          key={r.id}
-          variant="grid"
-          recipe={{
-            id: r.id,
-            title: r.title,
-            short_description: r.short_description,
-            image_url: r.image_url,
-          }}
-        />
+            <RecipeCard key={r.id} recipe={r} />
       ))}
       <UploadRecipeButton />
     </div>

@@ -93,7 +93,6 @@ export default function RecipeCard({
     );
   }
 
-  // --- GRID VARIANT (igual ao RecipeGrid do SearchPage, mas clicável) ---
   return (
     <Link
       to={`/recipe/${recipe.id}`}

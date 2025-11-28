@@ -22,7 +22,8 @@
     "@tailwindcss/vite": "^4.1.16",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.9.4"
+    "react-router-dom": "^7.9.4",
+    "supabase": "^2.63.1"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^11.1.0",
