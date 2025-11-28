@@ -139,6 +139,7 @@ export default function SearchPage() {
           let qb = supabase
             .from("lists")
             .select("id,user_id,title,description,visibility,created_at")
+            .neq("visibility", "private")
             .order("title", { ascending: true });
 
           if (debouncedQuery) {
@@ -216,8 +217,10 @@ export default function SearchPage() {
 
   const filteredLists = useMemo(() => {
     return lists.filter((l) => {
+      const vis = l.visibility?.toLowerCase();
+      if (vis === "private") return false;
+
       if (visibilityFilters.size > 0) {
-        const vis = l.visibility?.toLowerCase();
         if (!vis || !visibilityFilters.has(vis)) return false;
       }
       return true;
