@@ -29,7 +29,8 @@ type Profile = {
 // id, user_id, title, description, visibility, created_at
 type List = {
   id: string | number;
-  user_id: string;          // ← same as profiles.auth_id
+  user_id: string;          // same as profiles.auth_id
+  username?: string | null;
   title: string;
   description?: string | null;
   visibility: string;       // "public" | "private" | etc.
@@ -46,8 +47,8 @@ const COOKING_TIME_FILTERS = [
 ];
 
 const VISIBILITY_FILTERS = [
-  { id: "public", label: "Public" },
   { id: "followed", label: "Followed" },
+  { id: "not-followed", label: "Not followed" },
 ];
 
 const PAGE_SIZE = 10;
@@ -247,29 +248,28 @@ export default function SearchPage() {
       ? filteredUsers
       : filteredUsers.slice(0, PAGE_SIZE);
 
-  const filteredLists = useMemo(() => {
-    return lists.filter((l) => {
-      const vis = l.visibility?.toLowerCase();
-      if (vis === "private") return false;
+    const filteredLists = useMemo(() => {
+      return lists.filter((l) => {
+        const vis = l.visibility?.toLowerCase();
+        if (vis === "private") return false; // nunca mostra privadas
 
-      const isPublic = vis === "public";
-      const isFromFollowed = followedUserIds.includes(l.user_id);
+        const isFromFollowed = followedUserIds.includes(l.user_id);
 
-      if (visibilityFilters.size === 0) {
-        // no filters => any non-private list
-        return true;
-      }
+        // Sem filtros: mostra todas as listas não-privadas
+        if (visibilityFilters.size === 0) {
+          return true;
+        }
 
-      const wantsPublic = visibilityFilters.has("public");
-      const wantsFollowed = visibilityFilters.has("followed");
+        const wantsFollowed = visibilityFilters.has("followed");
+        const wantsNotFollowed = visibilityFilters.has("not-followed");
 
-      let ok = false;
-      if (wantsPublic && isPublic) ok = true;
-      if (wantsFollowed && isFromFollowed) ok = true;
+        let ok = false;
+        if (wantsFollowed && isFromFollowed) ok = true;
+        if (wantsNotFollowed && !isFromFollowed) ok = true;
 
-      return ok;
-    });
-  }, [lists, visibilityFilters, followedUserIds]);
+        return ok;
+      });
+    }, [lists, visibilityFilters, followedUserIds]);
 
   const visibleLists =
     showAllLists || !debouncedQuery
@@ -675,6 +675,7 @@ function ListGrid({ lists }: { lists: List[] }) {
             </div>
 
             <div className="mt-3 text-xs text-gray-500 space-y-1">
+              <p>👤 Creator: {l.user_id}</p>
               <p>👁 Visibility: {visLabel}</p>
               {l.created_at && (
                 <p>
