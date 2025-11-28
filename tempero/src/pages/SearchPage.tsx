@@ -29,10 +29,10 @@ type Profile = {
 // id, user_id, title, description, visibility, created_at
 type List = {
   id: string | number;
-  user_id: string;
+  user_id: string;          // ← same as profiles.auth_id
   title: string;
   description?: string | null;
-  visibility: string; // e.g. "public", "followed", "private"
+  visibility: string;       // "public" | "private" | etc.
   created_at?: string | null;
 };
 
@@ -62,6 +62,9 @@ export default function SearchPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
   const [lists, setLists] = useState<List[]>([]);
+
+  // for list filtering
+  const [followedUserIds, setFollowedUserIds] = useState<string[]>([]);
 
   const [difficultyFilters, setDifficultyFilters] = useState<Set<number>>(
     new Set()
@@ -113,6 +116,7 @@ export default function SearchPage() {
           setRecipes((data ?? []) as Recipe[]);
           setUsers([]);
           setLists([]);
+          setFollowedUserIds([]);
         } else if (tab === "users") {
           let qb = supabase
             .from("profiles")
@@ -134,12 +138,14 @@ export default function SearchPage() {
           setUsers((data ?? []) as Profile[]);
           setRecipes([]);
           setLists([]);
+          setFollowedUserIds([]);
         } else {
-          // LISTS
+          // ---------- LISTS ----------
+          // 1) Load only non-private lists from DB
           let qb = supabase
             .from("lists")
             .select("id,user_id,title,description,visibility,created_at")
-            .neq("visibility", "private")
+            .neq("visibility", "private")      // never show private
             .order("title", { ascending: true });
 
           if (debouncedQuery) {
@@ -153,6 +159,32 @@ export default function SearchPage() {
           setLists((data ?? []) as List[]);
           setRecipes([]);
           setUsers([]);
+
+          // 2) Fetch which users the current user follows
+          try {
+            const {
+              data: { user },
+            } = await supabase.auth.getUser();
+
+            if (!user) {
+              setFollowedUserIds([]);
+            } else {
+              const { data: follows, error: followsError } = await supabase
+                .from("followers")          // table that stores follow relations
+                .select("followed_id")   // column with the followed user's auth_id
+                .eq("follower_id", user.id); // current user's auth_id
+
+              if (followsError || !follows) {
+                setFollowedUserIds([]);
+              } else {
+                setFollowedUserIds(
+                  follows.map((f: { followed_id: string }) => f.followed_id)
+                );
+              }
+            }
+          } catch {
+            setFollowedUserIds([]);
+          }
         }
       } catch (e: unknown) {
         if (!cancelled)
@@ -220,12 +252,24 @@ export default function SearchPage() {
       const vis = l.visibility?.toLowerCase();
       if (vis === "private") return false;
 
-      if (visibilityFilters.size > 0) {
-        if (!vis || !visibilityFilters.has(vis)) return false;
+      const isPublic = vis === "public";
+      const isFromFollowed = followedUserIds.includes(l.user_id);
+
+      if (visibilityFilters.size === 0) {
+        // no filters => any non-private list
+        return true;
       }
-      return true;
+
+      const wantsPublic = visibilityFilters.has("public");
+      const wantsFollowed = visibilityFilters.has("followed");
+
+      let ok = false;
+      if (wantsPublic && isPublic) ok = true;
+      if (wantsFollowed && isFromFollowed) ok = true;
+
+      return ok;
     });
-  }, [lists, visibilityFilters]);
+  }, [lists, visibilityFilters, followedUserIds]);
 
   const visibleLists =
     showAllLists || !debouncedQuery
@@ -612,8 +656,6 @@ function ListGrid({ lists }: { lists: List[] }) {
         const visLabel =
           l.visibility?.toLowerCase() === "public"
             ? "Public"
-            : l.visibility?.toLowerCase() === "followed"
-            ? "Followed"
             : l.visibility;
 
         return (
