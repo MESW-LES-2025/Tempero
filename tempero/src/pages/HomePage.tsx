@@ -27,13 +27,13 @@ export default function HomePage() {
   }, []);
 
   return (
-  <div className="main-section bg-bright w-screen h-screen items-center justify-center py-10 px-5 space-y-15 overflow-y-auto ">
+  <div className="main-section bg-bright min-h-screen flex flex-col items-center justify-start py-10 px-5 space-y-15">
 
-    <div className="feed-preview-container flex flex-col ">
+    <div className="feed-preview-container flex flex-col max-w-full ">
       <div className="feed-preview-header mb-2">
         <h2 className="text-4xl font-heading-styled w-fit text-gradient-to-r py-2 ">What's new?</h2>
       </div>
-      <div className="feed-preview-list flex flex-row gap-6  bg-white rounded-lg shadow-lg overflow-x-scroll p-6  custom-scroll">
+      <div className="feed-preview-list flex flex-row max-w-full gap-6  bg-white rounded-lg shadow-lg overflow-x-scroll p-6  custom-scroll">
         {recentRecipes.map((recipe) => (
           <div key={recipe.id} >
             <RecipeCard key={recipe.id} recipe={recipe} backgroundColor="bright" />
