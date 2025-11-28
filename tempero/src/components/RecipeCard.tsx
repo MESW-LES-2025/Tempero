@@ -16,12 +16,14 @@ type RecipeCardProps = {
   recipe: RecipeCardData;
   variant?: "grid" | "list";
   addedAt?: string | null;
+  backgroundColor?: string;
 };
 
 export default function RecipeCard({
   recipe,
   variant = "grid",
   addedAt,
+  backgroundColor = "white",
 }: RecipeCardProps) {
   const imgSrc = resolveImage(
     recipe.image_url,
@@ -31,11 +33,14 @@ export default function RecipeCard({
   // --- LIST VARIANT (mantido como tinhas) ---
   if (variant === "list") {
     return (
-      <article className="flex gap-4 rounded-xl bg-white border border-off-white p-3 shadow-sm hover:shadow-md transition-shadow duration-150">
+      <article
+        className="flex gap-4 rounded-xl border border-off-white p-3 shadow-sm hover:shadow-md transition-shadow duration-150"
+        style={{ backgroundColor }}
+      >
         {imgSrc && (
           <Link
             to={`/recipe/${recipe.id}`}
-            className="relative block h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg"
+            className="relative block h-24 w-24 shrink-0 overflow-hidden rounded-lg"
           >
             <img
               src={imgSrc}
@@ -95,7 +100,10 @@ export default function RecipeCard({
 
   // --- GRID VARIANT (igual ao RecipeGrid) ---
   return (
-    <article className="rounded-lg overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition">
+    <article
+      className="rounded-lg w-68 overflow-hidden shadow-sm border border-gray-200 hover:shadow-md transition"
+      style={{ backgroundColor }}
+    >
       {imgSrc ? (
         <Link to={`/recipe/${recipe.id}`}>
           <img
@@ -108,16 +116,16 @@ export default function RecipeCard({
         <div className="w-full h-44 bg-gray-200" />
       )}
 
-      <div className="p-4">
+      <div className="p-4 h-60">
         <Link
           to={`/recipe/${recipe.id}`}
-          className="text-lg font-semibold text-[#e57f22] hover:text-[#c96411] transition-colors"
+          className="text-lg font-semibold text-[#e57f22] hover:text-[#c96411] transition-colors w-"
         >
           {recipe.title}
         </Link>
 
         {recipe.short_description && (
-          <p className="mt-2 text-sm text-gray-700 leading-relaxed line-clamp-5">
+          <p className="mt-2 h-22 text-sm text-gray-700 leading-relaxed line-clamp-5">
             {recipe.short_description}
           </p>
         )}
