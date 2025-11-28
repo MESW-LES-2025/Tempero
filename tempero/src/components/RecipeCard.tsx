@@ -2,14 +2,14 @@ import { Link } from "react-router-dom";
 import { recipeImageUrl } from "../utils/ImageURL";
 
 type RecipeCardData = {
-  id: string;
+  id: string | number;
   title: string;
   short_description?: string | null;
   image_url?: string | null;
   prep_time?: number | null;
   cook_time?: number | null;
   servings?: number | null;
-  difficulty?: number | string | null; // <- para suportar "3/5" ou similar se quiseres
+  difficulty?: number | string | null;
 };
 
 type RecipeCardProps = {
@@ -93,28 +93,26 @@ export default function RecipeCard({
     );
   }
 
-  // --- GRID VARIANT (igual ao RecipeGrid) ---
+  // --- GRID VARIANT (igual ao RecipeGrid do SearchPage, mas clicável) ---
   return (
-    <article className="rounded-lg overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition">
+    <Link
+      to={`/recipe/${recipe.id}`}
+      className="block rounded-lg overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition"
+    >
       {imgSrc ? (
-        <Link to={`/recipe/${recipe.id}`}>
-          <img
-            src={imgSrc}
-            alt={recipe.title}
-            className="w-full h-44 object-cover"
-          />
-        </Link>
+        <img
+          src={imgSrc}
+          alt={recipe.title}
+          className="w-full h-44 object-cover"
+        />
       ) : (
         <div className="w-full h-44 bg-gray-200" />
       )}
 
       <div className="p-4">
-        <Link
-          to={`/recipe/${recipe.id}`}
-          className="text-lg font-semibold text-[#e57f22] hover:text-[#c96411] transition-colors"
-        >
+        <h3 className="text-lg font-semibold text-[#e57f22]">
           {recipe.title}
-        </Link>
+        </h3>
 
         {recipe.short_description && (
           <p className="mt-2 text-sm text-gray-700 leading-relaxed line-clamp-5">
@@ -142,7 +140,7 @@ export default function RecipeCard({
           )}
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
 

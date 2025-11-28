@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
+import RecipeCard from "../components/RecipeCard";
 
 type Tab = "recipes" | "users" | "lists";
 
@@ -502,7 +503,15 @@ export default function SearchPage() {
           <div className="py-12 text-center text-red-600">{err}</div>
         ) : tab === "recipes" ? (
           <>
-            <RecipeGrid recipes={visibleRecipes} />
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {visibleRecipes.map((recipe) => (
+              <RecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                variant="grid"
+              />
+            ))}
+          </div>
 
             {debouncedQuery && filteredRecipes.length > PAGE_SIZE && (
               <div className="mt-6 flex justify-center">
@@ -559,7 +568,7 @@ export default function SearchPage() {
 
 /* ---------- UI PARTIALS ---------- */
 
-function RecipeGrid({ recipes }: { recipes: Recipe[] }) {
+/*function RecipeGrid({ recipes }: { recipes: Recipe[] }) {
   if (!recipes.length)
     return (
       <div className="py-12 text-center text-gray-600">
@@ -617,7 +626,7 @@ function RecipeGrid({ recipes }: { recipes: Recipe[] }) {
       ))}
     </div>
   );
-}
+}*/
 
 function UserGrid({ users }: { users: Profile[] }) {
   if (!users.length)
