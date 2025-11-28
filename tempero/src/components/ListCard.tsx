@@ -16,7 +16,7 @@ function getDisplayName(playlist: Playlist) {
   return p.username ?? "Unknown cook";
 }
 
-export default function PlaylistCard({
+export default function ListCard({
   playlist,
   isOwnProfile,
   onDelete,

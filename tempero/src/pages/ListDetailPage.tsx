@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import AddRecipeModal from "../components/AddRecipeModal";
 import Loader from "../components/Loader";
+import RecipeCard from "../components/RecipeCard";
 import Toast from "../components/Toast";
-import { supabase } from "../config/supabaseClient";
+// import { supabase } from "../config/supabaseClient";
 import { fetchPlaylistWithRecipes } from "../services/playlistsService";
 
 type RecipeInPlaylist = {
@@ -13,6 +14,10 @@ type RecipeInPlaylist = {
     title: string;
     short_description: string | null;
     image_url: string | null;
+    prep_time?: number | null;
+    cook_time?: number | null;
+    servings?: number | null;
+    difficulty?: number | null;
   } | null;
 };
 
@@ -27,32 +32,32 @@ type Playlist = {
   };
 };
 
-export default function PlaylistDetailPage() {
+export default function ListDetailPage() {
   const { playlistId } = useParams<{ playlistId: string }>();
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [recipes, setRecipes] = useState<RecipeInPlaylist[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type?: string } | null>(
+  const [toast, setToast] = useState<{ message: string; type?: "error" | "success" } | null>(
     null
   );
 
-  async function handleRemove(recipeId: string) {
-    if (!playlistId) return;
+  // async function handleRemove(recipeId: string) {
+  //   if (!playlistId) return;
 
-    await supabase
-      .from("list_recipes")
-      .delete()
-      .eq("list_id", playlistId)
-      .eq("recipe_id", recipeId);
+  //   await supabase
+  //     .from("list_recipes")
+  //     .delete()
+  //     .eq("list_id", playlistId)
+  //     .eq("recipe_id", recipeId);
 
-    // Update UI without reloading
-    setRecipes((prev) => prev.filter((r) => r.recipes?.id !== recipeId));
+  //   // Update UI without reloading
+  //   setRecipes((prev) => prev.filter((r) => r.recipes?.id !== recipeId));
 
-    // Toast
-    setToast({ message: "Recipe removed from list", type: "success" });
-  }
+  //   // Toast
+  //   setToast({ message: "Recipe removed from list", type: "success" });
+  // }
 
   useEffect(() => {
     if (!playlistId) return;
@@ -160,40 +165,21 @@ export default function PlaylistDetailPage() {
           <div className="space-y-3">
             {recipes.map((item) =>
               item.recipes ? (
-                <article
+                <RecipeCard
                   key={item.recipes.id}
-                  className="flex gap-3 rounded-xl bg-white border border-off-white
-                 p-2 shadow-sm hover:shadow-md transition-shadow duration-150"
-                >
-                  {item.recipes.image_url && (
-                    <img
-                      src={item.recipes.image_url}
-                      alt={item.recipes.title}
-                      className="h-20 w-20 flex-shrink-0 rounded-lg object-cover"
-                    />
-                  )}
-                  <div className="flex-1">
-                    <h2 className="text-sm font-heading text-secondary">
-                      {item.recipes.title}
-                    </h2>
-                    {item.recipes.short_description && (
-                      <p className="mt-1 text-xs text-dark/70 font-body leading-5 line-clamp-2">
-                        {item.recipes.short_description}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* REMOVE BUTTON */}
-                  <button
-                    onClick={() => handleRemove(item.recipes!.id)}
-                    className="
-          text-sm font-heading-styled text-color-danger
-          hover:text-red-700 px-2
-        "
-                  >
-                    ✕
-                  </button>
-                </article>
+                  variant="list"
+                  addedAt={item.added_at}
+                  recipe={{
+                    id: item.recipes.id,
+                    title: item.recipes.title,
+                    short_description: item.recipes.short_description,
+                    image_url: item.recipes.image_url,
+                    prep_time: item.recipes.prep_time,
+                    cook_time: item.recipes.cook_time,
+                    servings: item.recipes.servings,
+                    difficulty: item.recipes.difficulty,
+                  }}
+                />
               ) : null
             )}
           </div>
@@ -206,7 +192,7 @@ export default function PlaylistDetailPage() {
           onAdded={() => {
             // refresh recipe list
             fetchPlaylistWithRecipes(playlistId!).then(({ recipes }) => {
-              setRecipes(recipes);
+              setRecipes(recipes as unknown as RecipeInPlaylist[]);
               setToast({ message: "Recipe added to list", type: "success" });
             });
           }}
@@ -215,7 +201,7 @@ export default function PlaylistDetailPage() {
       {toast && (
         <Toast
           message={toast.message}
-          type={toast.type as any}
+          type={toast.type}
           onClose={() => setToast(null)}
         />
       )}

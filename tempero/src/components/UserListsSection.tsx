@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
 import type { Playlist } from "../services/playlistsService";
 import { fetchUserPlaylists } from "../services/playlistsService";
+import ListCard from "./ListCard";
 import Loader from "./Loader";
-import PlaylistCard from "./PlaylistCard";
 import Toast from "./Toast";
 
 type Props = {
@@ -12,11 +12,11 @@ type Props = {
   isOwnProfile: boolean;
 };
 
-export default function UserPlaylistsSection({ userId, isOwnProfile }: Props) {
+export default function UserListsSection({ userId, isOwnProfile }: Props) {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type?: string } | null>(
+  const [toast, setToast] = useState<{ message: string; type?: "error" | "success" } | null>(
     null
   );
 
@@ -46,7 +46,7 @@ export default function UserPlaylistsSection({ userId, isOwnProfile }: Props) {
     <>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {playlists.map((p) => (
-          <PlaylistCard
+          <ListCard
             key={p.id}
             playlist={p}
             isOwnProfile={isOwnProfile}

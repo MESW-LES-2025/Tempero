@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 
+import ListCard from "../components/ListCard";
 import Loader from "../components/Loader";
-import PlaylistCard from "../components/PlaylistCard";
 import type { Playlist } from "../services/playlistsService";
 import { fetchAllPublicPlaylists } from "../services/playlistsService";
 
-export default function PublicPlaylistsPage() {
+export default function PublicListsPage() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +44,7 @@ export default function PublicPlaylistsPage() {
 
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {playlists.map((playlist) => (
-            <PlaylistCard key={playlist.id} playlist={playlist} />
+            <ListCard key={playlist.id} playlist={playlist} isOwnProfile={false} onDelete={() => {}} />
           ))}
         </div>
       </section>
