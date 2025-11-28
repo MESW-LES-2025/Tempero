@@ -140,54 +140,74 @@ export default function SearchPage() {
           setRecipes([]);
           setLists([]);
           setFollowedUserIds([]);
-        } else {
-          // ---------- LISTS ----------
-          // 1) Load only non-private lists from DB
-          let qb = supabase
-            .from("lists")
-            .select("id,user_id,title,description,visibility,created_at")
-            .neq("visibility", "private")      // never show private
-            .order("title", { ascending: true });
+          } else {
+            // ---------- LISTS ----------
+            // 1) Load only non-private lists from DB
+            let qb = supabase
+              .from("lists")
+              .select(`
+                id,
+                user_id,
+                title,
+                description,
+                visibility,
+                created_at,
+                profiles:profiles (
+                  username
+                )
+              `)
+              .neq("visibility", "private")      // never show private
+              .order("title", { ascending: true });
 
-          if (debouncedQuery) {
-            qb = qb.ilike("title", `%${debouncedQuery}%`);
-          }
+            if (debouncedQuery) {
+              qb = qb.ilike("title", `%${debouncedQuery}%`);
+            }
 
-          const { data, error } = await qb;
-          if (cancelled) return;
-          if (error) throw error;
+            const { data, error } = await qb;
+            if (cancelled) return;
+            if (error) throw error;
 
-          setLists((data ?? []) as List[]);
-          setRecipes([]);
-          setUsers([]);
+            const listsWithUsernames: List[] = (data ?? []).map((row: any) => ({
+              id: row.id,
+              user_id: row.user_id,
+              title: row.title,
+              description: row.description,
+              visibility: row.visibility,
+              created_at: row.created_at,
+              username: row.profiles?.username ?? null,
+            }));
 
-          // 2) Fetch which users the current user follows
-          try {
-            const {
-              data: { user },
-            } = await supabase.auth.getUser();
+            setLists(listsWithUsernames);
+            setRecipes([]);
+            setUsers([]);
 
-            if (!user) {
-              setFollowedUserIds([]);
-            } else {
-              const { data: follows, error: followsError } = await supabase
-                .from("followers")          // table that stores follow relations
-                .select("followed_id")   // column with the followed user's auth_id
-                .eq("follower_id", user.id); // current user's auth_id
+            // 2) Fetch which users the current user follows
+            try {
+              const {
+                data: { user },
+              } = await supabase.auth.getUser();
 
-              if (followsError || !follows) {
+              if (!user) {
                 setFollowedUserIds([]);
               } else {
-                setFollowedUserIds(
-                  follows.map((f: { followed_id: string }) => f.followed_id)
-                );
+                const { data: follows, error: followsError } = await supabase
+                  .from("followers")          // table that stores follow relations
+                  .select("followed_id")      // column with the followed user's auth_id
+                  .eq("follower_id", user.id); // current user's auth_id
+
+                if (followsError || !follows) {
+                  setFollowedUserIds([]);
+                } else {
+                  setFollowedUserIds(
+                    follows.map((f: { followed_id: string }) => f.followed_id)
+                  );
+                }
               }
+            } catch {
+              setFollowedUserIds([]);
             }
-          } catch {
-            setFollowedUserIds([]);
           }
-        }
-      } catch (e: unknown) {
+                } catch (e: unknown) {
         if (!cancelled)
           setErr(
             e instanceof Error ? e.message : "Failed to fetch results."
@@ -675,7 +695,7 @@ function ListGrid({ lists }: { lists: List[] }) {
             </div>
 
             <div className="mt-3 text-xs text-gray-500 space-y-1">
-              <p>👤 Creator: {l.user_id}</p>
+              <p>👤 Creator: @{l.username ?? l.user_id}</p>
               <p>👁 Visibility: {visLabel}</p>
               {l.created_at && (
                 <p>
