@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import RecipeCard from "../components/RecipeCard";
 import ReviewCard from "../components/ReviewCard";
 import { supabase } from "../config/supabaseClient";
 import type { RecipePreview } from "../types/Recipe";
+import { fetchRecentRecipes, fetchRecipesByLevel } from "../types/Recipe";
 import { fetchRecentReviews, type ReviewFeedItem } from "../types/Review";
+import { fetchFollowingIds } from "../utils/FollowingList";
 
 
 export default function HomePage() {
@@ -12,6 +14,8 @@ export default function HomePage() {
   const [recentReviews, setRecentReviews] = useState<ReviewFeedItem[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [followingIds, setFollowingIds] = useState<string[] | null>(null);
+  const [suggestions, setSuggestions] = useState<RecipePreview[]>([]);
+
   const [feedItems, setFeedItems] = useState<
     Array<
       | { kind: "recipe"; date: string | null; data: RecipePreview }
@@ -20,21 +24,7 @@ export default function HomePage() {
   >([]);
 
   useEffect(() => {
-    const fetchRecentRecipes = async () => {
-      const { data, error } = await supabase
-        .from("recipes")
-        .select("*")
-        .order("updated_at", { ascending: false })
-        .limit(previewSize);
-
-      if (error) {
-        console.error("Error fetching recent recipes:", error);
-      } else {
-        setRecentRecipes(data );
-      }
-    };
-
-    fetchRecentRecipes();
+    fetchRecentRecipes(previewSize).then(setRecentRecipes);
   }, []);
 
   useEffect(() => {
@@ -54,20 +44,10 @@ export default function HomePage() {
       setFollowingIds([]);
       return;
     }
-    supabase
-      .from("followers")
-      .select("followed_id")
-      .eq("follower_id", userId)
-      .then(({ data, error }) => {
-        if (!mounted) return;
-        if (error) {
-          console.error("Error fetching follow relationships:", error);
-          setFollowingIds([]);
-          return;
-        }
-        const ids = (data ?? []).map((row: any) => row.followed_id).filter(Boolean);
-        setFollowingIds(ids);
-      });
+    fetchFollowingIds(userId).then((ids) => {
+      if (!mounted) return;
+      setFollowingIds(ids);
+    });
     return () => {
       mounted = false;
     };
@@ -118,6 +98,28 @@ export default function HomePage() {
     setFeedItems(merged);
   }, [recentRecipes, recentReviews]);
 
+  useEffect(() => {
+    // Fetch recipe suggestions based on user's experience level (equal level and some a level above)
+    const fetchSuggestions = async () => {
+      if (!userId) return;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("level")
+        .eq("auth_id", userId)
+        .single();
+      if (error || !data) return;
+      const userLevel = data.level;
+
+      const levelSuggestions = await fetchRecipesByLevel(userLevel);
+      const nextLevelSuggestions = await fetchRecipesByLevel(userLevel + 1);
+      const combined = [...levelSuggestions, ...nextLevelSuggestions];
+      setSuggestions(combined);
+    };
+
+    fetchSuggestions();
+    }, [userId]);
+
   return (
   <div className="main-section bg-bright min-h-screen flex flex-col items-center justify-start py-10 px-5 space-y-15">
 
@@ -125,7 +127,7 @@ export default function HomePage() {
         <div className="feed-preview-header mb-2">
         <h2 className="text-4xl font-heading-styled w-fit text-gradient-to-r py-2 ">What's new?</h2>
         </div>
-      <div className="feed-preview-list flex flex-row max-w-full gap-6  bg-white rounded-lg shadow-lg overflow-x-scroll p-6  custom-scroll">
+        <div className="feed-preview-list flex flex-row gap-6 bg-white rounded-lg shadow-lg overflow-x-scroll p-6 custom-scroll w-full">
         {feedItems.map((item, idx) => (
           <div key={`${item.kind}-${(item.data as any).id ?? idx}`}>
             {item.kind === "review" ? (
@@ -138,18 +140,24 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="suggestions-preview-container flex flex-col md:items-center ">
+      <div className="suggestions-preview-container flex flex-col md:items-center w-full">
         <div className="suggestions-preview-header mb-6 text-center">
           <h2 className="text-4xl font-heading-styled text-gradient-to-r py-2 mx-auto">
-            Suggestions for you!
+        Suggestions for you!
           </h2>
           <b className="font-body font-thin text-dark">
-            Recipe selection curated to increase your experience level
+        Recipe selection curated to increase your experience level
           </b>
         </div>
 
-        <div className="suggestions-preview-list flex flex-row gap-4 min-h-50 bg-white rounded-lg shadow-lg overflow-x-auto custom-scroll pb-4 w-full">
-          {/* ... */}
+        <div className="feed-preview-list flex flex-row gap-6 bg-white rounded-lg shadow-lg overflow-x-scroll p-6 custom-scroll w-full">
+          {suggestions.map((recipe) => (
+        <RecipeCard
+          key={recipe.id}
+          recipe={recipe}
+          backgroundColor="bright"
+        />
+          ))}
         </div>
       </div>
 

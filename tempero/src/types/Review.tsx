@@ -39,10 +39,7 @@ export type ReviewFeedItem = {
   author: ReviewAuthor | null;
 };
 
-/**
- * Fetch recent reviews for the homepage feed with recipe info and author profile details.
- * Uses two simple queries: reviews (with recipes) and profiles by author_id.
- */
+
 export async function fetchRecentReviews(
   limit: number,
   allowedAuthorIds?: string[]
