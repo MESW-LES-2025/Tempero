@@ -50,7 +50,20 @@ export async function fetchRecipesByLevel(level: string): Promise<RecipePreview[
     return data as RecipePreview[] ?? [];
 }
 
+export async function fetchPopularRecipes(limit: number = 20): Promise<RecipePreview[]> {
+  const { data, error } = await supabase
+    .from("popular_recipes")
+    .select("*")
+    .order("popularity", { ascending: false })
+    .limit(limit);
 
+  if (error) {
+    console.error("Error fetching popular recipes:", error);
+    return [];
+  }
+
+  return data;
+}
 export type Ingredient = {
     id: string;
     name: string;

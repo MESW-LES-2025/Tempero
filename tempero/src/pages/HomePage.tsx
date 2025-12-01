@@ -3,7 +3,7 @@ import RecipeCard from "../components/RecipeCard";
 import ReviewCard from "../components/ReviewCard";
 import { supabase } from "../config/supabaseClient";
 import type { RecipePreview } from "../types/Recipe";
-import { fetchRecentRecipes, fetchRecipesByLevel } from "../types/Recipe";
+import { fetchRecentRecipes, fetchRecipesByLevel, fetchPopularRecipes } from "../types/Recipe";
 import { fetchRecentReviews, type ReviewFeedItem } from "../types/Review";
 import { fetchFollowingIds } from "../utils/FollowingList";
 
@@ -15,6 +15,7 @@ export default function HomePage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [followingIds, setFollowingIds] = useState<string[] | null>(null);
   const [suggestions, setSuggestions] = useState<RecipePreview[]>([]);
+  const [popularRecipes, setPopularRecipes] = useState<RecipePreview[]>([]);
 
   const [feedItems, setFeedItems] = useState<
     Array<
@@ -120,6 +121,16 @@ export default function HomePage() {
     fetchSuggestions();
     }, [userId]);
 
+  useEffect(() => {
+      // Fetch popular recipes
+      const fetchPopular = async () => {
+        const popular = await fetchPopularRecipes(15);
+        setPopularRecipes(popular);
+        console.log(popular);
+      };
+      fetchPopular();
+    }, []);
+
   return (
   <div className="main-section bg-bright min-h-screen flex flex-col items-center justify-start py-10 px-5 space-y-15">
 
@@ -127,13 +138,16 @@ export default function HomePage() {
         <div className="feed-preview-header mb-2">
         <h2 className="text-4xl font-heading-styled w-fit text-gradient-to-r py-2 ">What's new?</h2>
         </div>
-        <div className="feed-preview-list flex flex-row gap-6 bg-white rounded-lg shadow-lg overflow-x-scroll p-6 custom-scroll w-full">
+        <div className="feed-preview-list flex flex-row gap-6 bg-white rounded-lg shadow-lg overflow-x-scroll p-6 custom-scroll w-full h-120">
         {feedItems.map((item, idx) => (
           <div key={`${item.kind}-${(item.data as any).id ?? idx}`}>
             {item.kind === "review" ? (
-              <ReviewCard review={item.data as ReviewFeedItem} className="min-w-[300px]" />
+              <ReviewCard review={item.data as ReviewFeedItem} className="min-w-[300px]"  />
             ) : (
-              <RecipeCard recipe={item.data as RecipePreview} backgroundColor="bright" />
+              <RecipeCard
+                recipe={item.data as RecipePreview}
+                backgroundColor={"var(--color-bright)"}
+              />
             )}
           </div>
         ))}
@@ -150,27 +164,31 @@ export default function HomePage() {
           </b>
         </div>
 
-        <div className="feed-preview-list flex flex-row gap-6 bg-white rounded-lg shadow-lg overflow-x-scroll p-6 custom-scroll w-full">
+        <div className="feed-preview-list flex flex-row gap-6 bg-white rounded-lg shadow-lg overflow-x-scroll p-6 custom-scroll w-full h-120">
           {suggestions.map((recipe) => (
         <RecipeCard
           key={recipe.id}
           recipe={recipe}
-          backgroundColor="bright"
+          backgroundColor="var(--color-bright)"
         />
           ))}
         </div>
       </div>
 
-      <div className="suggestions-preview-container flex flex-col md:items-end ">
+      <div className="suggestions-preview-container flex flex-col md:items-end w-full">
         <div className="suggestions-preview-header  md:text-right mb-2">
-        <h2 className="text-4xl font-heading-styled w-fit text-gradient-to-r   py-2 ">Popular recipes!</h2>
-
+          <h2 className="text-4xl font-heading-styled w-fit text-gradient-to-r   py-2 ">Popular recipes!</h2>
         </div>
-        <div className="suggestions-preview-list flex flex-row gap-4 min-h-50 bg-white rounded-lg shadow-lg overflow-x-auto custom-scroll pb-4 w-full">
-          {/* Suggetion preview items would go here */}
+        <div className="feed-preview-list flex flex-row gap-6 bg-white rounded-lg shadow-lg overflow-x-scroll p-6 custom-scroll w-full h-120">
+          {popularRecipes.map((recipe) => (
+            <RecipeCard
+              key={recipe.id}
+              recipe={recipe}
+              backgroundColor="var(--color-bright)"
+            />
+              ))}
         </div>
       </div>
-
     </div>
   );
 }

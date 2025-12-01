@@ -101,7 +101,7 @@ export default function RecipeCard({
   // --- GRID VARIANT (igual ao RecipeGrid) ---
   return (
     <article
-      className="rounded-lg w-68 overflow-hidden shadow-sm border border-gray-200 hover:shadow-md transition"
+      className="rounded-lg w-68 shrink-0 overflow-hidden shadow-sm border border-gray-200 hover:shadow-md transition"
       style={{ backgroundColor }}
     >
       {imgSrc ? (

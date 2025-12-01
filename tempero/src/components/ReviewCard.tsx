@@ -11,7 +11,7 @@ type Props = {
 export default function ReviewCard({
   review,
   className = "",
-  recipeCardBackground = "#fffaf5",
+  recipeCardBackground = "var(--color-bright)",
 }: Props) {
   const displayName = formatName(review.author);
   const profileHref = review.author?.username
