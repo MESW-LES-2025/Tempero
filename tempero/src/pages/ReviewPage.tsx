@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+/* import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import RecipeCard from "../components/RecipeCard";
 import Loader from "../components/Loader";
@@ -42,7 +42,7 @@ export default function ReviewPage() {
           `
         )
         .eq("id", id)
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error("Error fetching review:", error);
@@ -67,7 +67,7 @@ export default function ReviewPage() {
           id: data.id,
           rating: data.review,
           description: data.description ?? null,
-          recipe: data.recipes ?? null,
+          recipe: Array.isArray(data.recipes) ? data.recipes[0] ?? null : data.recipes ?? null,
           author,
         });
       }
@@ -132,3 +132,4 @@ export default function ReviewPage() {
     </div>
   );
 }
+ */

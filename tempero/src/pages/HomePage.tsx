@@ -1,4 +1,4 @@
-import { use, useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import RecipeCard from "../components/RecipeCard";
 import ReviewCard from "../components/ReviewCard";
 import { supabase } from "../config/supabaseClient";
