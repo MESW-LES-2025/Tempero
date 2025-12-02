@@ -10,25 +10,17 @@ const faqData: FaqItem[] = [
   {
     question: "How do I create a recipe?",
     answer: `
-You can create a recipe by going to **Recipes → Add Recipe**.  
-Make sure to include:
-- Title  
-- Ingredients  
-- Steps  
-- Photos *(optional)*  
+You can create a recipe by going to **Your Profile → Add Recipe (+ button at the bottom right)**.
+Make sure to fill all form fields, except the image which is optional.
+
     `,
   },
   {
-    question: "How do I make a list thematic?",
+    question: "How do I create a thematic list?",
     answer: `
-When creating a list, simply choose a **title** that describes the theme.  
-For example:
-
-- *Portuguese Classics*  
-- *Vegetarian Dishes*  
-- *My Travel Cooking Notes*  
-
-Then you can add recipes inside it.
+To create a thematic list, go to **Your Profile → Thematic Lists → + Thematic List (dashed rectangle)**.
+Fill in the title and description, then add recipes to your list.
+You can add more recipes later by editing the list.
     `,
   },
   {
@@ -64,6 +56,13 @@ You can search by:
 - Recipe Title  
 - Ingredients  
 - Tags
+    `,
+  },
+  {
+    question: "Which image formats are supported?",
+    answer: `
+Right now we support JPEG format only.
+In the future we plan to support other formats including HEIC.
     `,
   },
 ];
