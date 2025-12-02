@@ -66,6 +66,9 @@ export default function RecipePage() {
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [likesCount, setLikesCount] = useState<number>(0);
+  const [likedByUser, setLikedByUser] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -164,6 +167,41 @@ export default function RecipePage() {
     fetchRecipe();
   }, [id]);
 
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchLikes = async () => {
+      try {
+        // buscar todos os likes desta recipe
+        const { data, error } = await supabase
+          .from("recipe_likes")
+          .select("auth_id")
+          .eq("recipe_id", id);
+
+        if (error) {
+          console.error("Error fetching likes:", error);
+          return;
+        }
+
+        const count = data?.length ?? 0;
+        setLikesCount(count);
+
+        if (currentUserId) {
+          const alreadyLiked = data?.some(
+            (row) => row.auth_id === currentUserId
+          );
+          setLikedByUser(!!alreadyLiked);
+        } else {
+          setLikedByUser(false);
+        }
+      } catch (err) {
+        console.error("Unexpected error fetching likes:", err);
+      }
+    };
+
+    fetchLikes();
+  }, [id, currentUserId]);
+
   const heroImage = useMemo(
     () => recipeImageUrl(recipe?.image_url ?? null, 900),
     [recipe?.image_url]
@@ -201,6 +239,50 @@ export default function RecipePage() {
       setIsDeleting(false);
     }
   };
+
+  const handleToggleLike = async () => {
+    if (!recipe) return;
+    if (!currentUserId) {
+      alert("You need to login to like a recipe.");
+      return;
+    }
+
+    setLikeLoading(true);
+    try {
+      if (likedByUser) {
+        // tirar like
+        const { error } = await supabase
+          .from("recipe_likes")
+          .delete()
+          .eq("recipe_id", recipe.id)
+          .eq("auth_id", currentUserId);
+
+        if (error) throw error;
+
+        setLikedByUser(false);
+        setLikesCount((prev) => Math.max(0, prev - 1));
+      } else {
+        // dar like
+        const { error } = await supabase
+          .from("recipe_likes")
+          .insert({
+            recipe_id: recipe.id,
+            auth_id: currentUserId,
+          });
+
+        if (error) throw error;
+
+        setLikedByUser(true);
+        setLikesCount((prev) => prev + 1);
+      }
+    } catch (err) {
+      console.error("Error toggling like:", err);
+      alert("It was not possible to update the like. Try again.");
+    } finally {
+      setLikeLoading(false);
+    }
+  };
+
 
   if (loading) return <Loader message="Whisking the recipe..." />;
   if (!recipe)
@@ -241,6 +323,20 @@ export default function RecipePage() {
                     </span>
                   ))}
                 </div>
+                  <button
+                    onClick={handleToggleLike}
+                    disabled={likeLoading || !currentUserId}
+                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1 border font-heading text-sm transition-colors ${
+                      likedByUser
+                        ? "bg-main text-bright border-main"
+                        : "bg-white text-main border-main hover:bg-main/10"
+                    } disabled:opacity-60 disabled:cursor-not-allowed`}
+                  >
+                    <span>{likedByUser ? "🤍 Liked" : "💖 Like"}</span>
+                    <span className="text-xs text-dark/80">
+                      {likesCount} {likesCount === 1 ? "like" : "likes"}
+                    </span>
+                </button>
               </div>
               <h1 className="text-4xl sm:text-5xl font-heading-styled text-secondary mt-8">
                 {recipe.title}
