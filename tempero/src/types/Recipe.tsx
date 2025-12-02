@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { supabase } from "../config/supabaseClient";
 
 export type RecipePreview = {
     id: string;
@@ -17,6 +18,52 @@ export type Recipe = RecipePreview & {
     steps: Step[];
 };
 
+/**
+ * Fetch recent recipes ordered by update time.
+ */
+export async function fetchRecentRecipes(limit: number) {
+    const { data, error } = await supabase
+      .from("recipes")
+      .select("*")
+      .order("updated_at", { ascending: false })
+      .limit(limit);
+  
+    if (error) {
+      console.error("Error fetching recent recipes:", error);
+      return [];
+    }
+  
+    return data ?? [];
+}
+
+export async function fetchRecipesByLevel(level: string): Promise<RecipePreview[]> {
+    const { data, error } = await supabase
+        .from("recipes")
+        .select("*")
+        .eq("difficulty", level);
+
+    if (error) {
+        console.error("Error fetching recipes by level:", error);
+        return [];
+    }
+
+    return data as RecipePreview[] ?? [];
+}
+
+export async function fetchPopularRecipes(limit: number = 20): Promise<RecipePreview[]> {
+  const { data, error } = await supabase
+    .from("popular_recipes")
+    .select("*")
+    .order("popularity", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("Error fetching popular recipes:", error);
+    return [];
+  }
+
+  return data;
+}
 export type Ingredient = {
     id: string;
     name: string;

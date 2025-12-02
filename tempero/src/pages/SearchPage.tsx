@@ -507,7 +507,7 @@ export default function SearchPage() {
             {visibleRecipes.map((recipe) => (
               <RecipeCard
                 key={recipe.id}
-                recipe={recipe}
+                recipe={{ ...recipe, id: String(recipe.id) }}
                 variant="grid"
               />
             ))}
