@@ -7,13 +7,27 @@ import { expect } from '@playwright/test';
 
 Given('I am logged in as {string}', async function (username) {
   const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
+  
+  // Read credentials from environment variables
+  const email = process.env.TEST_EMAIL;
+  const password = process.env.TEST_PASSWORD;
+
+  if (!email || !password) {
+    throw new Error(
+      'Missing test credentials. Set TEST_EMAIL and TEST_PASSWORD environment variables.'
+    );
+  }
+
   // Go to login page and log in
   await this.page.goto(`${baseUrl}/Tempero/login`);
-  await this.page.fill('#login-email', 'temperoteam@gmail.com');
-  await this.page.fill('#login-pass', '123TastyFood');
+  await this.page.fill('#login-email', email);
+  await this.page.fill('#login-pass', password);
   await this.page.click('button[type="submit"]');
-  // Wait for redirect to home page
-  await this.page.waitForURL(`${baseUrl}/Tempero`, { timeout: 15000 });
+  // Wait for redirect away from login page
+  await this.page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 15000 });
+  
+  // Store username for later steps
+  this.currentUser = username;
 });
 
 When('I visit my profile page {string}', async function (url) {
