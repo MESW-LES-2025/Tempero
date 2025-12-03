@@ -4,6 +4,7 @@ import { supabase } from "../config/supabaseClient";
 import type { Ingredient, Step } from "../types/Recipe";
 import { recipeImageUrl } from "../utils/ImageURL";
 import Loader from "../components/Loader";
+import { deleteImage } from "../utils/ImageUtils";
 
 type RecipeRow = {
   id: string;
@@ -224,6 +225,9 @@ export default function RecipePage() {
 
     try {
       setIsDeleting(true);
+      if (recipe.image_url) {
+        await deleteImage(recipe.image_url);
+      }
       const { error } = await supabase
         .from("recipes")
         .delete()

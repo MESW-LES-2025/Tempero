@@ -20,8 +20,9 @@ vi.mock("../../src/utils/CompressImage", () => ({
   compressImage: vi.fn(async (file: File) => file),
 }));
 
-vi.mock("../../src/utils/UploadImage", () => ({
-  uploadImage: vi.fn(async () => "recipes/fake-image.jpg"),
+vi.mock("../../src/utils/ImageUtils", () => ({
+  uploadImage: vi.fn(async (file: File, folder: string) => `${folder}/fake-image.jpg`),
+  deleteImage: vi.fn(async (path: string) => {}),
 }));
 
 /*Mock Supabase*/
