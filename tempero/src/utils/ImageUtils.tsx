@@ -1,11 +1,13 @@
 import { supabase } from "../config/supabaseClient";
+import { compressImage } from "./CompressImage";
 
 export async function uploadImage(file: File, folder: string) {
+  const compressed = await compressImage(file);
   const ext = file.name.split(".").pop() ?? "jpg";
   const path = `${folder}/${Date.now()}.${ext}`;
   const { error } = await supabase.storage
     .from("images")
-    .upload(path, file, { upsert: true });
+    .upload(path, compressed, { upsert: true });
 
   if (error) throw error;
 

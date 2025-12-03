@@ -37,7 +37,7 @@ export default function ProfilePage() {
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const [followLoading, setFollowLoading] = useState<boolean>(false);
   const [followersCount, setFollowersCount] = useState<number>(0);
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [, setProfilePicture] = useState<string | null>(null);
   const [followingCount, setFollowingCount] = useState<number>(0);
   const navigate = useNavigate();
 
