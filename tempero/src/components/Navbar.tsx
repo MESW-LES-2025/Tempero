@@ -66,7 +66,7 @@ export default function Navbar() {
   <nav className="fixed top-0 left-0 right-0 z-50 navbar text-bright text-lg max-[500px]:text-sm font-heading flex flex-row justify-between bg-main px-4 py-3 shadow-lg items-center">
         <div className="flex items-center gap-4">
           <h1 className="logo">
-            <Link to="/">
+            <Link to="/home/">
               <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="Tempero Logo" className="h-15 max-[500px]:h-10 min-h-5 min-w-9 min" />
             </Link>
           </h1>
