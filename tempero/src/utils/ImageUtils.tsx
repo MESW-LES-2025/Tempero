@@ -1,9 +1,8 @@
 import { supabase } from "../config/supabaseClient";
 
-export async function uploadImage(file: File) {
+export async function uploadImage(file: File, folder: string) {
   const ext = file.name.split(".").pop() ?? "jpg";
-  const path = `recipes/${Date.now()}.${ext}`; // unique enough for now
-
+  const path = `${folder}/${Date.now()}.${ext}`;
   const { error } = await supabase.storage
     .from("images")
     .upload(path, file, { upsert: true });
@@ -11,4 +10,9 @@ export async function uploadImage(file: File) {
   if (error) throw error;
 
   return path; // e.g. "recipes/1763309189136.jpeg"
+}
+
+export async function deleteImage(path: string) {
+  const { error } = await supabase.storage.from("images").remove([path]);
+  if (error) throw error;
 }

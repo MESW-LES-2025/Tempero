@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import Loader from "../components/Loader";
 import { supabase } from "../config/supabaseClient";
+import { uploadImage, deleteImage } from "../utils/ImageUtils";
+import { profileImageUrl } from "../utils/ImageURL";
 
 type Profile = {
   auth_id: string;
@@ -9,6 +11,7 @@ type Profile = {
   first_name?: string | null;
   last_name?: string | null;
   bio?: string | null;
+  profile_picture_url?: string | null;
 };
 
 export default function EditProfilePage() {
@@ -17,12 +20,15 @@ export default function EditProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [bio, setBio] = useState("");
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [imagePath, setImagePath] = useState<string | null>(null);
 
   useEffect(() => {
     let done = false;
@@ -52,6 +58,7 @@ export default function EditProfilePage() {
       setFirstName(data?.first_name ?? "");
       setLastName(data?.last_name ?? "");
       setBio(data?.bio ?? "");
+      setImagePath(data?.profile_picture_url ?? null);
       setLoading(false);
     })();
 
@@ -59,6 +66,44 @@ export default function EditProfilePage() {
       done = true;
     };
   }, []);
+
+  // Handle image file selection
+  async function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const isValidImage = file.type.startsWith("image/");
+    if (!isValidImage) {
+      setErr("Please upload a valid image file.");
+      return;
+    }
+
+    setProfileImage(file);
+
+    try {
+      setUploading(true);
+      setErr(null);
+
+      // Delete old image if exists
+      if (imagePath) {
+        try {
+          await deleteImage(imagePath);
+        } catch (delErr) {
+          console.warn("Could not delete old profile image:", delErr);
+        }
+      }
+
+      // Upload new image
+      const newPath = await uploadImage(file, "profiles");
+      setImagePath(newPath);
+      setInfo("Image uploaded successfully!");
+    } catch (uploadErr: any) {
+      setErr(uploadErr.message || "Failed to upload image.");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -74,6 +119,7 @@ export default function EditProfilePage() {
         first_name: firstName.trim() || null,
         last_name: lastName.trim() || null,
         bio: bio.trim() || null,
+        profile_picture_url: imagePath,
       })
       .eq("auth_id", profile.auth_id);
 
@@ -86,6 +132,13 @@ export default function EditProfilePage() {
       navigate(`/profile/${profile.username}`);
     }
   }
+
+  // Compute preview URL
+  const previewUrl = profileImage
+    ? URL.createObjectURL(profileImage)
+    : imagePath
+      ? profileImageUrl(imagePath)
+      : null;
 
   if (loading) return <Loader message="Fetching User To Edit..." />;
 
@@ -111,6 +164,39 @@ export default function EditProfilePage() {
           onSubmit={handleSave}
           className="grid grid-cols-1 sm:grid-cols-2 gap-6"
         >
+          {/* Profile Image */}
+          <div className="space-y-2 sm:col-span-2 flex flex-col items-center">
+            <label className="text-lg font-heading text-dark">
+              Profile Picture
+            </label>
+            <div className="relative">
+              {previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt="Profile preview"
+                  className="w-32 h-32 rounded-full object-cover border-4 border-main/20"
+                />
+              ) : (
+                <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
+                  No image
+                </div>
+              )}
+              {uploading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full">
+                  <span className="text-white text-sm">Uploading…</span>
+                </div>
+              )}
+            </div>
+            <input
+              id="profile_image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              disabled={uploading}
+              className="mt-2 text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-main file:text-white file:cursor-pointer hover:file:bg-main/90 disabled:opacity-50"
+            />
+          </div>
+
           {/* First name */}
           <div className="space-y-1">
             <label
@@ -172,7 +258,7 @@ export default function EditProfilePage() {
 
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || uploading}
               className="rounded-lg bg-secondary px-4 py-2.5 text-white font-medium hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-70 transition"
             >
               {saving ? "Saving…" : "Save changes"}
