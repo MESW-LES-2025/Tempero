@@ -19,6 +19,7 @@ import RegisterPage from "./pages/RegisterPage";
 import ReviewPage from "./pages/ReviewPage";
 import SearchPage from "./pages/SearchPage";
 import UploadRecipePage from "./pages/UploadRecipePage";
+import FavoritesPage from "./pages/FavoritesPage";
 
 /* Auth guard component: redirects to /login when user is not authenticated */
 function RequireAuth() {
@@ -80,6 +81,14 @@ export default function App() {
       <Routes>
         {/* Full-bleed auth pages: no navbar/footer/padding */}
         <Route path="login" element={<LoginPage />} />
+        <Route path="skill-assessment" element={<AssessmentPage />} />
+        <Route path="profile/:username" element={<ProfilePage />} />
+        <Route path="profile/edit" element={<EditProfilePage />} />
+        <Route path="search" element={<SearchPage />} />
+        <Route path="upload-recipe" element={<UploadRecipePage />} />
+        <Route path="recipe/:id" element={<RecipePage />} />
+        <Route path="/favorites" element={<FavoritesPage />} />
+        <Route path="*" element={<NotFoundPage />} />
         <Route path="register" element={<RegisterPage />} />
 
         {/* All other pages use the main layout */}
