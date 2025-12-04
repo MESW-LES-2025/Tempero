@@ -6,6 +6,7 @@ import Recipes from "../components/Recipes";
 import Reviews from "../components/Reviews";
 import UserListsSection from "../components/UserListsSection";
 import { supabase } from "../config/supabaseClient";
+import LikedRecipes from "../components/LikedRecipes"
 
 type Badge = { label: string; icon: string };
 const badges: Badge[] = [
@@ -29,7 +30,7 @@ type Profile = {
 
 export default function ProfilePage() {
   const { username } = useParams<{ username: string }>();
-  const [tab, setTab] = useState<"recipes" | "reviews" | "lists">("recipes");
+  const [tab, setTab] = useState<"recipes" | "reviews" | "lists" | "liked">("recipes");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileNotFound, setProfileNotFound] = useState<boolean>(false);
@@ -317,17 +318,30 @@ export default function ProfilePage() {
             >
               Lists
             </button>
+
+              <button
+                className={`pb-2 ${
+                  tab === "liked"
+                    ? "text-secondary border-b-2 border-secondary"
+                    : "text-dark/60 hover:text-secondary"
+                }`}
+                onClick={() => setTab("liked")}
+              >
+                Liked
+              </button>
           </div>
 
           {tab === "recipes" ? (
             <Recipes userId={profile?.auth_id} username={profile?.username} />
           ) : tab === "reviews" ? (
             <Reviews userId={profile?.auth_id} username={profile?.username} />
-          ) : (
+          ) : tab === "lists" ? (
             <UserListsSection
               userId={profile?.auth_id}
               isOwnProfile={isOwnProfile}
             />
+          ) : (
+            <LikedRecipes userId={profile?.auth_id} />
           )}
         </div>
       </section>
