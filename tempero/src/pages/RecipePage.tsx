@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
 import type { Ingredient, Step } from "../types/Recipe";
 import { recipeImageUrl } from "../utils/ImageURL";
@@ -60,9 +60,41 @@ type RecipeDetails = {
   updated_at?: string;
 };
 
+type ReviewData = {
+  id: string;
+  difficulty: number;
+  prep_time: number;
+  taste: number;
+  average_rating: number;
+  description: string | null;
+  profiles: {
+    first_name: string | null;
+    last_name: string | null;
+    chef_type: string | null;
+  } | null;
+};
+
+type CommentData = {
+  id: string;
+  body: string;
+  created_at: string;
+  author: {
+    username: string | null;
+    first_name: string | null;
+    last_name: string | null;
+  } | null;
+};
+
 export default function RecipePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [showXpToast, setShowXpToast] = useState(false);
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const xpGained = (location.state as any)?.xpGained ?? 0;
+  const leveledUp = (location.state as any)?.leveledUp ?? false;
+  const newLevel = (location.state as any)?.newLevel ?? 1;
+  const newChefType = (location.state as any)?.newChefType ?? "";
   const [recipe, setRecipe] = useState<RecipeDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -70,6 +102,23 @@ export default function RecipePage() {
   const [likesCount, setLikesCount] = useState<number>(0);
   const [likedByUser, setLikedByUser] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [reviews, setReviews] = useState<ReviewData[]>([]);
+  const [avgDifficulty, setAvgDifficulty] = useState<number>(0);
+  const [avgPrepTime, setAvgPrepTime] = useState<number>(0);
+  const [avgTaste, setAvgTaste] = useState<number>(0);
+  const [overallRating, setOverallRating] = useState<number>(0);
+
+  useEffect(() => {
+    if (leveledUp) {
+      setShowLevelUpModal(true);
+      const timer = setTimeout(() => setShowLevelUpModal(false), 4000);
+      return () => clearTimeout(timer);
+    } else if (xpGained > 0) {
+      setShowXpToast(true);
+      const timer = setTimeout(() => setShowXpToast(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [xpGained, leveledUp]);
 
   useEffect(() => {
     let mounted = true;
@@ -203,6 +252,52 @@ export default function RecipePage() {
     fetchLikes();
   }, [id, currentUserId]);
 
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchReviews = async () => {
+      const { data, error } = await supabase
+        .from("reviews")
+        .select(`
+          id,
+          difficulty,
+          prep_time,
+          taste,
+          average_rating,
+          description,
+          profiles!reviews_author_id_fkey(first_name, last_name, chef_type)
+        `)
+        .eq("recipe_id", id);
+
+      if (error) {
+        console.error("Error fetching reviews:", error);
+        return;
+      }
+
+      const mapped = (data || []).map((review) => ({
+        ...review,
+        profiles: Array.isArray(review.profiles) ? review.profiles[0] : review.profiles,
+        average_rating: review.average_rating ?? 0,
+      })) as ReviewData[];
+
+      setReviews(mapped);
+
+      if (mapped.length > 0) {
+        const avgDiff = mapped.reduce((sum, r) => sum + r.difficulty, 0) / mapped.length;
+        const avgPrep = mapped.reduce((sum, r) => sum + r.prep_time, 0) / mapped.length;
+        const avgTst = mapped.reduce((sum, r) => sum + r.taste, 0) / mapped.length;
+        const overall = (avgDiff + avgPrep + avgTst) / 3;
+
+        setAvgDifficulty(avgDiff);
+        setAvgPrepTime(avgPrep);
+        setAvgTaste(avgTst);
+        setOverallRating(overall);
+      }
+    };
+
+    fetchReviews();
+  }, [id]);
+
   const heroImage = useMemo(
     () => recipeImageUrl(recipe?.image_url ?? null, 900),
     [recipe?.image_url]
@@ -308,10 +403,30 @@ export default function RecipePage() {
 
   return (
     <div className="min-h-screen bg-bright text-dark">
+      {showLevelUpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-bright rounded-2xl p-8 shadow-2xl border-4 border-main max-w-md mx-4 text-center animate-bounce-in">
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-3xl font-heading-styled text-main mb-2">Congratulations!</h2>
+            <p className="text-xl font-heading text-secondary mb-4">
+              You've reached Level {newLevel}
+            </p>
+            <p className="text-lg font-body text-dark mb-2">
+              You are now a <span className="font-semibold text-main">{newChefType}</span>
+            </p>
+            <p className="text-sm font-body text-dark/70">+{xpGained} XP</p>
+          </div>
+        </div>
+      )}
+      {showXpToast && !leveledUp && (
+        <div className="fixed bottom-6 right-6 z-50 bg-main text-bright px-6 py-3 rounded-lg shadow-lg font-heading animate-fade-in">
+          🎉 Great job! You earned {xpGained} XP
+        </div>
+      )}
       <div className="pt-24 pb-16 px-4 sm:px-10 max-w-6xl mx-auto">
         {/* Header */}
-        <header className="flex flex-col gap-4 mb-10">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
+        <header className="mb-10">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
             <div className="flex-1 min-w-[260px] space-y-3">
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="inline-flex items-center rounded-lg bg-main/10 text-main border border-main px-4 py-1 font-heading">
@@ -365,9 +480,53 @@ export default function RecipePage() {
               </div>
             )}
           </div>
-          <p className="text-dark/70 font-body max-w-2xl">
-            {recipe.short_description}
-          </p>
+
+          {/* Description + Ratings Card */}
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            <p className="text-dark/70 font-body flex-1">
+              {recipe.short_description}
+            </p>
+            <aside className="w-full lg:w-80 bg-white/70 border border-main/40 rounded-2xl p-6 shadow-sm">
+              <h2 className="mb-4 text-2xl font-heading-styled text-main text-center">
+                Rating
+              </h2>
+              <ul className="space-y-3 font-body text-dark mb-6">
+                <li className="flex justify-between">
+                  <span className="font-semibold">Difficulty</span>
+                  <span>
+                    <span className="text-dark">{avgDifficulty.toFixed(1)}</span>
+                    <span className="text-main">/5</span>
+                  </span>
+                </li>
+                <li className="flex justify-between">
+                  <span className="font-semibold">Time Required</span>
+                  <span>
+                    <span className="text-dark">{avgPrepTime.toFixed(1)}</span>
+                    <span className="text-main">/5</span>
+                  </span>
+                </li>
+                <li className="flex justify-between">
+                  <span className="font-semibold">Quality and Taste</span>
+                  <span>
+                    <span className="text-dark">{avgTaste.toFixed(1)}</span>
+                    <span className="text-main">/5</span>
+                  </span>
+                </li>
+              </ul>
+              <div className="flex items-center justify-center gap-2 pt-4 border-t border-main/20">
+                <StarRating rating={overallRating} />
+                <span className="text-lg font-heading text-dark">{overallRating.toFixed(1)}</span>
+              </div>
+              {currentUserId && !isAuthor && (
+                <button
+                  className="mt-4 w-full bg-main hover:bg-secondary text-bright font-heading text-sm py-1.5 rounded-lg transition-colors"
+                  onClick={() => navigate(`/review/${recipe.id}`)}
+                >
+                  Review Recipe
+                </button>
+              )}
+            </aside>
+          </div>
         </header>
 
         {/* Image + Ingredients */}
@@ -441,6 +600,20 @@ export default function RecipePage() {
             ))}
         </section>
 
+        {/* Reviews */}
+        <section className="mt-16">
+          <h2 className="text-3xl font-heading-styled text-secondary mb-8">Reviews</h2>
+          {reviews.length === 0 ? (
+            <p className="text-dark/60 font-body text-center py-8">No reviews yet. Be the first to review this recipe!</p>
+          ) : (
+            <div className="space-y-6">
+              {reviews.map((review) => (
+                <Review key={review.id} review={review} />
+              ))}
+            </div>
+          )}
+        </section>
+
         {/* Created / Last edited notes */}
         <div className="mt-6 text-xs text-dark/60 flex flex-col sm:flex-row sm:justify-end gap-2">
           <span>
@@ -506,4 +679,215 @@ function buildAuthorName(row: RecipeRow): string {
   const combined = `${first} ${last}`.trim();
   if (combined) return combined;
   return row.profiles?.username ?? "Unknown author";
+}
+
+function StarRating({ rating }: { rating: number }) {
+  const stars = [];
+  const safeRating = Math.max(0, Math.min(5, rating));
+  
+  for (let i = 1; i <= 5; i++) {
+    const isFilled = i <= Math.floor(safeRating);
+    const isPartial = i === Math.ceil(safeRating) && safeRating % 1 !== 0;
+    const fillPercent = isPartial ? (safeRating % 1) * 100 : (isFilled ? 100 : 0);
+    
+    stars.push(
+      <svg
+        key={i}
+        className="w-6 h-6"
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <defs>
+          <linearGradient id={`star-gradient-${i}-${rating}`}>
+            <stop offset={`${fillPercent}%`} stopColor="#FF6B35" />
+            <stop offset={`${fillPercent}%`} stopColor="#E5E7EB" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+          fill={`url(#star-gradient-${i}-${rating})`}
+          stroke="#FF6B35"
+          strokeWidth="1"
+        />
+      </svg>
+    );
+  }
+  return <div className="flex gap-1">{stars}</div>;
+}
+
+function Review({ review }: { review: ReviewData }) {
+  const [comments, setComments] = useState<CommentData[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [showComments, setShowComments] = useState(false);
+
+  const chefType = review.profiles?.chef_type || "Cook";
+  const reviewerName = review.profiles
+    ? `${review.profiles.first_name || ""} ${review.profiles.last_name || ""}`.trim() || "Anonymous"
+    : "Anonymous";
+  const avgRating = Number(review.average_rating) || 0;
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setCurrentUserId(data?.user?.id ?? null);
+    });
+  }, []);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      const { data, error } = await supabase
+        .from("comments")
+        .select("id, body, created_at, author_id")
+        .eq("review_id", review.id)
+        .order("created_at", { ascending: true });
+
+      if (!error && data) {
+        const authorIds = data.map((c: any) => c.author_id);
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("auth_id, username, first_name, last_name")
+          .in("auth_id", authorIds);
+
+        const profileMap = new Map(profiles?.map(p => [p.auth_id, p]) || []);
+
+        setComments(
+          data.map((c: any) => ({
+            id: c.id,
+            body: c.body,
+            created_at: c.created_at,
+            author: profileMap.get(c.author_id) || null,
+          }))
+        );
+      }
+    };
+
+    fetchComments();
+  }, [review.id]);
+
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !currentUserId) return;
+
+    setSubmitting(true);
+    const { data, error } = await supabase
+      .from("comments")
+      .insert({
+        review_id: review.id,
+        author_id: currentUserId,
+        body: newComment.trim(),
+      })
+      .select("id, body, created_at, author_id")
+      .single();
+
+    setSubmitting(false);
+
+    if (!error && data) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username, first_name, last_name")
+        .eq("auth_id", currentUserId)
+        .single();
+
+      setComments((prev) => [
+        ...prev,
+        {
+          id: data.id,
+          body: data.body,
+          created_at: data.created_at,
+          author: profile || null,
+        },
+      ]);
+      setNewComment("");
+    }
+  };
+
+  return (
+    <div className="bg-white/80 border border-main/30 rounded-2xl p-6 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-heading text-dark">
+          <span className="text-main">{chefType}</span> — {reviewerName}
+        </h3>
+        <div className="flex items-center gap-2">
+          <StarRating rating={avgRating} />
+          <span className="text-sm font-heading text-dark">{avgRating.toFixed(1)}</span>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-4 mb-4 text-sm font-body">
+        <div>
+          <span className="text-dark/60">Difficulty: </span>
+          <span className="text-dark">{review.difficulty}</span>
+          <span className="text-main">/5</span>
+        </div>
+        <div>
+          <span className="text-dark/60">Time Required: </span>
+          <span className="text-dark">{review.prep_time}</span>
+          <span className="text-main">/5</span>
+        </div>
+        <div>
+          <span className="text-dark/60">Quality & Taste: </span>
+          <span className="text-dark">{review.taste}</span>
+          <span className="text-main">/5</span>
+        </div>
+      </div>
+      {review.description && (
+        <p className="text-dark/80 font-body mb-4">{review.description}</p>
+      )}
+
+      <button
+        onClick={() => setShowComments(!showComments)}
+        className="flex items-center gap-2 text-sm font-heading text-main hover:text-secondary transition-colors mb-4"
+      >
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+        </svg>
+        See comments
+      </button>
+
+      {/* Comments Section */}
+      {showComments && (
+        <div className="mt-4 pt-4 border-t border-main/20">
+          <h4 className="text-sm font-heading text-secondary mb-3">Comments ({comments.length})</h4>
+        
+        <div className="space-y-3 mb-4">
+          {comments.map((comment) => {
+            const authorName = comment.author
+              ? `${comment.author.first_name || ""} ${comment.author.last_name || ""}`.trim() || comment.author.username || "Anonymous"
+              : "Anonymous";
+            return (
+              <div key={comment.id} className="bg-bright/50 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-heading text-main">{authorName}</span>
+                  <span className="text-xs text-dark/50">
+                    {new Date(comment.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="text-sm font-body text-dark">{comment.body}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        {currentUserId && (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
+              placeholder="Add a comment..."
+              className="flex-1 rounded-lg border border-dark/20 px-3 py-2 text-sm font-body outline-none focus:ring-2 focus:ring-main"
+            />
+            <button
+              onClick={handleAddComment}
+              disabled={!newComment.trim() || submitting}
+              className="bg-main hover:bg-secondary text-bright px-4 py-2 rounded-lg text-sm font-heading disabled:opacity-50"
+            >
+              {submitting ? "..." : "Post"}
+            </button>
+          </div>
+        )}
+        </div>
+      )}
+    </div>
+  );
 }
