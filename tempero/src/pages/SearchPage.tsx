@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
 import RecipeCard from "../components/RecipeCard";
+import { profileImageUrl } from "../utils/ImageURL";
+import chefImg from "../assets/febrian-zakaria-SiQgni-cqFg-unsplash.jpg";
 
 type Tab = "recipes" | "users" | "lists";
 
@@ -507,7 +509,7 @@ export default function SearchPage() {
             {visibleRecipes.map((recipe) => (
               <RecipeCard
                 key={recipe.id}
-                recipe={recipe}
+                recipe={{ ...recipe, id: String(recipe.id) }}
                 variant="grid"
               />
             ))}
@@ -643,26 +645,31 @@ function UserGrid({ users }: { users: Profile[] }) {
           u.first_name || u.last_name
             ? `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim()
             : u.username;
+
+        // Use profileImageUrl if avatar exists, otherwise fallback to chefImg
+        const avatarSrc = u.avatar_url
+          ? profileImageUrl(u.avatar_url)
+          : chefImg;
+
         return (
           <Link
             key={u.auth_id}
             to={`/profile/${u.username}`}
             className="block rounded-lg overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition"
           >
-            {u.avatar_url ? (
-              <img
-                src={u.avatar_url}
-                alt={display}
-                className="w-full h-44 object-cover"
-              />
-            ) : (
-              <div className="w-full h-44 bg-gray-200" />
-            )}
+            <img
+              src={avatarSrc}
+              alt={display}
+              className="w-full h-44 object-cover"
+            />
             <div className="p-4">
               <h3 className="text-lg font-semibold text-[#e57f22]">
                 {display}
               </h3>
               <p className="mt-1 text-sm text-gray-600">@{u.username}</p>
+              {u.level && (
+                <p className="mt-1 text-xs text-gray-500">Level {u.level}</p>
+              )}
             </div>
           </Link>
         );
