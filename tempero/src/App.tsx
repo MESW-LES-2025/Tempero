@@ -16,6 +16,7 @@ import ProfilePage from "./pages/ProfilePage";
 import PublicListsPage from "./pages/PublicListsPage";
 import RecipePage from "./pages/RecipePage";
 import RegisterPage from "./pages/RegisterPage";
+import ReviewPage from "./pages/ReviewPage";
 import SearchPage from "./pages/SearchPage";
 import UploadRecipePage from "./pages/UploadRecipePage";
 
@@ -101,6 +102,7 @@ export default function App() {
             <Route path="search" element={<SearchPage />} />
             <Route path="upload-recipe" element={<UploadRecipePage />} />
             <Route path="recipe/:id" element={<RecipePage />} />
+            <Route path="review/:id" element={<ReviewPage />} />
           </Route>
         </Route>
       </Routes>
