@@ -93,6 +93,20 @@ export default function Navbar() {
           </button>
         </div>
         
+        {/* XP Progress Bar */}
+        <div className="flex-1 max-w-xs mx-4">
+          <div className="text-sm text-bright font-heading mb-1">Level 3 — Home Chef</div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-4 bg-bright/20 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-bright rounded-full transition-all duration-300"
+                style={{ width: '65%' }}
+              />
+            </div>
+            <span className="text-sm text-bright font-heading whitespace-nowrap">3500/4000</span>
+          </div>
+        </div>
+
         <ul className="flex gap-6 mr-4 items-center">
 
          <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">

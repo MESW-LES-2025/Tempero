@@ -310,8 +310,8 @@ export default function RecipePage() {
     <div className="min-h-screen bg-bright text-dark">
       <div className="pt-24 pb-16 px-4 sm:px-10 max-w-6xl mx-auto">
         {/* Header */}
-        <header className="flex flex-col gap-4 mb-10">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
+        <header className="mb-10">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
             <div className="flex-1 min-w-[260px] space-y-3">
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="inline-flex items-center rounded-lg bg-main/10 text-main border border-main px-4 py-1 font-heading">
@@ -365,9 +365,53 @@ export default function RecipePage() {
               </div>
             )}
           </div>
-          <p className="text-dark/70 font-body max-w-2xl">
-            {recipe.short_description}
-          </p>
+
+          {/* Description + Ratings Card */}
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            <p className="text-dark/70 font-body flex-1">
+              {recipe.short_description}
+            </p>
+            <aside className="w-full lg:w-80 bg-white/70 border border-main/40 rounded-2xl p-6 shadow-sm">
+              <h2 className="mb-4 text-2xl font-heading-styled text-main text-center">
+                Rating
+              </h2>
+              <ul className="space-y-3 font-body text-dark mb-6">
+                <li className="flex justify-between">
+                  <span className="font-semibold">Difficulty</span>
+                  <span>
+                    <span className="text-dark">3</span>
+                    <span className="text-main">/5</span>
+                  </span>
+                </li>
+                <li className="flex justify-between">
+                  <span className="font-semibold">Time Required</span>
+                  <span>
+                    <span className="text-dark">4</span>
+                    <span className="text-main">/5</span>
+                  </span>
+                </li>
+                <li className="flex justify-between">
+                  <span className="font-semibold">Quality and Taste</span>
+                  <span>
+                    <span className="text-dark">4</span>
+                    <span className="text-main">/5</span>
+                  </span>
+                </li>
+              </ul>
+              <div className="flex items-center justify-center gap-2 pt-4 border-t border-main/20">
+                <StarRating rating={3.67} />
+                <span className="text-lg font-heading text-dark">3.7</span>
+              </div>
+              {!isAuthor && currentUserId && (
+                <button
+                  className="mt-4 w-full bg-main hover:bg-secondary text-bright font-heading text-sm py-1.5 rounded-lg transition-colors"
+                  onClick={() => alert('Review functionality coming soon!')}
+                >
+                  Review Recipe
+                </button>
+              )}
+            </aside>
+          </div>
         </header>
 
         {/* Image + Ingredients */}
@@ -506,4 +550,33 @@ function buildAuthorName(row: RecipeRow): string {
   const combined = `${first} ${last}`.trim();
   if (combined) return combined;
   return row.profiles?.username ?? "Unknown author";
+}
+
+function StarRating({ rating }: { rating: number }) {
+  const stars = [];
+  for (let i = 1; i <= 5; i++) {
+    const fill = Math.min(Math.max(rating - (i - 1), 0), 1);
+    stars.push(
+      <svg
+        key={i}
+        className="w-6 h-6"
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <defs>
+          <linearGradient id={`star-gradient-${i}`}>
+            <stop offset={`${fill * 100}%`} stopColor="#FF6B35" />
+            <stop offset={`${fill * 100}%`} stopColor="#E5E7EB" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+          fill={`url(#star-gradient-${i})`}
+          stroke="#FF6B35"
+          strokeWidth="1"
+        />
+      </svg>
+    );
+  }
+  return <div className="flex gap-1">{stars}</div>;
 }
