@@ -1,6 +1,6 @@
-drop policy "Anyone can read recipes" on "public"."recipes";
+drop policy if exists "Anyone can read recipes" on "public"."recipes";
 
-drop policy "anyone can create recipes" on "public"."recipes";
+drop policy if exists "anyone can create recipes" on "public"."recipes";
 
 alter table "public"."recipe-tags" drop constraint "recipe-tags_recipe_id_fkey";
 
