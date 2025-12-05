@@ -11,6 +11,9 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [xp, setXp] = useState<number>(0);
+  const [level, setLevel] = useState<number>(1);
+  const [chefType, setChefType] = useState<string>("New Cook");
 
   useEffect(() => {
     let mounted = true;
@@ -34,6 +37,71 @@ export default function Navbar() {
       listener.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("xp, level, chef_type")
+        .eq("auth_id", user.id)
+        .single();
+
+      if (error || !data) return;
+
+      setXp(data.xp || 0);
+      setLevel(data.level || 1);
+      setChefType(data.chef_type || "New Cook");
+    };
+
+    fetchProfile();
+
+    // Subscribe to profile changes
+    const channel = supabase
+      .channel(`profile-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "profiles",
+          filter: `auth_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const newData = payload.new as any;
+          setXp(newData.xp || 0);
+          setLevel(newData.level || 1);
+          setChefType(newData.chef_type || "New Cook");
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  // Refetch profile on location change
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("xp, level, chef_type")
+        .eq("auth_id", user.id)
+        .single();
+
+      if (error || !data) return;
+
+      setXp(data.xp || 0);
+      setLevel(data.level || 1);
+      setChefType(data.chef_type || "New Cook");
+    };
+
+    fetchProfile();
+  }, [location.pathname, user]);
 
   // Hide navbar on the register page
   if (location.pathname === "/register" || location.pathname === "/login" || location.pathname === "/skill-assessment") return null;
@@ -93,6 +161,22 @@ export default function Navbar() {
           </button>
         </div>
         
+        {/* XP Progress Bar */}
+        {user && (
+          <div className="flex-1 max-w-xs mx-4">
+            <div className="text-sm text-bright font-heading mb-1">Level {level} — {chefType}</div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-4 bg-bright/20 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-bright rounded-full transition-all duration-300"
+                  style={{ width: `${Math.min(100, (xp % 1000) / 10)}%` }}
+                />
+              </div>
+              <span className="text-sm text-bright font-heading whitespace-nowrap">{xp}</span>
+            </div>
+          </div>
+        )}
+
         <ul className="flex gap-6 mr-4 items-center">
 
          <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">
