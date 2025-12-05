@@ -58,10 +58,10 @@ Feature: User Profile Management
 
   Scenario: View profile with level and chef type
     Given I am logged in as "Masterchef"
-    And a user "wayne" has level 2 and chef type "Junior Cook"
+    And a user "wayne" has level 3 and chef type "Home Chef"
     When I visit the profile page "/profile/wayne"
-    Then I should see "Level 2"
-    And I should see "Junior Cook"
+    Then I should see "Level 3"
+    And I should see "Home Chef"
 
   Scenario: View profile with bio
     Given I am logged in as "Masterchef"

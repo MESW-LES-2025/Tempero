@@ -51,13 +51,11 @@ function RequireAuth() {
 function NotFoundPage() {
   return (
     <div className="p-6 text-center">
-      {
-        <img
-          src={ErrorImage}
-          alt="404 Not Found"
-          className="mx-auto scale-50"
-        />
-      }
+      <img
+        src={ErrorImage}
+        alt="404 Not Found"
+        className="mx-auto scale-50"
+      />
     </div>
   );
 }
@@ -81,19 +79,11 @@ export default function App() {
       <Routes>
         {/* Full-bleed auth pages: no navbar/footer/padding */}
         <Route path="login" element={<LoginPage />} />
-        <Route path="skill-assessment" element={<AssessmentPage />} />
-        <Route path="profile/:username" element={<ProfilePage />} />
-        <Route path="profile/edit" element={<EditProfilePage />} />
-        <Route path="search" element={<SearchPage />} />
-        <Route path="upload-recipe" element={<UploadRecipePage />} />
-        <Route path="recipe/:id" element={<RecipePage />} />
-        <Route path="/favorites" element={<FavoritesPage />} />
-        <Route path="*" element={<NotFoundPage />} />
         <Route path="register" element={<RegisterPage />} />
 
-        {/* All other pages use the main layout */}
+        {/* All other pages use the main layout (navbar + footer) */}
         <Route element={<MainLayout />}>
-          {/* Default landing page: About */}
+          {/* Public pages */}
           <Route index element={<AboutPage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="faq" element={<FaqPage />} />
@@ -106,12 +96,13 @@ export default function App() {
             <Route path="lists/new" element={<CreateListPage />} />
             <Route path="lists" element={<PublicListsPage />} />
             <Route path="lists/:playlistId" element={<ListDetailPage />} />
-            <Route path="profile/:username" element={<ProfilePage />} />
+          <Route path="profile/:username" element={<ProfilePage />} />
             <Route path="profile/edit" element={<EditProfilePage />} />
             <Route path="search" element={<SearchPage />} />
             <Route path="upload-recipe" element={<UploadRecipePage />} />
             <Route path="recipe/:id" element={<RecipePage />} />
             <Route path="review/:id" element={<ReviewPage />} />
+            <Route path="favorites" element={<FavoritesPage />} />
           </Route>
         </Route>
       </Routes>
