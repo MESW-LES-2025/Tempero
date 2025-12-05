@@ -44,7 +44,7 @@ export const Units: Unit[] = [
 export const getUnit = (name: string) =>
   Units.find(u => u.name === name);
 
-export function toBase(amount: number, unitName: string): number {
+/* export function toBase(amount: number, unitName: string): number {
   const unit = getUnit(unitName);
   if (!unit) throw new Error('Unknown unit: ' + unitName);
   return amount * unit.factorToBase;
@@ -108,4 +108,4 @@ export function convertAmountToSystem(
   }
 
   return { amount: bestAmount, unit: bestUnit };
-}
+} */

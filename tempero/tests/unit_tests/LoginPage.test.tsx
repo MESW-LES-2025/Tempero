@@ -177,4 +177,246 @@ describe("LoginPage", () => {
       await screen.findByText(/password reset email sent/i)
     ).toBeInTheDocument();
   });
-});
+
+  it("normaliza erro de email não confirmado e mostra botão de resend", async () => {
+    (supabase.auth.signInWithPassword as any).mockResolvedValue({
+      data: { user: null },
+      error: { message: "Email not confirmed" },
+    });
+
+    renderWithRouter();
+
+    await userEvent.type(
+      screen.getByLabelText(/email/i),
+      "test@example.com"
+    );
+    await userEvent.type(
+      screen.getByLabelText(/^password$/i),
+      "password123"
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /log in/i })
+    );
+
+    // Mensagem normalizada
+    expect(
+      await screen.findByText(/email not confirmed\. check your inbox or resend the confirmation\./i)
+    ).toBeInTheDocument();
+
+    // Botão de resend fica visível porque err contém "confirm"
+    expect(
+      screen.getByRole("button", { name: /resend confirmation email/i })
+    ).toBeInTheDocument();
+  });
+
+  it("pede email antes de reenviar confirmação se o campo estiver vazio", async () => {
+    (supabase.auth.signInWithPassword as any).mockResolvedValue({
+      data: { user: null },
+      error: { message: "Email not confirmed" },
+    });
+
+    renderWithRouter();
+
+    // Fazer login falhar para ativar o botão de resend
+    await userEvent.type(
+      screen.getByLabelText(/email/i),
+      "test@example.com"
+    );
+    await userEvent.type(
+      screen.getByLabelText(/^password$/i),
+      "password123"
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /log in/i })
+    );
+
+    // Botão de resend visível
+    const emailInput = await screen.findByLabelText(/email/i);
+    const resendBtn = screen.getByRole("button", {
+      name: /resend confirmation email/i,
+    });
+
+    // Limpar email para cair no ramo `if (!email)`
+    await userEvent.clear(emailInput);
+
+    await userEvent.click(resendBtn);
+
+    expect(
+      await screen.findByText(/enter your email first to resend the confirmation link/i)
+    ).toBeInTheDocument();
+
+    expect(supabase.auth.resend).not.toHaveBeenCalled();
+  });
+
+  it("envia email de confirmação com sucesso ao clicar em Resend confirmation email", async () => {
+    (supabase.auth.signInWithPassword as any).mockResolvedValue({
+      data: { user: null },
+      error: { message: "Email not confirmed" },
+    });
+
+    (supabase.auth.resend as any).mockResolvedValue({
+      data: {},
+      error: null,
+    });
+
+    renderWithRouter();
+
+    await userEvent.type(
+      screen.getByLabelText(/email/i),
+      "confirm@example.com"
+    );
+    await userEvent.type(
+      screen.getByLabelText(/^password$/i),
+      "password123"
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /log in/i })
+    );
+
+    const resendBtn = await screen.findByRole("button", {
+      name: /resend confirmation email/i,
+    });
+
+    await userEvent.click(resendBtn);
+
+    await waitFor(() => {
+      expect(supabase.auth.resend).toHaveBeenCalledWith({
+        type: "signup",
+        email: "confirm@example.com",
+        options: {
+          emailRedirectTo: expect.stringMatching(/\/login$/),
+        },
+      });
+    });
+
+    expect(
+      await screen.findByText(/confirmation email sent\. please check your inbox/i)
+    ).toBeInTheDocument();
+  });
+
+
+  it("mostra erro se resend confirmation falhar", async () => {
+    (supabase.auth.signInWithPassword as any).mockResolvedValue({
+      data: { user: null },
+      error: { message: "Email not confirmed" },
+    });
+
+    (supabase.auth.resend as any).mockResolvedValue({
+      data: {},
+      error: { message: "Resend failed!" },
+    });
+
+    renderWithRouter();
+
+    await userEvent.type(
+      screen.getByLabelText(/email/i),
+      "confirm@example.com"
+    );
+    await userEvent.type(
+      screen.getByLabelText(/^password$/i),
+      "password123"
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /log in/i })
+    );
+
+    const resendBtn = await screen.findByRole("button", {
+      name: /resend confirmation email/i,
+    });
+
+    await userEvent.click(resendBtn);
+
+    expect(
+      await screen.findByText(/resend failed!/i)
+    ).toBeInTheDocument();
+  });
+
+  it("pede email antes de enviar reset password", async () => {
+    (supabase.auth.resetPasswordForEmail as any).mockResolvedValue({
+      data: {},
+      error: null,
+    });
+
+    renderWithRouter();
+
+    // Não preencher email
+    await userEvent.click(
+      screen.getByRole("button", { name: /forgot password/i })
+    );
+
+    expect(
+      await screen.findByText(/enter your email first to receive a reset link/i)
+    ).toBeInTheDocument();
+
+    expect(supabase.auth.resetPasswordForEmail).not.toHaveBeenCalled();
+  });
+
+  it("mostra erro se reset password falhar", async () => {
+    (supabase.auth.resetPasswordForEmail as any).mockResolvedValue({
+      data: {},
+      error: { message: "Reset failed!" },
+    });
+
+    renderWithRouter();
+
+    await userEvent.type(
+      screen.getByLabelText(/email/i),
+      "reset@example.com"
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /forgot password/i })
+    );
+
+    expect(
+      await screen.findByText(/reset failed!/i)
+    ).toBeInTheDocument();
+  });
+
+  it("mostra mensagem original quando erro não é de credenciais ou confirmação", async () => {
+    (supabase.auth.signInWithPassword as any).mockResolvedValue({
+      data: { user: null },
+      error: { message: "Some other error" },
+    });
+
+    renderWithRouter();
+
+    await userEvent.type(
+      screen.getByLabelText(/email/i),
+      "test@example.com"
+    );
+    await userEvent.type(
+      screen.getByLabelText(/^password$/i),
+      "password123"
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /log in/i })
+    );
+
+    expect(
+      await screen.findByText(/some other error/i)
+    ).toBeInTheDocument();
+  });
+
+  it("permite alternar entre mostrar e esconder password", async () => {
+    renderWithRouter();
+
+    const passInput = screen.getByLabelText(/^password$/i) as HTMLInputElement;
+
+    // estado inicial: password escondida
+    expect(passInput.type).toBe("password");
+    const showBtn = screen.getByRole("button", { name: /show password/i });
+
+    await userEvent.click(showBtn);
+    expect(passInput.type).toBe("text");
+    expect(
+      screen.getByRole("button", { name: /hide password/i })
+    ).toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /hide password/i })
+    );
+    expect(passInput.type).toBe("password");
+  });
+
+
+}); 
