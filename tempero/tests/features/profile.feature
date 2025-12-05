@@ -57,22 +57,26 @@ Feature: User Profile Management
     And I should see the recipes content
 
   Scenario: View profile with level and chef type
-    Given a user "wayne" has level 2 and chef type "Junior Cook"
+    Given I am logged in as "Masterchef"
+    And a user "wayne" has level 3 and chef type "Home Chef"
     When I visit the profile page "/profile/wayne"
-    Then I should see "Level 2"
-    And I should see "Junior Cook"
+    Then I should see "Level 3"
+    And I should see "Home Chef"
 
   Scenario: View profile with bio
-    Given a user "wayne" has a bio "I just cook"
+    Given I am logged in as "Masterchef"
+    And a user "wayne" has a bio "I just cook"
     When I visit the profile page "/profile/wayne"
     Then I should see the bio "I just cook"
 
   Scenario: View profile without bio
-    Given a user "almahmudsarker" has no bio
+    Given I am logged in as "Masterchef"
+    And a user "almahmudsarker" has no bio
     When I visit the profile page "/profile/almahmudsarker"
     Then I should see "This user has not provided a bio yet."
 
   Scenario: View non-existent user profile
+    Given I am logged in as "Masterchef"
     When I visit the profile page "/profile/nonexistent"
     Then I should see an error "User not found."
 

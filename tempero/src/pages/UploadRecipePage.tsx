@@ -5,7 +5,8 @@ import { supabase } from "../config/supabaseClient";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Units } from "../utils/Units";
 import { compressImage } from "../utils/CompressImage";
-import { uploadImage } from "../utils/UploadImage";
+import { uploadImage, deleteImage } from "../utils/ImageUtils";
+import { recipeImageUrl } from "../utils/ImageURL";
 import type { Recipe } from "../types/Recipe";
 
 function makeId() {
@@ -237,6 +238,13 @@ function MediaStep() {
   const { form, setForm } = useUploadRecipe();
   const [uploading, setUploading] = useState(false);
 
+  // Build preview URL: prefer new file, else existing imagePath
+  const previewUrl = form.imageFile
+    ? URL.createObjectURL(form.imageFile)
+    : form.imagePath
+      ? recipeImageUrl(form.imagePath)
+      : null;
+
   async function onFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -249,20 +257,32 @@ function MediaStep() {
 
       // enforce JPEG only
       const isJpeg =
-      file.type === "image/jpeg" ||
-      file.name.toLowerCase().endsWith(".jpg") ||
-      file.name.toLowerCase().endsWith(".jpeg");    
+        file.type === "image/jpeg" ||
+        file.name.toLowerCase().endsWith(".jpg") ||
+        file.name.toLowerCase().endsWith(".jpeg");
       if (!isJpeg) {
-      alert("Only JPG/JPEG images are supported. Please upload a .jpg or .jpeg file.");
-      return;
+        alert("Only JPG/JPEG images are supported. Please upload a .jpg or .jpeg file.");
+        return;
       }
-      // 2. compress
+
+      // If there's already an image stored, delete the old one first
+      const oldPath = form.imagePath;
+      if (oldPath) {
+        try {
+          await deleteImage(oldPath);
+        } catch (delErr) {
+          // Log but don't block upload if delete fails
+          console.warn("Could not delete old image:", delErr);
+        }
+      }
+
+      // Compress
       const compressed = await compressImage(file);
 
-      // 3. upload directly to recipes/
-      const storagePath = await uploadImage(compressed);
+      // Upload directly to recipes/
+      const storagePath = await uploadImage(compressed,"recipes");
 
-      // 4. save path in form
+      // Save path in form
       setForm((p) => ({
         ...p,
         imagePath: storagePath,
@@ -288,10 +308,10 @@ function MediaStep() {
         />
       </label>
 
-      {form.imageFile && (
+      {previewUrl && (
         <div className="mt-2">
           <img
-            src={URL.createObjectURL(form.imageFile)}
+            src={previewUrl}
             alt="preview"
             className="max-h-48 rounded"
           />

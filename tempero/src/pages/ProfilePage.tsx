@@ -6,6 +6,8 @@ import Recipes from "../components/Recipes";
 import Reviews from "../components/Reviews";
 import UserListsSection from "../components/UserListsSection";
 import { supabase } from "../config/supabaseClient";
+import LikedRecipes from "../components/LikedRecipes"
+import { profileImageUrl } from "../utils/ImageURL";
 
 type Badge = { label: string; icon: string };
 const badges: Badge[] = [
@@ -21,7 +23,6 @@ type Profile = {
   first_name?: string | null;
   last_name?: string | null;
   bio?: string | null;
-  avatar_url?: string | null;
   level?: number | null;
   chef_type?: string | null;
   profile_picture_url?: string | null;
@@ -29,7 +30,7 @@ type Profile = {
 
 export default function ProfilePage() {
   const { username } = useParams<{ username: string }>();
-  const [tab, setTab] = useState<"recipes" | "reviews" | "lists">("recipes");
+  const [tab, setTab] = useState<"recipes" | "reviews" | "lists" | "liked">("recipes");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileNotFound, setProfileNotFound] = useState<boolean>(false);
@@ -37,6 +38,7 @@ export default function ProfilePage() {
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const [followLoading, setFollowLoading] = useState<boolean>(false);
   const [followersCount, setFollowersCount] = useState<number>(0);
+  const [, setProfilePicture] = useState<string | null>(null);
   const [followingCount, setFollowingCount] = useState<number>(0);
   const navigate = useNavigate();
 
@@ -88,6 +90,9 @@ export default function ProfilePage() {
         setFollowersCount(followersCount || 0);
         setFollowingCount(followingCount || 0);
       }
+
+      setProfilePicture(data.profile_picture_url || null);
+      console.log("Profile picture:", data.profile_picture_url);
 
       // Check if current user is following this profile
       if (currentUser && data && currentUser.id !== data.auth_id) {
@@ -167,12 +172,15 @@ export default function ProfilePage() {
         {/* LEFT CARD */}
         <article className="relative w-full lg:w-1/3 bg-white border border-secondary/30 rounded-xl shadow-sm px-4 sm:px-6 py-6 flex flex-col items-center">
           {/* Avatar */}
-
           <img
-            src={profile?.avatar_url || chefImg}
+            src={
+              profile?.profile_picture_url
+                ? profileImageUrl(profile.profile_picture_url)
+                : chefImg
+            }
             alt={displayName}
             className="
-              absolute left-0 sm:left-0 -top-0
+              absolute left-0 sm:left-0 top-0
               h-44 w-32 sm:h-48 sm:w-32 
               object-cover rounded-tl-lg rounded-br-lg
             "
@@ -317,17 +325,30 @@ export default function ProfilePage() {
             >
               Lists
             </button>
+
+              <button
+                className={`pb-2 ${
+                  tab === "liked"
+                    ? "text-secondary border-b-2 border-secondary"
+                    : "text-dark/60 hover:text-secondary"
+                }`}
+                onClick={() => setTab("liked")}
+              >
+                Liked
+              </button>
           </div>
 
           {tab === "recipes" ? (
             <Recipes userId={profile?.auth_id} username={profile?.username} />
           ) : tab === "reviews" ? (
             <Reviews userId={profile?.auth_id} username={profile?.username} />
-          ) : (
+          ) : tab === "lists" ? (
             <UserListsSection
               userId={profile?.auth_id}
               isOwnProfile={isOwnProfile}
             />
+          ) : (
+            <LikedRecipes userId={profile?.auth_id} />
           )}
         </div>
       </section>
