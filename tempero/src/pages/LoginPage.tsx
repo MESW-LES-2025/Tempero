@@ -55,7 +55,7 @@ export default function LoginPage() {
       if (!profile?.xp) {
         navigate("/skill-assessment");
       } else {
-        navigate("/");
+        navigate("/home");
       }
     }
   }
