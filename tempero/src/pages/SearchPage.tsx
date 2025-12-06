@@ -660,7 +660,7 @@ function UserGrid({ users }: { users: Profile[] }) {
             <img
               src={avatarSrc}
               alt={display}
-              className="w-full h-44 object-cover"
+              className="w-full h-52 object-cover"
             />
             <div className="p-4">
               <h3 className="text-lg font-semibold text-[#e57f22]">
