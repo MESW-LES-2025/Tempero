@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import type { ChangeEvent } from "react";
-import { UploadRecipeProvider, useUploadRecipe, type UploadIngredient } from "../utils/UploadRecipeContext";
+import { UploadRecipeProvider, useUploadRecipe } from "../utils/UploadRecipeContext";
 import { supabase } from "../config/supabaseClient";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Units } from "../utils/Units";
