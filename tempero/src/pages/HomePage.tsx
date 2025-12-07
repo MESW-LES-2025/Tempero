@@ -134,7 +134,7 @@ export default function HomePage() {
   return (
   <div className="main-section bg-bright min-h-screen flex flex-col items-center justify-start py-10 px-5 space-y-15">
 
-      <div className="feed-preview-container flex flex-col max-w-full ">
+      <div className="feed-preview-container flex flex-col w-full ">
         <div className="feed-preview-header mb-2">
         <h2 className="text-4xl font-heading-styled w-fit text-gradient-to-r py-2 ">What's new?</h2>
         </div>

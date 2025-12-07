@@ -22,7 +22,7 @@ function DetailsStep() {
                 <input
                     value={form.title}
                     onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-                    className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none  transition-all duration-200 ease-in-out"
+                    className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-bright focus:ring-1 focus:ring-main focus:shadow-main/20 border-none  transition-all duration-200 ease-in-out"
                     placeholder="Recipe title"
                 />
             </label>
@@ -32,7 +32,7 @@ function DetailsStep() {
                 <textarea
                     value={form.short_description}
                     onChange={(e) => setForm((p) => ({ ...p, short_description: e.target.value }))}
-                    className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none  transition-all duration-200 ease-in-out"
+                    className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-bright focus:ring-1 focus:ring-main focus:shadow-main/20 border-none  transition-all duration-200 ease-in-out"
                     rows={3}
                 />
             </label>
@@ -50,7 +50,7 @@ function DetailsStep() {
                                 preparation_time: e.target.value ? parseInt(e.target.value, 10) : null,
                             }))
                         }
-                        className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
+                        className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-bright focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
                         placeholder="e.g. 15"
                     />
                 </label>
@@ -67,7 +67,7 @@ function DetailsStep() {
                                 cooking_time: e.target.value ? parseInt(e.target.value, 10) : null,
                             }))
                         }
-                        className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
+                        className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-bright focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
                         placeholder="e.g. 30"
                     />
                 </label>
@@ -84,7 +84,7 @@ function DetailsStep() {
                                 servings: e.target.value ? parseInt(e.target.value, 10) : null,
                             }))
                         }
-                        className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
+                        className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-bright focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
                         placeholder="e.g. 4"
                     />
                 </label>
@@ -99,7 +99,7 @@ function DetailsStep() {
                                 difficulty: e.target.value ? parseInt(e.target.value, 10) : null,
                             }))
                         }
-                        className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
+                        className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-bright focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
                     >
                         <option value="">Select</option>
                         {Array.from({ length: 5 }, (_, i) => i + 1).map((n) => (
@@ -150,7 +150,7 @@ function IngredientsStep() {
                     <div key={ing.id} className="space-y-1 mb-4">
                         <div className="flex gap-2">
                             <input
-                                className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
+                                className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-bright focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
                                 value={ing.name}
                                 onChange={(e) => updateIngredient(i, { name: e.target.value })}
                                 placeholder="Ingredient"
@@ -159,7 +159,7 @@ function IngredientsStep() {
                                 type="number"
                                 min={0}
                                 step="any"
-                                className="w-20 rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
+                                className="w-20 rounded-lg border px-3 py-2 outline-none shadow-lg bg-bright focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
                                 value={ing.amount ?? ""}
                                 onChange={(e) => {
                                     const v = e.target.value;
@@ -168,7 +168,7 @@ function IngredientsStep() {
                                 placeholder="Amt"
                             />
                             <select
-                                className="w-28 rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
+                                className="w-28 rounded-lg border px-3 py-2 outline-none shadow-lg bg-bright focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
                                 value={ing.unit ?? ""}
                                 onChange={(e) => updateIngredient(i, { unit: e.target.value })}
                             >
@@ -186,7 +186,7 @@ function IngredientsStep() {
                             </button>
                         </div>
                         <input
-                            className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
+                            className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-bright focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
                             value={ing.note || ""}
                             onChange={(e) => updateIngredient(i, { note: e.target.value })}
                             placeholder="Note (optional)"
@@ -228,7 +228,7 @@ function StepsStep() {
                         <div className="w-16 text-sm font-medium pt-2">Step {i + 1}</div>
                         <div className="flex">
                             <textarea
-                                className="flex-1 w-full rounded-lg px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 transition-all duration-200 ease-in-out"
+                                className="flex-1 w-full rounded-lg px-3 py-2 outline-none shadow-lg bg-bright focus:ring-1 focus:ring-main focus:shadow-main/20 transition-all duration-200 ease-in-out"
                                 value={s.description}
                                 onChange={(e) => updateStep(i, e.target.value)}
                                 rows={2}
@@ -448,7 +448,7 @@ function ReviewStep() {
                             onChange={(e) => setTagInput(e.target.value)}
                             onKeyDown={onTagKeyDown}
                             placeholder="Add tag and press Enter"
-                            className="rounded-lg border px-3 py-2 outline-none shadow-sm bg-white/70 focus:ring-1 focus:ring-main transition-all duration-150 w-full"
+                            className="rounded-lg  px-3 py-2  border-none outline-none shadow-sm bg-bright focus:ring-1 focus:ring-main transition-all duration-150 w-full"
                         />
                         <button type="button" onClick={() => addTag()} className="px-3 py-2 bg-main text-bright rounded">Add</button>
                     </div>
@@ -840,7 +840,8 @@ async function submit() {
 }
 
     return (
-        <div className="rounded-lg bg-bright/90 p-4 shadow-sm flex flex-col min-h-90 max-h-[70vh] overflow-x-visible">
+        <div className="rounded-lg bg-white p-4 shadow-sm flex flex-col min-h-90 max-h-[70vh] overflow-x-visible">
+            <h1 className="text-2xl font-heading-styled text-main mb-4">{isEditing ? "Edit recipe" : "Upload a recipe"}</h1>
             <div className="mb-3 overflow-x-visible">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-medium">{STEPS[stepIndex].title}</h2>
@@ -899,7 +900,6 @@ export default function UploadRecipePage() {
         <UploadRecipeProvider>
             <div className="min-h-screen bg-bright/5 ">
                 <main className="max-w-4xl mx-auto px-4 py-8">
-                    <h1 className="text-2xl font-heading-styled text-main mb-4">{isEditing ? "Edit recipe" : "Upload a recipe"}</h1>
                     <UploadFormInner />
                 </main>
             </div>

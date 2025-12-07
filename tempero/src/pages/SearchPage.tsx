@@ -336,11 +336,11 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-amber-50">
+    <div className="min-h-screen w-full bg-bright px-0">
       {/* Top nav */}
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
+      <div className="mx-auto  px-4 sm:px-6 py-8">
         {/* Tabs */}
-        <div className="flex gap-10 items-center mb-6">
+        <div className="flex gap-10 items-center mb-6 font-heading">
           <button
             className={`text-xl tracking-wide ${
               tab === "users"
@@ -349,7 +349,7 @@ export default function SearchPage() {
             }`}
             onClick={() => setTab("users")}
           >
-            USERS
+            Users
           </button>
           <button
             className={`text-xl tracking-wide ${
@@ -359,7 +359,7 @@ export default function SearchPage() {
             }`}
             onClick={() => setTab("recipes")}
           >
-            RECIPES
+            Recipes
           </button>
           <button
             className={`text-xl tracking-wide ${
@@ -369,13 +369,13 @@ export default function SearchPage() {
             }`}
             onClick={() => setTab("lists")}
           >
-            LISTS
+            Lists
           </button>
         </div>
 
         {/* Search input */}
         <div className="flex justify-center">
-          <div className="relative w-full max-w-xl">
+          <div className="relative w-full ">
             <span className="absolute left-3 top-1/2 -translate-y-1/2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -489,80 +489,81 @@ export default function SearchPage() {
             </div>
           </div>
         )}
+        <div className = "Results Section bg-white p-5 pt-1 mt-5 rounded-lg shadow-sm ">
+          <h2 className="mt-8 mb-4 text-5xl font-heading-styled text-[#e57f22]">
+            {tab === "recipes"
+              ? "Recipes"
+              : tab === "users"
+              ? "Users"
+              : "Lists"}
+          </h2>
 
-        <h2 className="mt-8 mb-4 text-2xl font-semibold text-[#e57f22]">
-          {tab === "recipes"
-            ? "RECIPES"
-            : tab === "users"
-            ? "USERS"
-            : "LISTS"}
-        </h2>
-
-        {/* Results */}
-        {loading ? (
-          <div className="py-12 text-center text-gray-700">Loading…</div>
-        ) : err ? (
-          <div className="py-12 text-center text-red-600">{err}</div>
-        ) : tab === "recipes" ? (
-          <>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {visibleRecipes.map((recipe) => (
-              <RecipeCard
+          {/* Results */}
+          {loading ? (
+            <div className="py-12 text-center text-gray-700">Loading…</div>
+          ) : err ? (
+            <div className="py-12 text-center text-red-600">{err}</div>
+          ) : tab === "recipes" ? (
+            <>
+            <div className="grid gap-5 grid-cols-[repeat(auto-fit,minmax(17rem,1fr))]">
+              {visibleRecipes.map((recipe) => (
+                <RecipeCard
                 key={recipe.id}
                 recipe={{ ...recipe, id: String(recipe.id) }}
                 variant="grid"
-              />
-            ))}
-          </div>
+                />
+              ))}
+            </div>
 
-            {debouncedQuery && filteredRecipes.length > PAGE_SIZE && (
-              <div className="mt-6 flex justify-center">
-                <button
-                  onClick={() => setShowAllRecipes((v) => !v)}
-                  className="px-4 py-2 rounded-md border border-[#e57f22] text-[#e57f22] text-sm font-medium hover:bg-[#e57f22] hover:text-white transition"
-                >
-                  {showAllRecipes
-                    ? "Show less"
-                    : `Show all ${filteredRecipes.length} recipes`}
-                </button>
-              </div>
-            )}
-          </>
-        ) : tab === "users" ? (
-          <>
-            <UserGrid users={visibleUsers} />
+              {debouncedQuery && filteredRecipes.length > PAGE_SIZE && (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => setShowAllRecipes((v) => !v)}
+                    className="px-4 py-2 rounded-md border border-[#e57f22] text-[#e57f22] text-sm font-medium hover:bg-[#e57f22] hover:text-white transition"
+                    >
+                    {showAllRecipes
+                      ? "Show less"
+                      : `Show all ${filteredRecipes.length} recipes`}
+                  </button>
+                </div>
+              )}
+            </>
+          ) : tab === "users" ? (
+            <>
+              <UserGrid users={visibleUsers} />
 
-            {debouncedQuery && users.length > PAGE_SIZE && (
-              <div className="mt-6 flex justify-center">
-                <button
-                  onClick={() => setShowAllUsers((v) => !v)}
-                  className="px-4 py-2 rounded-md border border-[#e57f22] text-[#e57f22] text-sm font-medium hover:bg-[#e57f22] hover:text-white transition"
-                >
-                  {showAllUsers
-                    ? "Show less"
-                    : `Show all ${users.length} users`}
-                </button>
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            <ListGrid lists={visibleLists} />
+              {debouncedQuery && users.length > PAGE_SIZE && (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => setShowAllUsers((v) => !v)}
+                    className="px-4 py-2 rounded-md border border-[#e57f22] text-[#e57f22] text-sm font-medium hover:bg-[#e57f22] hover:text-white transition"
+                    >
+                    {showAllUsers
+                      ? "Show less"
+                      : `Show all ${users.length} users`}
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <ListGrid lists={visibleLists} />
 
-            {debouncedQuery && lists.length > PAGE_SIZE && (
-              <div className="mt-6 flex justify-center">
-                <button
-                  onClick={() => setShowAllLists((v) => !v)}
-                  className="px-4 py-2 rounded-md border border-[#e57f22] text-[#e57f22] text-sm font-medium hover:bg-[#e57f22] hover:text-white transition"
-                >
-                  {showAllLists
-                    ? "Show less"
-                    : `Show all ${lists.length} lists`}
-                </button>
-              </div>
-            )}
-          </>
-        )}
+              {debouncedQuery && lists.length > PAGE_SIZE && (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => setShowAllLists((v) => !v)}
+                    className="px-4 py-2 rounded-md border border-[#e57f22] text-[#e57f22] text-sm font-medium hover:bg-[#e57f22] hover:text-white transition"
+                    >
+                    {showAllLists
+                      ? "Show less"
+                      : `Show all ${lists.length} lists`}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -639,7 +640,7 @@ function UserGrid({ users }: { users: Profile[] }) {
     );
 
   return (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-5 grid-cols-[repeat(auto-fit,minmax(14rem,1fr))]">
       {users.map((u) => {
         const display =
           u.first_name || u.last_name
@@ -655,12 +656,12 @@ function UserGrid({ users }: { users: Profile[] }) {
           <Link
             key={u.auth_id}
             to={`/profile/${u.username}`}
-            className="block rounded-lg overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition"
+            className="block rounded-lg overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition h-90"
           >
             <img
               src={avatarSrc}
               alt={display}
-              className="w-full h-44 object-cover"
+              className="w-full h-60 object-cover"
             />
             <div className="p-4">
               <h3 className="text-lg font-semibold text-[#e57f22]">
@@ -687,7 +688,7 @@ function ListGrid({ lists }: { lists: List[] }) {
     );
 
   return (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-5 grid-cols-[repeat(auto-fit,minmax(14rem,1fr))]">
       {lists.map((l) => {
         const visLabel =
           l.visibility?.toLowerCase() === "public"
