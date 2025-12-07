@@ -52,16 +52,16 @@ describe("SearchPage", () => {
   it("renders tabs and search input", () => {
     render(<SearchPage />);
     expect(
-      screen.getByRole("button", { name: "RECIPES" })
+      screen.getByRole("button", { name: "Recipes" })
     ).toBeInTheDocument();
     expect(
       screen.getByPlaceholderText(/find a recipe by name/i)
     ).toBeInTheDocument();
   });
 
-  it("switches to USERS tab when clicked", () => {
+  it("switches to Users tab when clicked", () => {
     render(<SearchPage />);
-    fireEvent.click(screen.getByText("USERS"));
+    fireEvent.click(screen.getByText("Users"));
     expect(
       screen.getByPlaceholderText(/find a user by name or username/i)
     ).toBeInTheDocument();
@@ -102,7 +102,7 @@ describe("SearchPage", () => {
 
     render(<SearchPage />);
 
-    fireEvent.click(screen.getByText("USERS"));
+    fireEvent.click(screen.getByText("Users"));
 
     await waitFor(() => {
       expect(screen.getByText("Maria Rocha")).toBeInTheDocument();
@@ -133,7 +133,7 @@ describe("SearchPage", () => {
 
     render(<SearchPage />);
 
-    fireEvent.click(screen.getByText("USERS"));
+    fireEvent.click(screen.getByText("Users"));
 
     await waitFor(() => {
       expect(screen.getByText("@maria")).toBeInTheDocument();
@@ -251,8 +251,8 @@ describe("SearchPage", () => {
     });
   });
 
-  // ---------- NOVO: LISTS tab - mostra apenas listas não privadas ----------
-  it("loads lists on LISTS tab and hides private lists", async () => {
+  // ---------- NOVO: Lists tab - mostra apenas listas não privadas ----------
+  it("loads lists on Lists tab and hides private lists", async () => {
     (supabase.from as any).mockImplementation((table: string) => {
       if (table === "lists") {
         return mockSupabaseSelect([
@@ -285,7 +285,7 @@ describe("SearchPage", () => {
 
     render(<SearchPage />);
 
-    fireEvent.click(screen.getByText("LISTS"));
+    fireEvent.click(screen.getByText("Lists"));
 
     await waitFor(() => {
       expect(screen.getByText(/public list/i)).toBeInTheDocument();
@@ -295,7 +295,7 @@ describe("SearchPage", () => {
     expect(screen.queryByText(/private list/i)).not.toBeInTheDocument();
   });
 
-  // ---------- NOVO: LISTS tab - filtros de visibilidade (followed / not-followed) ----------
+  // ---------- NOVO: Lists tab - filtros de visibilidade (followed / not-followed) ----------
   it("filters lists by visibility filters (followed / not-followed)", async () => {
     // user logado
     (supabase.auth.getUser as any).mockResolvedValue({
@@ -336,7 +336,7 @@ describe("SearchPage", () => {
 
     render(<SearchPage />);
 
-    fireEvent.click(screen.getByText("LISTS"));
+    fireEvent.click(screen.getByText("Lists"));
 
     await waitFor(() => {
       expect(screen.getByText(/followed list/i)).toBeInTheDocument();
@@ -372,13 +372,13 @@ describe("SearchPage", () => {
     });
   });
 
-  // ---------- NOVO: empty states para USERS e LISTS ----------
+  // ---------- NOVO: empty states para Users e Lists ----------
   it("shows empty state when no users found", async () => {
     (supabase.from as any).mockReturnValue(mockSupabaseSelect([]));
 
     render(<SearchPage />);
 
-    fireEvent.click(screen.getByText("USERS"));
+    fireEvent.click(screen.getByText("Users"));
 
     await waitFor(() => {
       expect(
@@ -396,7 +396,7 @@ describe("SearchPage", () => {
 
     render(<SearchPage />);
 
-    fireEvent.click(screen.getByText("LISTS"));
+    fireEvent.click(screen.getByText("Lists"));
 
     await waitFor(() => {
       expect(
