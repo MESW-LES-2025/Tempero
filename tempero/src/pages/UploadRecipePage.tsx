@@ -893,9 +893,6 @@ async function submit() {
 }
 
 export default function UploadRecipePage() {
-    const [searchParams] = useSearchParams();
-    const isEditing = Boolean(searchParams.get("recipeId"));
-
     return (
         <UploadRecipeProvider>
             <div className="min-h-screen bg-bright/5 ">
