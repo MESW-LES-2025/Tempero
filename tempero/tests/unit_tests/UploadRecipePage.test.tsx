@@ -984,100 +984,53 @@ it("submete com tags e passa pelo fluxo de upsert de tags", async () => {
   });
 });
  it("mostra erro genérico quando ocorre falha ao guardar a receita", async () => {
-  // user logged in
   mockedAuthGetUser.mockResolvedValue({
     data: { user: { id: "user-1" } },
     error: null,
   });
 
-  // vamos “envenenar” o from() só para recipe-ingredients neste teste
-  const originalFrom = supabase.from;
-  (supabase as any).from = vi.fn((table: string) => {
-    if (table === "recipe-ingredients") {
-      return {
-        upsert: vi.fn().mockResolvedValue({
-          error: { message: "ingredients failed" },
-        }),
-      };
+  const originalRpc = supabase.rpc;
+  (supabase as any).rpc = vi.fn((fnName: string, args: any) => {
+    if (fnName === "replace_recipe_ingredients") {
+      return Promise.resolve({
+        data: null,
+        error: { message: "ingredients failed via RPC" },
+      });
     }
-    // resto do comportamento usa o mock original
-    return originalFrom(table as any);
+    return originalRpc(fnName, args);
   });
 
   renderPage();
 
-  // Step 1: Details válidos
-  fireEvent.change(
-    screen.getByPlaceholderText(/recipe title/i),
-    { target: { value: "My Test Recipe" } }
-  );
-  fireEvent.change(
-    screen.getByLabelText(/short description/i),
-    { target: { value: "Tasty dish" } }
-  );
-  fireEvent.change(
-    screen.getByLabelText(/preparation time/i),
-    { target: { value: "10" } }
-  );
-  fireEvent.change(
-    screen.getByLabelText(/cooking time/i),
-    { target: { value: "20" } }
-  );
-  fireEvent.change(
-    screen.getByLabelText(/servings/i),
-    { target: { value: "2" } }
-  );
-  fireEvent.change(
-    screen.getByLabelText(/difficulty/i),
-    { target: { value: "1" } }
-  );
+  fireEvent.change(screen.getByPlaceholderText(/recipe title/i), { target: { value: "My Test Recipe" } });
+  fireEvent.change(screen.getByLabelText(/short description/i), { target: { value: "Tasty dish" } });
+  fireEvent.change(screen.getByLabelText(/preparation time/i), { target: { value: "10" } });
+  fireEvent.change(screen.getByLabelText(/cooking time/i), { target: { value: "20" } });
+  fireEvent.change(screen.getByLabelText(/servings/i), { target: { value: "2" } });
+  fireEvent.change(screen.getByLabelText(/difficulty/i), { target: { value: "1" } });
   fireEvent.click(screen.getByRole("button", { name: /next/i }));
 
-  // Step 2: Ingredients mínimos válidos
   await screen.findByText(/ingredients/i);
-  fireEvent.click(
-    screen.getByRole("button", { name: /add ingredient/i })
-  );
-  fireEvent.change(
-    screen.getByPlaceholderText(/ingredient/i),
-    { target: { value: "Flour" } }
-  );
-  fireEvent.change(
-    screen.getByPlaceholderText(/amt/i),
-    { target: { value: "200" } }
-  );
+  fireEvent.click(screen.getByRole("button", { name: /add ingredient/i }));
+  fireEvent.change(screen.getByPlaceholderText(/ingredient/i), { target: { value: "Flour" } });
+  fireEvent.change(screen.getByPlaceholderText(/amt/i), { target: { value: "200" } });
   fireEvent.click(screen.getByRole("button", { name: /next/i }));
 
-  // Step 3: Steps
   await screen.findByText(/steps/i);
-  fireEvent.click(
-    screen.getByRole("button", { name: /add step/i })
-  );
-  fireEvent.change(
-    screen.getByPlaceholderText(/describe step 1/i),
-    { target: { value: "Mix everything." } }
-  );
+  fireEvent.click(screen.getByRole("button", { name: /add step/i }));
+  fireEvent.change(screen.getByPlaceholderText(/describe step 1/i), { target: { value: "Mix everything." } });
   fireEvent.click(screen.getByRole("button", { name: /next/i }));
 
-  // Step 4
   await screen.findByText(/media/i);
   fireEvent.click(screen.getByRole("button", { name: /next/i }));
 
-  // Step 5
   await screen.findByRole("heading", { name: "Review", level: 2 });
+  fireEvent.click(screen.getByRole("button", { name: /publish/i }));
 
-  fireEvent.click(
-    screen.getByRole("button", { name: /publish/i })
-  );
-
-  expect(
-    await screen.findByText(/something went wrong while saving the recipe/i)
-  ).toBeInTheDocument();
-
+  expect(await screen.findByText(/something went wrong while saving the recipe/i)).toBeInTheDocument();
   expect(mockNavigate).not.toHaveBeenCalled();
 
-  // restaurar o comportamento original para não afetar outros testes
-  (supabase as any).from = originalFrom;
+  (supabase as any).rpc = originalRpc;
 });
 
 it("carrega receita existente para edição e faz update (usa upsert em recipes)", async () => {

@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import type { ChangeEvent } from "react";
-import { UploadRecipeProvider, useUploadRecipe, type UploadIngredient } from "../utils/UploadRecipeContext";
+import { UploadRecipeProvider, useUploadRecipe } from "../utils/UploadRecipeContext";
 import { supabase } from "../config/supabaseClient";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Units } from "../utils/Units";
@@ -116,25 +116,38 @@ function IngredientsStep() {
     const { form, setForm } = useUploadRecipe();
 
     function addIngredient() {
-        // amount is now a number | null
-        setForm((p) => ({ ...p, ingredients: [...p.ingredients, { id: makeId(), name: "", amount: 1, unit: "", note: "" }] }));
+        // We add a temp ID for React 'key' props.
+        // The RPC function will ignore this ID and generate new ones for insertions.
+        setForm((p) => ({ 
+            ...p, 
+            ingredients: [...p.ingredients, { id: crypto.randomUUID(), name: "", amount: 1, unit: "", note: "" }] 
+        }));
     }
-    function updateIngredient(idx: number, patch: Partial<UploadIngredient>) {
+
+    function updateIngredient(idx: number, patch: any) {
         setForm((p) => {
             const ingredients = [...p.ingredients];
             ingredients[idx] = { ...ingredients[idx], ...patch };
             return { ...p, ingredients };
         });
     }
+
     function removeIngredient(idx: number) {
-        setForm((p) => ({ ...p, ingredients: p.ingredients.filter((_, i) => i !== idx) }));
+        // RPC STRATEGY: 
+        // We just filter it out. Since the backend wipes and recreates the list,
+        // removing it here effectively deletes it from the DB on submit.
+        setForm((p) => ({ 
+            ...p, 
+            ingredients: p.ingredients.filter((_, i) => i !== idx) 
+        }));
     }
 
     return (
         <div className="space-y-3">
             <div className="flex flex-col gap-2">
                 {form.ingredients.map((ing, i) => (
-                    <div key={ing.id || i} className="space-y-1 mb-4">
+                    // Use ing.id for the key to ensure input focus stability
+                    <div key={ing.id} className="space-y-1 mb-4">
                         <div className="flex gap-2">
                             <input
                                 className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
@@ -154,7 +167,6 @@ function IngredientsStep() {
                                 }}
                                 placeholder="Amt"
                             />
-                            {/* unit select using predefined Units */}
                             <select
                                 className="w-28 rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
                                 value={ing.unit ?? ""}
@@ -162,16 +174,20 @@ function IngredientsStep() {
                             >
                                 <option value="">Unit</option>
                                 {Units.map((u) => (
-                                <option key={u.name} value={u.name}>
-                                    {u.name}
-                                </option>
+                                    <option key={u.name} value={u.name}>{u.name}</option>
                                 ))}
                             </select>
-                            <button type="button" onClick={() => removeIngredient(i)} className="px-3 py-1 text-red-600 hover:bg-red-50 rounded">✕</button>
+                            <button 
+                                type="button" 
+                                onClick={() => removeIngredient(i)} 
+                                className="px-3 py-1 text-red-600 hover:bg-red-50 rounded"
+                            >
+                                ✕
+                            </button>
                         </div>
                         <input
                             className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-white/70 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
-                            value={ing.note}
+                            value={ing.note || ""}
                             onChange={(e) => updateIngredient(i, { note: e.target.value })}
                             placeholder="Note (optional)"
                         />
@@ -179,7 +195,9 @@ function IngredientsStep() {
                 ))}
             </div>
 
-            <button type="button" onClick={addIngredient} className="mt-2 px-3 py-2 bg-main text-bright rounded text-sm">Add ingredient</button>
+            <button type="button" onClick={addIngredient} className="mt-2 px-3 py-2 bg-main text-bright rounded text-sm">
+                Add ingredient
+            </button>
         </div>
     );
 }
@@ -744,22 +762,22 @@ async function submit() {
 
         const recipeId = inserted.id;
 
-        // 3) Insert ingredients
-        if (form.ingredients.length > 0) {
-            const ingredientRows = form.ingredients.map((ing) => ({
-                recipe_id: recipeId,
-                name: ing.name,
-                amount: ing.amount ?? undefined,
-                unit: ing.unit,
-                notes: ing.note ?? null,
-            }));
+        // 3) Insert ingredients (Atomic Replace)
 
-            const { error: ingredientsError } = await supabase
-                .from("recipe-ingredients")
-                .upsert(ingredientRows);
+        const ingredientsPayload = form.ingredients.map((ing) => ({
+            name: ing.name,
+            amount: ing.amount ?? null, // SQL needs null, not undefined
+            unit: ing.unit,
+            notes: ing.note ?? null,
+        }));
 
-            if (ingredientsError) throw ingredientsError;
-        }
+        // Call the SQL function 'replace_recipe_ingredients'
+        const { error: rpcError } = await supabase.rpc('replace_recipe_ingredients', {
+            p_recipe_id: recipeId,
+            p_ingredients: ingredientsPayload,
+        });
+
+        if (rpcError) throw rpcError;
 
         // 4) Insert steps
         if (form.steps.length > 0) {
