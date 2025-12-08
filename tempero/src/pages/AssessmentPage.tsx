@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
+import { getLevelInfo } from "../utils/Levels";
 
 export default function AssessmentPage() {
   const [questions, setQuestions] = useState<Array<{
@@ -151,18 +152,27 @@ export default function AssessmentPage() {
     try {
       // Calculate total XP (sum of all answers)
       const totalXP = Object.values(answers).reduce((sum, value) => sum + value, 0);
+      const finalXP = totalXP * 100;
+
+      // Get level info from XP
+      const levelInfo = getLevelInfo(finalXP);
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       console.log("Answers:", answers);
-      console.log("Total XP calculated:", totalXP);
+      console.log("Total XP calculated:", finalXP);
+      console.log("Level info:", levelInfo);
       console.log("User ID:", user.id);
 
-      // Update profile with XP
+      // Update profile with XP, level, and chef type
       const { data, error } = await supabase
         .from('profiles')
-        .update({ xp: totalXP * 100 })
+        .update({ 
+          xp: finalXP,
+          level: levelInfo.level,
+          chef_type: levelInfo.name,
+        })
         .eq('auth_id', user.id)
         .select();
 
