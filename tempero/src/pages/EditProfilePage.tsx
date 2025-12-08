@@ -143,7 +143,7 @@ export default function EditProfilePage() {
   if (loading) return <Loader message="Fetching User To Edit..." />;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-amber-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-bright px-4">
       <div className="w-full max-w-2xl rounded-xl bg-white p-6 sm:p-8 shadow-xl font-body">
         <h1 className="mb-4 text-3xl font-bold font-heading text-main text-center">
           Edit Profile
@@ -210,7 +210,7 @@ export default function EditProfilePage() {
               type="text"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              className="w-full rounded-lg px-3 py-2 outline-none shadow-lg bg-amber-50 focus:ring-2 focus:ring-main transition"
+              className="w-full rounded-lg px-3 py-2 outline-none shadow-lg bg-bright focus:ring-2 focus:ring-main transition"
             />
           </div>
 
@@ -227,7 +227,7 @@ export default function EditProfilePage() {
               type="text"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              className="w-full rounded-lg px-3 py-2 outline-none shadow-lg bg-amber-50 focus:ring-2 focus:ring-main transition"
+              className="w-full rounded-lg px-3 py-2 outline-none shadow-lg bg-bright focus:ring-2 focus:ring-main transition"
             />
           </div>
 
@@ -241,7 +241,7 @@ export default function EditProfilePage() {
               rows={4}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              className="w-full rounded-lg px-3 py-2 outline-none shadow-lg bg-amber-50 focus:ring-2 focus:ring-main transition"
+              className="w-full rounded-lg px-3 py-2 outline-none shadow-lg bg-bright focus:ring-2 focus:ring-main transition"
               placeholder="Tell us about your cooking style..."
             />
           </div>
