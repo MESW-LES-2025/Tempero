@@ -9,13 +9,13 @@ import { supabase } from "../config/supabaseClient";
 import LikedRecipes from "../components/LikedRecipes"
 import { profileImageUrl } from "../utils/ImageURL";
 
-type Badge = { label: string; icon: string };
-const badges: Badge[] = [
+//type Badge = { label: string; icon: string };
+/* const badges: Badge[] = [
   { label: "Master Chef", icon: "👨‍🍳" },
   { label: "Bake Off", icon: "🧁" },
   { label: "Sous Chef", icon: "🔪" },
   { label: "Vegetarian", icon: "🥕" },
-];
+]; */
 
 type Profile = {
   auth_id: string;
