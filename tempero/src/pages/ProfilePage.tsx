@@ -167,10 +167,10 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-bright flex justify-center items-start py-10">
-      <section className="w-full max-w-7xl flex flex-col lg:flex-row items-start justify-center gap-10 px-4 sm:px-6 lg:px-10">
+    <div className="min-h-screen w-full bg-bright flex  items-start py-10">
+      <section className="w-full  flex flex-col lg:flex-row items-start justify-center gap-10 px-4 sm:px-6 lg:px-10">
         {/* LEFT CARD */}
-        <article className="relative w-full lg:w-1/3 bg-white border border-secondary/30 rounded-xl shadow-sm px-4 sm:px-6 py-6 flex flex-col items-center">
+        <article className="relative min-w-75 w-full lg:max-w-75 sm lg:w-1/3 bg-white border border-secondary/30 rounded-xl shadow-sm px-4 sm:px-6 py-6 flex flex-col items-center">
           {/* Avatar */}
           <img
             src={
@@ -239,22 +239,24 @@ export default function ProfilePage() {
             )}
 
             {/* Dotted separator */}
-            <div className="border-t border-dotted border-dark/40 w-full my-5"></div>
+            {/* <div className="border-t border-dotted border-dark/40 w-full my-5"></div> */}
 
             {/* Badges */}
+            {/* 
             <div className="w-full max-w-[300px] flex flex-wrap gap-3 justify-center bg-white rounded-xl p-3 shadow-sm">
               {badges.map((b, i) => (
-                <span
-                  key={i}
-                  className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-bright font-body text-dark text-sm"
-                >
-                  {b.icon} {b.label}
-                </span>
+              <span
+                key={i}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-bright font-body text-dark text-sm"
+              >
+                {b.icon} {b.label}
+              </span>
               ))}
             </div>
+            */}
 
             {/* Dotted separator */}
-            <div className="border-t border-dotted border-dark/40 w-full my-5"></div>
+            <div className="border-t border-dotted border-dark/40 w-full my-10"></div>
 
             {/* BIO */}
             <p className="font-body text-dark leading-7 text-left">
@@ -291,8 +293,8 @@ export default function ProfilePage() {
         </article>
 
         {/* RIGHT SIDE */}
-        <div className="w-full lg:w-2/3">
-          <div className="flex gap-6 mb-5 border-b border-dark/10 font-heading text-lg">
+        <div className="w-full ">
+          <div className="flex gap-6 mb-5 border-b border-dark/10 font-heading text-lg ">
             <button
               className={`pb-2 ${
                 tab === "recipes"
