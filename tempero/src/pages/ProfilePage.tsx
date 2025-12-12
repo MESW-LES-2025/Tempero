@@ -170,42 +170,43 @@ export default function ProfilePage() {
     <div className="min-h-screen w-full bg-bright flex  items-start py-10">
       <section className="w-full  flex flex-col lg:flex-row items-start justify-center gap-10 px-4 sm:px-6 lg:px-10">
         {/* LEFT CARD */}
-        <article className="relative min-w-75 w-full lg:max-w-75 sm lg:w-1/3 bg-white border border-secondary/30 rounded-xl shadow-sm px-4 sm:px-6 py-6 flex flex-col items-center">
-          {/* Avatar */}
-          <img
-            src={
-              profile?.profile_picture_url
-                ? profileImageUrl(profile.profile_picture_url)
-                : chefImg
-            }
-            alt={displayName}
-            className="
-              absolute left-0 sm:left-0 top-0
-              h-44 w-32 sm:h-48 sm:w-32 
-              object-cover rounded-tl-lg rounded-br-lg
-            "
-          />
+        <article className="relative min-w-80 w-full lg:max-w-75 lg:w-1/3 bg-white border border-secondary/30 rounded-xl shadow-sm px-4 sm:px-6 py-6 flex flex-col">
+          {/* Top section: Avatar + Name side by side */}
+          <div className="flex items-start gap-4 mb-4">
+            {/* Avatar */}
+            <img
+              src={
+                profile?.profile_picture_url
+                  ? profileImageUrl(profile.profile_picture_url)
+                  : chefImg
+              }
+              alt={displayName}
+              className="h-32 w-24 sm:h-40 sm:w-28 object-cover rounded-lg shrink-0"
+            />
 
-          {/* Content */}
-          <div className="w-full max-w-[320px] mt-2 sm:mt-6 mx-auto text-center flex flex-col items-end">
-            {/* Name */}
-            <h1 className="font-heading-styled text-3xl text-secondary mb-2">
-              {displayName}
-            </h1>
+            {/* Name + Level to the right of avatar */}
+            <div className="flex flex-col justify-center min-w-0 ">
+              {/* Level */}
+              {profile?.level && profile?.chef_type && (
+                <div className="bg-bright text-dark py-1 px-3 rounded-lg shadow-sm w-fit font-body text-sm">
+                  <span className="font-heading-styled font-semibold">
+                    Level {profile.level}
+                  </span>{" "}
+                  ·{" "}
+                  <span className="text-main font-heading-styled font-semibold">
+                    {profile.chef_type}
+                  </span>
+                </div>
+              )}
+              <h1 className="font-heading-styled text-2xl sm:text-3xl text-secondary mt-4 wrap-break-word">
+                {displayName}
+              </h1>
 
-            {/* Level */}
-            {profile?.level && profile?.chef_type && (
-              <div className="bg-bright text-dark py-1 px-4 rounded-lg shadow-sm w-fit mb-4 font-body">
-                <span className="font-heading-styled font-semibold">
-                  Level {profile.level}
-                </span>{" "}
-                ·{" "}
-                <span className="text-main font-heading-styled font-semibold">
-                  {profile.chef_type}
-                </span>
-              </div>
-            )}
+            </div>
+          </div>
 
+          {/* Content below avatar */}
+          <div className="w-full flex flex-col items-center">
             {/* Followers counts */}
             <div className="flex items-center justify-center gap-10 text-center font-body text-dark my-2">
               <div>
@@ -226,7 +227,7 @@ export default function ProfilePage() {
             {/* Follow button */}
             {currentUser && profile?.auth_id !== currentUser.id && (
               <button
-                className={`mt-3 w-full max-w-[460px] font-heading-styled py-2.5 rounded-lg transition ${
+                className={`mt-3 w-full max-w-[280px] font-heading-styled py-2.5 rounded-lg transition ${
                   isFollowing
                     ? "bg-gray-500 hover:bg-gray-600 text-white"
                     : "bg-main hover:bg-secondary text-bright"
@@ -239,27 +240,10 @@ export default function ProfilePage() {
             )}
 
             {/* Dotted separator */}
-            {/* <div className="border-t border-dotted border-dark/40 w-full my-5"></div> */}
-
-            {/* Badges */}
-            {/* 
-            <div className="w-full max-w-[300px] flex flex-wrap gap-3 justify-center bg-white rounded-xl p-3 shadow-sm">
-              {badges.map((b, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-bright font-body text-dark text-sm"
-              >
-                {b.icon} {b.label}
-              </span>
-              ))}
-            </div>
-            */}
-
-            {/* Dotted separator */}
-            <div className="border-t border-dotted border-dark/40 w-full my-10"></div>
+            <div className="border-t border-dotted border-dark/40 w-full my-6"></div>
 
             {/* BIO */}
-            <p className="font-body text-dark leading-7 text-left">
+            <p className="font-body text-dark leading-7 text-left w-full">
               {bioText ? (
                 <>
                   {showFullBio ? bioText : shortBio}
@@ -283,7 +267,7 @@ export default function ProfilePage() {
             {/* Edit */}
             {isOwnProfile && (
               <button
-                className="my-6 w-full max-w-[460px] bg-main hover:bg-secondary transition text-bright font-heading-styled py-2.5 rounded-lg items-start"
+                className="my-6 w-full max-w-[280px] bg-main hover:bg-secondary transition text-bright font-heading-styled py-2.5 rounded-lg"
                 onClick={() => navigate("/profile/edit")}
               >
                 Edit Profile
