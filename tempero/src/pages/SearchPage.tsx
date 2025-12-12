@@ -696,6 +696,9 @@ function ListGrid({ lists }: { lists: List[] }) {
             : l.visibility;
 
         return (
+          <Link
+            to={`/lists/${l.id}`}
+          >
           <article
             key={l.id}
             className="rounded-lg overflow-hidden shadow-sm border border-gray-200 bg-white hover:shadow-md transition p-4 flex flex-col justify-between"
@@ -722,6 +725,7 @@ function ListGrid({ lists }: { lists: List[] }) {
               )}
             </div>
           </article>
+          </Link>
         );
       })}
     </div>
