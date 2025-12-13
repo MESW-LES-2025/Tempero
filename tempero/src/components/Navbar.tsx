@@ -11,9 +11,6 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showMobileSearch, setShowMobileSearch] = useState(false);
-  const [xp, setXp] = useState<number>(0);
-  const [level, setLevel] = useState<number>(1);
-  const [chefType, setChefType] = useState<string>("New Cook");
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
@@ -45,15 +42,12 @@ export default function Navbar() {
     const fetchProfile = async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("xp, level, chef_type, is_admin")
+        .select("is_admin")
         .eq("auth_id", user.id)
         .single();
 
       if (error || !data) return;
 
-      setXp(data.xp || 0);
-      setLevel(data.level || 1);
-      setChefType(data.chef_type || "New Cook");
       setIsAdmin(data.is_admin || false);
     };
 
@@ -72,9 +66,6 @@ export default function Navbar() {
         },
         (payload) => {
           const newData = payload.new as any;
-          setXp(newData.xp || 0);
-          setLevel(newData.level || 1);
-          setChefType(newData.chef_type || "New Cook");
           setIsAdmin(newData.is_admin || false);
         }
       )
@@ -92,15 +83,12 @@ export default function Navbar() {
     const fetchProfile = async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("xp, level, chef_type, is_admin")
+        .select("is_admin")
         .eq("auth_id", user.id)
         .single();
 
       if (error || !data) return;
 
-      setXp(data.xp || 0);
-      setLevel(data.level || 1);
-      setChefType(data.chef_type || "New Cook");
       setIsAdmin(data.is_admin || false);
     };
 
