@@ -20,6 +20,7 @@ import ReviewPage from "./pages/ReviewPage";
 import SearchPage from "./pages/SearchPage";
 import UploadRecipePage from "./pages/UploadRecipePage";
 import FavoritesPage from "./pages/FavoritesPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 
 /* Auth guard component: redirects to /login when user is not authenticated */
 function RequireAuth() {
@@ -103,6 +104,7 @@ export default function App() {
             <Route path="recipe/:id" element={<RecipePage />} />
             <Route path="review/:id" element={<ReviewPage />} />
             <Route path="favorites" element={<FavoritesPage />} />
+            <Route path="admin" element={<AdminDashboardPage />} />
           </Route>
         </Route>
       </Routes>

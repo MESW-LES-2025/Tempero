@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "../components/Navbar";
 import HomePage from "../pages/HomePage";
 import RegisterPage from "../pages/RegisterPage";
+import AdminDashboardPage from "../pages/AdminDashboardPage";
 
 function NotFoundPage() {
   return (
@@ -19,6 +20,7 @@ export default function AppRoutes() {
         <Route element={<MainLayout />}>
           <Route index element={<HomePage />} />
           <Route path="register" element={<RegisterPage />} />
+          <Route path="admin" element={<AdminDashboardPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
