@@ -14,6 +14,7 @@ export default function Navbar() {
   const [xp, setXp] = useState<number>(0);
   const [level, setLevel] = useState<number>(1);
   const [chefType, setChefType] = useState<string>("New Cook");
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
     let mounted = true;
@@ -44,7 +45,7 @@ export default function Navbar() {
     const fetchProfile = async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("xp, level, chef_type")
+        .select("xp, level, chef_type, is_admin")
         .eq("auth_id", user.id)
         .single();
 
@@ -53,6 +54,7 @@ export default function Navbar() {
       setXp(data.xp || 0);
       setLevel(data.level || 1);
       setChefType(data.chef_type || "New Cook");
+      setIsAdmin(data.is_admin || false);
     };
 
     fetchProfile();
@@ -73,6 +75,7 @@ export default function Navbar() {
           setXp(newData.xp || 0);
           setLevel(newData.level || 1);
           setChefType(newData.chef_type || "New Cook");
+          setIsAdmin(newData.is_admin || false);
         }
       )
       .subscribe();
@@ -89,7 +92,7 @@ export default function Navbar() {
     const fetchProfile = async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("xp, level, chef_type")
+        .select("xp, level, chef_type, is_admin")
         .eq("auth_id", user.id)
         .single();
 
@@ -98,6 +101,7 @@ export default function Navbar() {
       setXp(data.xp || 0);
       setLevel(data.level || 1);
       setChefType(data.chef_type || "New Cook");
+      setIsAdmin(data.is_admin || false);
     };
 
     fetchProfile();
@@ -131,7 +135,7 @@ export default function Navbar() {
 
   return (
     <>
-  <nav className="fixed top-0 left-0 right-0 z-50 navbar text-bright text-lg max-[500px]:text-sm font-heading flex flex-row justify-between bg-main px-4 py-3 shadow-lg items-center">
+  <nav className="fixed top-0 left-0 right-0 z-50 navbar text-bright text-lg max-[500px]:text-sm font-heading flex flex-col md:flex-row justify-between bg-main px-4 py-3 shadow-lg items-center gap-2">
         <div className="flex items-center gap-4">
           <h1 className="logo">
             <Link to="/home/">
@@ -161,23 +165,7 @@ export default function Navbar() {
           </button>
         </div>
         
-        {/* XP Progress Bar */}
-        {user && (
-          <div className="flex-1 max-w-xs mx-4">
-            <div className="text-sm text-bright font-heading mb-1">Level {level} — {chefType}</div>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 h-4 bg-bright/20 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-bright rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min(100, (xp % 1000) / 10)}%` }}
-                />
-              </div>
-              <span className="text-sm text-bright font-heading whitespace-nowrap">{xp}</span>
-            </div>
-          </div>
-        )}
-
-        <ul className="flex gap-6 mr-4 items-center">
+        <ul className="flex flex-wrap gap-4 md:gap-6 md:mr-4 items-center justify-center">
 
          <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">
              <NavLink
@@ -196,6 +184,17 @@ export default function Navbar() {
        Favorites
      </NavLink>
          </li>
+
+         {isAdmin && (
+           <li className="hover:scale-110 hover:-translate-y-1 hover:opacity-70 duration-100">
+             <NavLink
+               to="/admin"
+               className={({ isActive }) => `${isActive ? active : ""} px-1`}
+             >
+               Admin
+             </NavLink>
+           </li>
+         )}
  
          {/* profile link */}
      <div className="usersection max-[500px]:flex-col max-[500px]:text-xs bg-bright/10 p-2 rounded-md gap-2 flex font-heading  ">

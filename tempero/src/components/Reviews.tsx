@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../config/supabaseClient";
 import Loader from "./Loader";
+import ReportModal from "./ReportModal";
 
 type Review = {
   id: number;
@@ -25,6 +26,8 @@ type ReviewsProps = {
 export default function Reviews({ userId }: ReviewsProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -64,8 +67,29 @@ export default function Reviews({ userId }: ReviewsProps) {
           <p className="mt-2 text-gray-700 text-sm leading-relaxed">
             {rev.description}
           </p>
+          <button
+            onClick={() => {
+              setSelectedReviewId(rev.id.toString());
+              setReportModalOpen(true);
+            }}
+            className="mt-2 text-xs text-gray-500 hover:text-[#e57f22] transition-colors"
+          >
+            🚩 Report
+          </button>
         </article>
       ))}
+      
+      {selectedReviewId && (
+        <ReportModal
+          isOpen={reportModalOpen}
+          onClose={() => {
+            setReportModalOpen(false);
+            setSelectedReviewId(null);
+          }}
+          itemType="review"
+          itemId={selectedReviewId}
+        />
+      )}
     </div>
   );
 }
