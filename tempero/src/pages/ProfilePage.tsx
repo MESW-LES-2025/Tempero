@@ -5,6 +5,8 @@ import chefImg from "../assets/febrian-zakaria-SiQgni-cqFg-unsplash.jpg";
 import Recipes from "../components/Recipes";
 import Reviews from "../components/Reviews";
 import UserListsSection from "../components/UserListsSection";
+import ReportModal from "../components/ReportModal";
+import XpCard from "../components/XpCard";
 import { supabase } from "../config/supabaseClient";
 import { profileImageUrl } from "../utils/ImageURL";
 
@@ -39,6 +41,7 @@ export default function ProfilePage() {
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [, setProfilePicture] = useState<string | null>(null);
   const [followingCount, setFollowingCount] = useState<number>(0);
+  const [showReportModal, setShowReportModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -225,17 +228,29 @@ export default function ProfilePage() {
 
             {/* Follow button */}
             {currentUser && profile?.auth_id !== currentUser.id && (
-              <button
-                className={`mt-3 w-full max-w-[280px] font-heading-styled py-2.5 rounded-lg transition ${
-                  isFollowing
-                    ? "bg-gray-500 hover:bg-gray-600 text-white"
-                    : "bg-main hover:bg-secondary text-bright"
-                }`}
-                onClick={handleFollow}
-                disabled={followLoading}
-              >
-                {followLoading ? "..." : isFollowing ? "Unfollow" : "Follow"}
-              </button>
+              <>
+                <button
+                  className={`mt-3 w-full max-w-[280px] font-heading-styled py-2.5 rounded-lg transition ${
+                    isFollowing
+                      ? "bg-gray-500 hover:bg-gray-600 text-white"
+                      : "bg-main hover:bg-secondary text-bright"
+                  }`}
+                  onClick={handleFollow}
+                  disabled={followLoading}
+                >
+                  {followLoading ? "..." : isFollowing ? "Unfollow" : "Follow"}
+                </button>
+                
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  className="mt-2 text-xs text-dark/50 hover:text-main font-body transition-colors flex items-center justify-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                  </svg>
+                  Report User
+                </button>
+              </>
             )}
 
             {/* Dotted separator */}
@@ -274,6 +289,8 @@ export default function ProfilePage() {
             )}
           </div>
         </article>
+
+        {isOwnProfile && <XpCard />}
 
         {/* RIGHT SIDE */}
         <div className="w-full ">
@@ -325,6 +342,15 @@ export default function ProfilePage() {
           )}
         </div>
       </section>
+      
+      {profile && (
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          itemType="user"
+          itemId={profile.auth_id}
+        />
+      )}
     </div>
   );
 }

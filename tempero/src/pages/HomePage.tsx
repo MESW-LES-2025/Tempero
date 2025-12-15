@@ -1,6 +1,7 @@
 import {  useEffect, useState } from "react";
 import RecipeCard from "../components/RecipeCard";
 import ReviewCard from "../components/ReviewCard";
+import XpCard from "../components/XpCard";
 import { supabase } from "../config/supabaseClient";
 import type { RecipePreview } from "../types/Recipe";
 import { fetchRecentRecipes, fetchRecipesByLevel, fetchPopularRecipes } from "../types/Recipe";
@@ -133,6 +134,8 @@ export default function HomePage() {
 
   return (
   <div className="main-section bg-bright min-h-screen flex flex-col items-center justify-start py-10 px-5 space-y-15">
+
+      <XpCard />
 
       <div className="feed-preview-container flex flex-col w-full ">
         <div className="feed-preview-header mb-2">
