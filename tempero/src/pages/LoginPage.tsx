@@ -50,7 +50,7 @@ export default function LoginPage() {
         .from('profiles')
         .select('xp')
         .eq('auth_id', data.user.id)
-        .maybeSingle(); 
+        .single(); 
 
       if (!profile?.xp) {
         navigate("/skill-assessment");
@@ -96,7 +96,7 @@ export default function LoginPage() {
     setErr(null);
     setInfo(null);
     if (!email) {
-      setErr("Enter your email above to resend the confirmation link.");
+      setErr("Please enter your email address first.");
       return;
     }
     try {
