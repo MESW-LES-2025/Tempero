@@ -6,10 +6,13 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
+  
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
+  
   const [err, setErr] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  
   const navigate = useNavigate();
 
   function normalizeError(message?: string | null) {
@@ -43,14 +46,11 @@ export default function LoginPage() {
     }
 
     if (data.user) {
-      // Check if user needs to take XP assessment
       const { data: profile } = await supabase
         .from('profiles')
         .select('xp')
         .eq('auth_id', data.user.id)
-        .single();
-
-      console.log("User profile:", profile);
+        .maybeSingle(); 
 
       if (!profile?.xp) {
         navigate("/skill-assessment");
@@ -60,11 +60,43 @@ export default function LoginPage() {
     }
   }
 
+  // 👇 RESTORED & FIXED: Handles password reset directly here
+  async function handleResetPassword() {
+    setErr(null);
+    setInfo(null);
+    
+    if (!email) {
+      setErr("Please enter your email address first.");
+      return;
+    }
+
+    // Define URLs exactly as we did for the other page
+    // Ensures /Tempero/ is included so the link doesn't break
+    const localUrl = "http://localhost:5173/Tempero/update-password"; 
+    const productionUrl = "https://your-username.github.io/Tempero/update-password"; 
+
+    const redirectUrl = window.location.hostname === "localhost" 
+      ? localUrl 
+      : productionUrl;
+
+    console.log("Sending reset link to:", redirectUrl);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
+    });
+
+    if (error) {
+      setErr(error.message);
+    } else {
+      setInfo("Password reset link sent! Check your email.");
+    }
+  }
+
   async function handleResendConfirmation() {
     setErr(null);
     setInfo(null);
     if (!email) {
-      setErr("Enter your email first to resend the confirmation link.");
+      setErr("Enter your email above to resend the confirmation link.");
       return;
     }
     try {
@@ -73,7 +105,10 @@ export default function LoginPage() {
         type: "signup",
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/login`,
+          // Also fixing this redirect just in case
+          emailRedirectTo: window.location.hostname === "localhost" 
+            ? "http://localhost:5173/Tempero/login"
+            : "https://your-username.github.io/Tempero/login",
         },
       });
       if (error) setErr(error.message);
@@ -81,21 +116,6 @@ export default function LoginPage() {
     } finally {
       setResending(false);
     }
-  }
-
-  async function handleResetPassword() {
-    setErr(null);
-    setInfo(null);
-    if (!email) {
-      setErr("Enter your email first to receive a reset link.");
-      return;
-    }
-    const redirectTo = `${window.location.origin}/update-password`;
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo,
-    });
-    if (error) setErr(error.message);
-    else setInfo("Password reset email sent. Check your inbox.");
   }
 
   const showResend =
@@ -109,7 +129,8 @@ export default function LoginPage() {
         <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="Tempero Logo" className="h-16" />
       </div>
       <div className="absolute inset-0 backdrop-blur-xs pointer-events-none"></div>
-      <div className="mx-auto mt-12 max-w-md">
+      
+      <div className="mx-auto mt-12 max-w-md w-full">
         <div className="rounded-xl bg-bright/90 p-6 shadow-sm relative z-10">
           <h1 className="mb-4 text-3xl font-bold font-heading text-main text-center">
             Login
@@ -124,7 +145,7 @@ export default function LoginPage() {
             </div>
           )}
           {info && (
-            <div className="mb-3 font-body rounded-lg bg-main/10 px-3 py-2 text-sm text-main">
+            <div className="mb-3 font-body rounded-lg bg-green-100 border border-green-200 px-3 py-2 text-sm text-green-700">
               {info}
             </div>
           )}
@@ -183,6 +204,7 @@ export default function LoginPage() {
 
           <div className="mt-4 flex flex-col gap-2 text-sm">
             <div className="flex items-center justify-between">
+              {/* 👇 CHANGED BACK TO BUTTON: Calls handleResetPassword */}
               <button
                 type="button"
                 onClick={handleResetPassword}
@@ -204,7 +226,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleResendConfirmation}
                 disabled={resending}
-                className="self-start text-gray-700 underline underline-offset-4 hover:text-black disabled:opacity-70"
+                className="self-start text-gray-700 underline underline-offset-4 hover:text-black disabled:opacity-70 text-left"
               >
                 {resending ? "Resending…" : "Resend confirmation email"}
               </button>

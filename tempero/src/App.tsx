@@ -21,6 +21,7 @@ import SearchPage from "./pages/SearchPage";
 import UploadRecipePage from "./pages/UploadRecipePage";
 import FavoritesPage from "./pages/FavoritesPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import UpdatePasswordPage from "./pages/UpdatePasswordPage";
 
 /* Auth guard component: redirects to /login when user is not authenticated */
 function RequireAuth() {
@@ -81,6 +82,7 @@ export default function App() {
         {/* Full-bleed auth pages: no navbar/footer/padding */}
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
+        <Route path="update-password" element={<UpdatePasswordPage />} />
 
         {/* All other pages use the main layout (navbar + footer) */}
         <Route element={<MainLayout />}>
@@ -97,7 +99,7 @@ export default function App() {
             <Route path="lists/new" element={<CreateListPage />} />
             <Route path="lists" element={<PublicListsPage />} />
             <Route path="lists/:playlistId" element={<ListDetailPage />} />
-          <Route path="profile/:username" element={<ProfilePage />} />
+            <Route path="profile/:username" element={<ProfilePage />} />
             <Route path="profile/edit" element={<EditProfilePage />} />
             <Route path="search" element={<SearchPage />} />
             <Route path="upload-recipe" element={<UploadRecipePage />} />
