@@ -174,7 +174,7 @@ describe("LoginPage", () => {
     });
 
     expect(
-      await screen.findByText(/password reset email sent/i)
+      await screen.findByText(/Password reset link sent! Check your email./i)
     ).toBeInTheDocument();
   });
 
@@ -242,7 +242,7 @@ describe("LoginPage", () => {
     await userEvent.click(resendBtn);
 
     expect(
-      await screen.findByText(/enter your email first to resend the confirmation link/i)
+      await screen.findByText(/Please enter your email address first./i)
     ).toBeInTheDocument();
 
     expect(supabase.auth.resend).not.toHaveBeenCalled();
@@ -332,30 +332,24 @@ describe("LoginPage", () => {
   });
 
   it("pede email antes de enviar reset password", async () => {
-    (supabase.auth.resetPasswordForEmail as any).mockResolvedValue({
-      data: {},
-      error: null,
+      const user = userEvent.setup();
+      renderWithRouter();
+
+      // Click 'Forgot password?' without typing an email
+      await user.click(screen.getByRole("button", { name: /forgot password\?/i }));
+
+      // Expect the SPECIFIC error for this button
+      expect(await screen.findByText(/Please enter your email address first./i)).toBeInTheDocument();
+      
+      // Ensure Supabase was NOT called
+      expect(supabase.auth.resetPasswordForEmail).not.toHaveBeenCalled();
     });
 
-    renderWithRouter();
-
-    // Não preencher email
-    await userEvent.click(
-      screen.getByRole("button", { name: /forgot password/i })
-    );
-
-    expect(
-      await screen.findByText(/enter your email first to receive a reset link/i)
-    ).toBeInTheDocument();
-
-    expect(supabase.auth.resetPasswordForEmail).not.toHaveBeenCalled();
-  });
-
-  it("mostra erro se reset password falhar", async () => {
-    (supabase.auth.resetPasswordForEmail as any).mockResolvedValue({
-      data: {},
-      error: { message: "Reset failed!" },
-    });
+    it("mostra erro se reset password falhar", async () => {
+      (supabase.auth.resetPasswordForEmail as any).mockResolvedValue({
+        data: {},
+        error: { message: "Reset failed!" },
+      });
 
     renderWithRouter();
 
