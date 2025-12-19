@@ -18,19 +18,19 @@ CREATE TABLE IF NOT EXISTS public.reports (
 ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: Users can create reports
-CREATE POLICY "Users can create reports" ON public.reports
+CREATE POLICY IF NOT EXISTS "Users can create reports" ON public.reports
   FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = reporter_id);
 
 -- RLS Policy: Users can view their own reports
-CREATE POLICY "Users can view own reports" ON public.reports
+CREATE POLICY IF NOT EXISTS "Users can view own reports" ON public.reports
   FOR SELECT
   TO authenticated
   USING (auth.uid() = reporter_id);
 
 -- RLS Policy: Admins can view all reports
-CREATE POLICY "Admins can view all reports" ON public.reports
+CREATE POLICY IF NOT EXISTS "Admins can view all reports" ON public.reports
   FOR SELECT
   TO authenticated
   USING (
@@ -41,7 +41,7 @@ CREATE POLICY "Admins can view all reports" ON public.reports
   );
 
 -- RLS Policy: Admins can update reports
-CREATE POLICY "Admins can update reports" ON public.reports
+CREATE POLICY IF NOT EXISTS "Admins can update reports" ON public.reports
   FOR UPDATE
   TO authenticated
   USING (
@@ -52,7 +52,7 @@ CREATE POLICY "Admins can update reports" ON public.reports
   );
 
 -- Allow admins to delete recipes
-CREATE POLICY "Admins can delete any recipe"
+CREATE POLICY IF NOT EXISTS "Admins can delete any recipe"
 ON recipes FOR DELETE
 TO authenticated
 USING (
@@ -64,7 +64,7 @@ USING (
 );
 
 -- Allow admins to delete reviews
-CREATE POLICY "Admins can delete any review"
+CREATE POLICY IF NOT EXISTS "Admins can delete any review"
 ON reviews FOR DELETE
 TO authenticated
 USING (
@@ -76,7 +76,7 @@ USING (
 );
 
 -- Allow admins to delete comments
-CREATE POLICY "Admins can delete any comment"
+CREATE POLICY IF NOT EXISTS "Admins can delete any comment"
 ON comments FOR DELETE
 TO authenticated
 USING (
@@ -88,7 +88,7 @@ USING (
 );
 
 -- Allow admins to delete users (profiles)
-CREATE POLICY "Admins can delete any profile"
+CREATE POLICY IF NOT EXISTS "Admins can delete any profile"
 ON profiles FOR DELETE
 TO authenticated
 USING (
