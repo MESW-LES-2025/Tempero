@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
+import { validatePassword } from "../utils/validatePassword";
 
 export default function UpdatePasswordPage() {
   const [password, setPassword] = useState("");
@@ -32,8 +33,9 @@ export default function UpdatePasswordPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
       setLoading(false);
       return;
     }
@@ -109,7 +111,7 @@ export default function UpdatePasswordPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-lg px-3 py-2 outline-none shadow-xl bg-amber-50 focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200"
-                placeholder="Min 6 characters"
+                placeholder="Min 8 characters"
               />
             </div>
 
