@@ -75,7 +75,7 @@ export default function FaqPage() {
   };
 
   return (
-    <main className="min-h-screen bg-bright pb-20 pt-10 px-4 sm:px-6 lg:px-10">
+    <main className="min-h-screen bg-bright pb-20 pt-10 px-4 sm:px-6 lg:px-10 mt-10 md:mt-0">
       {/* Vertical Background Text */}
       <h1
         className="
