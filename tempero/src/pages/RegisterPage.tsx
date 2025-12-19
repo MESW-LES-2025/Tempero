@@ -84,6 +84,22 @@ useEffect(() => {
       return;
     }
 
+    if (password.toLowerCase() === password) {
+      setErr("Password must contain at least one uppercase letter.");
+      return;
+    }
+
+    if (password.toUpperCase() === password) {
+      setErr("Password must contain at least one lowercase letter.");
+      return;
+    }
+
+        const hasNumberOrSymbolandLetters = /[\d\W_]/.test(password) && /[a-zA-Z]/.test(password);
+    if (!hasNumberOrSymbolandLetters) {
+      setErr("Password must contain at least one number or symbol.");
+      return;
+    }
+
     if (firstName.length > 20) {
       setErr("First name must be at most 20 characters.");
       return;
