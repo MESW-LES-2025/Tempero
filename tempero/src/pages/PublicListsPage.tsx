@@ -23,7 +23,7 @@ export default function PublicListsPage() {
   return (
     <main className="min-h-screen bg-bright">
       <section className="mx-auto max-w-5xl px-4 pb-12 pt-8 sm:px-6 lg:px-10">
-        <header className="mb-6">
+        <header className="mt-10 md:mt-0 mb-6">
           <h1 className="text-2xl font-heading text-secondary sm:text-3xl">
             Recipe lists
           </h1>
@@ -44,7 +44,12 @@ export default function PublicListsPage() {
 
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {playlists.map((playlist) => (
-            <ListCard key={playlist.id} playlist={playlist} isOwnProfile={false} onDelete={() => {}} />
+            <ListCard
+              key={playlist.id}
+              playlist={playlist}
+              isOwnProfile={false}
+              onDelete={() => {}}
+            />
           ))}
         </div>
       </section>
