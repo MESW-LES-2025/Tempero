@@ -60,25 +60,29 @@ export default function XpCard() {
   if (!user) return null;
 
   return (
-    <div className="bg-white border border-secondary/20 rounded-xl p-6 shadow-sm w-full max-w-2xl">
-      <h3 className="text-lg font-heading-styled text-secondary mb-4">Your Progress</h3>
-      
+    <div className="bg-white border border-secondary/20 rounded-xl p-6 shadow-sm w-full max-w-2xl mt-16 md:mt-0">
+      <h3 className="text-lg font-heading-styled text-secondary mb-4">
+        Your Progress
+      </h3>
+
       <div className="mb-3">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-heading text-dark">Level {level}</span>
           <span className="text-sm font-heading text-main">{chefType}</span>
         </div>
-        
+
         <div className="h-4 bg-bright rounded-full overflow-hidden">
-          <div 
+          <div
             className="h-full bg-main rounded-full transition-all duration-300"
             style={{ width: `${Math.min(100, (xp % 1000) / 10)}%` }}
           />
         </div>
-        
+
         <div className="flex justify-between items-center mt-2">
           <span className="text-xs text-dark/60 font-body">{xp} XP</span>
-          <span className="text-xs text-dark/60 font-body">{Math.floor(xp / 1000) * 1000 + 1000} XP</span>
+          <span className="text-xs text-dark/60 font-body">
+            {Math.floor(xp / 1000) * 1000 + 1000} XP
+          </span>
         </div>
       </div>
     </div>
