@@ -82,7 +82,7 @@ describe("RegisterPage", () => {
     );
     await userEvent.type(
       screen.getByLabelText(/^password$/i),
-      "password123"
+      "Password123!"
     );
 
     // Esperar pelo resultado da verificação de username
@@ -124,7 +124,7 @@ describe("RegisterPage", () => {
     );
     await userEvent.type(
       screen.getByLabelText(/^password$/i),
-      "password123"
+      "Password123!"
     );
 
     // Esperar até o debounce + rpc marcarem o username como disponível
@@ -192,6 +192,49 @@ describe("RegisterPage", () => {
     expect(supabase.auth.signUp).not.toHaveBeenCalled();
   });
 
+  it("valida password sem número ou símbolo", async () => {
+    (supabase.rpc as any).mockResolvedValue({ data: true, error: null });
+
+    renderWithRouter();
+
+    await userEvent.type(
+      screen.getByLabelText(/email/i),
+      "new@example.com"
+    );
+    await userEvent.type(
+      screen.getByLabelText(/username/i),
+      "joao"
+    );
+    await userEvent.type(
+      screen.getByLabelText(/first name/i),
+      "Joao"
+    );
+    await userEvent.type(
+      screen.getByLabelText(/last name/i),
+      "Silva"
+    );
+    await userEvent.type(
+      screen.getByLabelText(/^password$/i),
+      "Passwords" // 9 chars, has upper and lower, but no number/symbol
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/username is available/i)
+      ).toBeInTheDocument();
+    });
+
+    const registerBtn = screen.getByRole("button", { name: /register/i });
+    expect(registerBtn).toBeEnabled();
+
+    await userEvent.click(registerBtn);
+
+    expect(
+      await screen.findByText(/password must contain at least one number or symbol/i)
+    ).toBeInTheDocument();
+    expect(supabase.auth.signUp).not.toHaveBeenCalled();
+  });
+
 
   it("mostra erro se o primeiro nome for demasiado curto", async () => {
     (supabase.rpc as any).mockResolvedValue({ data: true, error: null });
@@ -216,7 +259,7 @@ describe("RegisterPage", () => {
     );
     await userEvent.type(
       screen.getByLabelText(/^password$/i),
-      "password123"
+      "Password123!"
     );
 
     await waitFor(() => {
@@ -257,7 +300,7 @@ describe("RegisterPage", () => {
     );
     await userEvent.type(
       screen.getByLabelText(/^password$/i),
-      "password123"
+      "Password123!"
     );
 
     await waitFor(() => {
@@ -302,7 +345,7 @@ describe("RegisterPage", () => {
     );
     await userEvent.type(
       screen.getByLabelText(/^password$/i),
-      "password123"
+      "Password123!"
     );
 
     await waitFor(() => {
@@ -396,7 +439,7 @@ describe("RegisterPage", () => {
   );
   await userEvent.type(
     screen.getByLabelText(/^password$/i),
-    "password123"
+    "Password123!"
   );
 
   await waitFor(() => {
@@ -437,7 +480,7 @@ it("mostra erro se o último nome for demasiado curto", async () => {
   );
   await userEvent.type(
     screen.getByLabelText(/^password$/i),
-    "password123"
+    "Password123!"
   );
 
   await waitFor(() => {
@@ -480,7 +523,7 @@ it("mostra erro quando tenta registrar sem username confirmado como disponível"
   );
   await userEvent.type(
     screen.getByLabelText(/^password$/i),
-    "password123"
+    "Password123!"
   );
 
   // Submeter ANTES do debounce validar o username

@@ -5,6 +5,7 @@ import type { Ingredient, Step } from "../types/Recipe";
 import { recipeImageUrl } from "../utils/ImageURL";
 import Loader from "../components/Loader";
 import { deleteImage } from "../utils/ImageUtils";
+import ReportModal from "../components/ReportModal";
 
 type RecipeRow = {
   id: string;
@@ -107,6 +108,8 @@ export default function RecipePage() {
   const [avgPrepTime, setAvgPrepTime] = useState<number>(0);
   const [avgTaste, setAvgTaste] = useState<number>(0);
   const [overallRating, setOverallRating] = useState<number>(0);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (leveledUp) {
@@ -127,6 +130,16 @@ export default function RecipePage() {
       const { data } = await supabase.auth.getUser();
       if (!mounted) return;
       setCurrentUserId(data?.user?.id ?? null);
+      
+      if (data?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("auth_id", data.user.id)
+          .single();
+        if (!mounted) return;
+        setIsAdmin(profile?.is_admin || false);
+      }
     })();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_, session) => {
@@ -462,23 +475,35 @@ export default function RecipePage() {
               </h1>
             </div>
 
-            {isAuthor && (
-              <div className="flex gap-2 self-start">
+            <div className="flex gap-2 self-start">
+              {isAuthor ? (
+                <>
+                  <button
+                    onClick={handleEdit}
+                    className="inline-flex items-center gap-2 rounded-lg border border-secondary px-4 py-1 font-heading text-secondary hover:bg-secondary hover:text-bright transition-colors"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="inline-flex items-center gap-2 rounded-lg bg-danger/80 px-4 py-1 font-heading text-bright hover:bg-danger focus:ring-none  disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </button>
+                </>
+              ) : currentUserId && (
                 <button
-                  onClick={handleEdit}
-                  className="inline-flex items-center gap-2 rounded-lg border border-secondary px-4 py-1 font-heading text-secondary hover:bg-secondary hover:text-bright transition-colors"
+                  onClick={() => setShowReportModal(true)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-dark/20 px-4 py-1 font-heading text-dark/60 hover:text-main hover:border-main transition-colors"
                 >
-                  Edit
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                  </svg>
+                  Report Recipe
                 </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="inline-flex items-center gap-2 rounded-lg bg-danger/80 px-4 py-1 font-heading text-bright hover:bg-danger focus:ring-none  disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-                >
-                  {isDeleting ? "Deleting..." : "Delete"}
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Description + Ratings Card */}
@@ -517,7 +542,7 @@ export default function RecipePage() {
                 <StarRating rating={overallRating} />
                 <span className="text-lg font-heading text-dark">{overallRating.toFixed(1)}</span>
               </div>
-              {currentUserId && !isAuthor && (
+              {currentUserId && !isAuthor && !isAdmin && (
                 <button
                   className="mt-4 w-full bg-main hover:bg-secondary text-bright font-heading text-sm py-1.5 rounded-lg transition-colors"
                   onClick={() => navigate(`/review/${recipe.id}`)}
@@ -630,6 +655,15 @@ export default function RecipePage() {
           </span>
         </div>
       </div>
+      
+      {recipe && (
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          itemType="recipe"
+          itemId={recipe.id}
+        />
+      )}
     </div>
   );
 }
@@ -721,6 +755,10 @@ function Review({ review }: { review: ReviewData }) {
   const [submitting, setSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [showComments, setShowComments] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportItemType, setReportItemType] = useState<"review" | "comment">("review");
+  const [reportItemId, setReportItemId] = useState<string>("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const chefType = review.profiles?.chef_type || "Cook";
   const reviewerName = review.profiles
@@ -729,8 +767,17 @@ function Review({ review }: { review: ReviewData }) {
   const avgRating = Number(review.average_rating) || 0;
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       setCurrentUserId(data?.user?.id ?? null);
+      
+      if (data?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("auth_id", data.user.id)
+          .single();
+        setIsAdmin(profile?.is_admin || false);
+      }
     });
   }, []);
 
@@ -807,9 +854,24 @@ function Review({ review }: { review: ReviewData }) {
         <h3 className="text-lg font-heading text-dark">
           <span className="text-main">{chefType}</span> — {reviewerName}
         </h3>
-        <div className="flex items-center gap-2">
-          <StarRating rating={avgRating} />
-          <span className="text-sm font-heading text-dark">{avgRating.toFixed(1)}</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <StarRating rating={avgRating} />
+            <span className="text-sm font-heading text-dark">{avgRating.toFixed(1)}</span>
+          </div>
+          <button
+            onClick={() => {
+              setReportItemType("review");
+              setReportItemId(review.id);
+              setShowReportModal(true);
+            }}
+            className="text-dark/40 hover:text-main transition-colors"
+            title="Report review"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+            </svg>
+          </button>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-4 mb-4 text-sm font-body">
@@ -842,6 +904,13 @@ function Review({ review }: { review: ReviewData }) {
         </svg>
         See comments
       </button>
+      
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        itemType={reportItemType}
+        itemId={reportItemId}
+      />
 
       {/* Comments Section */}
       {showComments && (
@@ -857,9 +926,24 @@ function Review({ review }: { review: ReviewData }) {
               <div key={comment.id} className="bg-bright/50 rounded-lg p-3">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-heading text-main">{authorName}</span>
-                  <span className="text-xs text-dark/50">
-                    {new Date(comment.created_at).toLocaleDateString()}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-dark/50">
+                      {new Date(comment.created_at).toLocaleDateString()}
+                    </span>
+                    <button
+                      onClick={() => {
+                        setReportItemType("comment");
+                        setReportItemId(comment.id);
+                        setShowReportModal(true);
+                      }}
+                      className="text-dark/40 hover:text-main transition-colors"
+                      title="Report comment"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
                 <p className="text-sm font-body text-dark">{comment.body}</p>
               </div>
@@ -867,7 +951,7 @@ function Review({ review }: { review: ReviewData }) {
           })}
         </div>
 
-        {currentUserId && (
+        {currentUserId && !isAdmin && (
           <div className="flex gap-2">
             <input
               type="text"
