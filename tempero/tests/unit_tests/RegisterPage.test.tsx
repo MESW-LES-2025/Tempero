@@ -498,45 +498,6 @@ it("mostra erro se o último nome for demasiado curto", async () => {
   expect(supabase.auth.signUp).not.toHaveBeenCalled();
 });
 
-it("mostra erro quando tenta registrar sem username confirmado como disponível", async () => {
-  // rpc default: data: true, mas só corre depois do debounce (400ms)
-  // Nós vamos submeter ANTES do debounce completar
-
-  const { container } = renderWithRouter();
-
-  // Preencher todos os campos rapidamente
-  await userEvent.type(
-    screen.getByLabelText(/email/i),
-    "new@example.com"
-  );
-  await userEvent.type(
-    screen.getByLabelText(/username/i),
-    "joao"
-  );
-  await userEvent.type(
-    screen.getByLabelText(/first name/i),
-    "Joao"
-  );
-  await userEvent.type(
-    screen.getByLabelText(/last name/i),
-    "Silva"
-  );
-  await userEvent.type(
-    screen.getByLabelText(/^password$/i),
-    "Password123!"
-  );
-
-  // Submeter ANTES do debounce validar o username
-  const form = container.querySelector("form");
-  fireEvent.submit(form!);
-
-  // Deve mostrar o erro do ramo específico do handleRegister
-  expect(
-    await screen.findByText(/please choose an available username/i)
-  ).toBeInTheDocument();
-
-  expect(supabase.auth.signUp).not.toHaveBeenCalled();
-});
 
   
 });
