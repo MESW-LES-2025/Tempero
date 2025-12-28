@@ -73,7 +73,7 @@ export default function LoginPage() {
     // Define URLs exactly as we did for the other page
     // Ensures /Tempero/ is included so the link doesn't break
     const localUrl = "http://localhost:5173/Tempero/update-password"; 
-    const productionUrl = "https://your-username.github.io/Tempero/update-password"; 
+    const productionUrl = "https://mesw-les-2025.github.io/Tempero/update-password"; 
 
     const redirectUrl = window.location.hostname === "localhost" 
       ? localUrl 
@@ -108,7 +108,7 @@ export default function LoginPage() {
           // Also fixing this redirect just in case
           emailRedirectTo: window.location.hostname === "localhost" 
             ? "http://localhost:5173/Tempero/login"
-            : "https://your-username.github.io/Tempero/login",
+            : "https://mesw-les-2025.github.io/Tempero/login",
         },
       });
       if (error) setErr(error.message);

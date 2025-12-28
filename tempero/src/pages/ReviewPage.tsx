@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import Loader from "../components/Loader";
 import { supabase } from "../config/supabaseClient";
 import { getLevelInfo } from "../utils/Levels";
-import Loader from "../components/Loader";
 
 export default function ReviewPage() {
   const { id } = useParams<{ id: string }>();
@@ -49,7 +49,14 @@ export default function ReviewPage() {
       return;
     }
 
-    if (difficulty < 1 || difficulty > 5 || timeRequired < 1 || timeRequired > 5 || qualityTaste < 1 || qualityTaste > 5) {
+    if (
+      difficulty < 1 ||
+      difficulty > 5 ||
+      timeRequired < 1 ||
+      timeRequired > 5 ||
+      qualityTaste < 1 ||
+      qualityTaste > 5
+    ) {
       setError("All ratings must be between 1 and 5.");
       return;
     }
@@ -58,13 +65,17 @@ export default function ReviewPage() {
     setError(null);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         setError("You must be logged in to submit a review.");
         return;
       }
 
-      const averageRating = parseFloat(((difficulty + timeRequired + qualityTaste) / 3).toFixed(4));
+      const averageRating = parseFloat(
+        ((difficulty + timeRequired + qualityTaste) / 3).toFixed(4)
+      );
 
       const now = new Date().toISOString();
       const payload = {
@@ -78,14 +89,24 @@ export default function ReviewPage() {
         created_at: now,
         updated_at: now,
       };
-      
-      console.log("Review payload:", payload);
-      console.log("Taste value type:", typeof payload.taste, "value:", payload.taste);
 
-      const { error: insertError } = await supabase.from("reviews").insert(payload);
+      console.log("Review payload:", payload);
+      console.log(
+        "Taste value type:",
+        typeof payload.taste,
+        "value:",
+        payload.taste
+      );
+
+      const { error: insertError } = await supabase
+        .from("reviews")
+        .insert(payload);
 
       if (insertError) {
-        console.error("Insert error details:", JSON.stringify(insertError, null, 2));
+        console.error(
+          "Insert error details:",
+          JSON.stringify(insertError, null, 2)
+        );
         throw insertError;
       }
 
@@ -129,7 +150,9 @@ export default function ReviewPage() {
           .eq("auth_id", user.id);
       }
 
-      navigate(`/recipe/${id}`, { state: { xpGained, leveledUp, newLevel, newChefType } });
+      navigate(`/recipe/${id}`, {
+        state: { xpGained, leveledUp, newLevel, newChefType },
+      });
     } catch (err: any) {
       console.error("Error submitting review:", err);
       setError(err?.message || "Failed to submit review. Please try again.");
@@ -141,12 +164,14 @@ export default function ReviewPage() {
   if (loading) return <Loader message="Loading..." />;
 
   return (
-    <div className="min-h-screen bg-bright">
+    <div className="min-h-screen bg-bright mt-10 md:mt-0">
       <div className="max-w-4xl mx-auto px-4 py-10">
         <h1 className="text-3xl font-heading-styled text-secondary">
           Review recipe
         </h1>
-        <p className="text-xl font-heading-styled text-dark mt-2">{recipeTitle ?? ""}</p>
+        <p className="text-xl font-heading-styled text-dark mt-2">
+          {recipeTitle ?? ""}
+        </p>
 
         <div className="mt-8 space-y-6">
           <RatingCard
@@ -169,8 +194,12 @@ export default function ReviewPage() {
           />
 
           <div className="bg-white/80 border border-main/30 rounded-2xl p-6 shadow-sm">
-            <h2 className="text-xl font-heading text-secondary mb-2">Your Review</h2>
-            <p className="text-sm font-body text-dark/70 mb-4">Share your experience with this recipe</p>
+            <h2 className="text-xl font-heading text-secondary mb-2">
+              Your Review
+            </h2>
+            <p className="text-sm font-body text-dark/70 mb-4">
+              Share your experience with this recipe
+            </p>
             <textarea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}

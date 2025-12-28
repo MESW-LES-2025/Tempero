@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { supabase } from "../config/supabaseClient";
+import { validatePassword } from "../utils/validatePassword";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -79,24 +80,9 @@ useEffect(() => {
       return;
     }
 
-    if (password.length < 8) {
-      setErr("Password must be at least 8 characters.");
-      return;
-    }
-
-    if (password.toLowerCase() === password) {
-      setErr("Password must contain at least one uppercase letter.");
-      return;
-    }
-
-    if (password.toUpperCase() === password) {
-      setErr("Password must contain at least one lowercase letter.");
-      return;
-    }
-
-        const hasNumberOrSymbolandLetters = /[\d\W_]/.test(password) && /[a-zA-Z]/.test(password);
-    if (!hasNumberOrSymbolandLetters) {
-      setErr("Password must contain at least one number or symbol.");
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setErr(passwordError);
       return;
     }
 

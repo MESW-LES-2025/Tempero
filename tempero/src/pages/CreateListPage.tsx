@@ -41,7 +41,7 @@ export default function CreateListPage() {
   }
 
   return (
-    <main className="min-h-screen bg-bright flex justify-center py-10 px-4">
+    <main className="min-h-screen bg-bright flex justify-center mt-10 md:mt-0 py-10 px-4">
       <section className="w-full max-w-xl bg-white rounded-xl shadow-md border border-secondary/20 p-6">
         <h1 className="font-heading-styled text-3xl text-secondary mb-6">
           Create a New Thematic List

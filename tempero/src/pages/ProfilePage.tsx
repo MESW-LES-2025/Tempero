@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import chefImg from "../assets/febrian-zakaria-SiQgni-cqFg-unsplash.jpg";
 import Recipes from "../components/Recipes";
+import ReportModal from "../components/ReportModal";
 import Reviews from "../components/Reviews";
 import UserListsSection from "../components/UserListsSection";
-import ReportModal from "../components/ReportModal";
 import XpCard from "../components/XpCard";
 import { supabase } from "../config/supabaseClient";
 import { profileImageUrl } from "../utils/ImageURL";
@@ -31,7 +31,7 @@ type Profile = {
 
 export default function ProfilePage() {
   const { username } = useParams<{ username: string }>();
-  const [tab, setTab] = useState<"recipes" | "reviews" | "lists" >("recipes");
+  const [tab, setTab] = useState<"recipes" | "reviews" | "lists">("recipes");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileNotFound, setProfileNotFound] = useState<boolean>(false);
@@ -172,7 +172,7 @@ export default function ProfilePage() {
     <div className="min-h-screen w-full bg-bright flex  items-start py-10">
       <section className="w-full  flex flex-col lg:flex-row items-start justify-center gap-10 px-4 sm:px-6 lg:px-10">
         {/* LEFT CARD */}
-        <article className="relative min-w-80 w-full lg:max-w-75 lg:w-1/3 bg-white border border-secondary/30 rounded-xl shadow-sm px-4 sm:px-6 py-6 flex flex-col">
+        <article className="relative min-w-80 w-full lg:max-w-75 lg:w-1/3 bg-white border border-secondary/30 rounded-xl shadow-sm px-4 sm:px-6 py-6 flex flex-col mt-10 md:mt-0">
           {/* Top section: Avatar + Name side by side */}
           <div className="flex items-start gap-4 mb-4">
             {/* Avatar */}
@@ -203,7 +203,6 @@ export default function ProfilePage() {
               <h1 className="font-heading-styled text-2xl sm:text-3xl text-secondary mt-4 wrap-break-word">
                 {displayName}
               </h1>
-
             </div>
           </div>
 
@@ -240,13 +239,23 @@ export default function ProfilePage() {
                 >
                   {followLoading ? "..." : isFollowing ? "Unfollow" : "Follow"}
                 </button>
-                
+
                 <button
                   onClick={() => setShowReportModal(true)}
                   className="mt-2 text-xs text-dark/50 hover:text-main font-body transition-colors flex items-center justify-center gap-1"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"
+                    />
                   </svg>
                   Report User
                 </button>
@@ -327,7 +336,6 @@ export default function ProfilePage() {
             >
               Lists
             </button>
-
           </div>
 
           {tab === "recipes" ? (
@@ -342,7 +350,7 @@ export default function ProfilePage() {
           )}
         </div>
       </section>
-      
+
       {profile && (
         <ReportModal
           isOpen={showReportModal}

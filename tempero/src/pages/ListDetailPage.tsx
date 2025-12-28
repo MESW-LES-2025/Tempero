@@ -39,9 +39,10 @@ export default function ListDetailPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type?: "error" | "success" } | null>(
-    null
-  );
+  const [toast, setToast] = useState<{
+    message: string;
+    type?: "error" | "success";
+  } | null>(null);
 
   // async function handleRemove(recipeId: string) {
   //   if (!playlistId) return;
@@ -111,7 +112,7 @@ export default function ListDetailPage() {
       : owner?.username ?? "Unknown cook";
 
   return (
-    <main className="min-h-screen bg-bright">
+    <main className="min-h-screen bg-bright mt-10 md:mt-0">
       <section className="mx-auto max-w-4xl px-4 pb-12 pt-8 sm:px-6 lg:px-8">
         <header className="mb-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
