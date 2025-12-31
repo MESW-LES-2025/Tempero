@@ -505,7 +505,7 @@ export default function SearchPage() {
             <div className="py-12 text-center text-red-600">{err}</div>
           ) : tab === "recipes" ? (
             <>
-            <div className="grid gap-5 grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] auto-rows-[24rem]">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4 justify-items-center sm:justify-items-start">
               {visibleRecipes.map((recipe) => (
                 <RecipeCard
                 key={recipe.id}

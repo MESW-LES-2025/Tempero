@@ -67,7 +67,7 @@ function MainLayout() {
   return (
     <div className="min-h-screen flex flex-col bg-bright">
       <Navbar />
-      <main className="flex-1 py-5 px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 p-0 ">
         <Outlet />
       </main>
       <Footer />

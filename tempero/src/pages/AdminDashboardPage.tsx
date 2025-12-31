@@ -72,8 +72,8 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-bright py-10 px-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen w-full bg-bright ">
+      <div className="px-4 pb-12 pt-23 lg:pt-8 sm:px-6 lg:px-10">
         <h1 className="text-4xl font-heading text-secondary mb-8">Admin Dashboard</h1>
         
         {/* Tabs */}
