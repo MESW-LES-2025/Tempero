@@ -80,24 +80,9 @@ export type Step = {
 };
 
 export default function UploadRecipeButton() {
-    const [isAdmin, setIsAdmin] = useState(false);
 
-    useEffect(() => {
-        (async () => {
-            const { data } = await supabase.auth.getUser();
-            if (!data.user) return;
-            
-            const { data: profile } = await supabase
-                .from("profiles")
-                .select("is_admin")
-                .eq("auth_id", data.user.id)
-                .single();
-            
-            setIsAdmin(profile?.is_admin || false);
-        })();
-    }, []);
 
-    if (isAdmin) return null;
+
 
     return (
         <button className="bg-main text-bright text-3xl font-heading fixed right-6 bottom-10 py-2 px-4 rounded shadow-2xl hover:cursor-pointer hover:-translate-y-1 hover:opacity-80 transition-all">

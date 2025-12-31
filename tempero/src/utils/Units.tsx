@@ -32,6 +32,7 @@ export const Units: Unit[] = [
 
 
   // COUNT (no conversion)
+  { name: 'to taste',   system: 'neutral', kind: 'count', base: 'piece', factorToBase: 1, factorFromBase: 1 },
   { name: 'piece',   system: 'neutral', kind: 'count', base: 'piece', factorToBase: 1, factorFromBase: 1 },
   { name: 'slice',   system: 'neutral', kind: 'count', base: 'piece', factorToBase: 1, factorFromBase: 1 },
   { name: 'clove',   system: 'neutral', kind: 'count', base: 'piece', factorToBase: 1, factorFromBase: 1 },
@@ -39,6 +40,8 @@ export const Units: Unit[] = [
   { name: 'dash',    system: 'neutral', kind: 'count', base: 'piece', factorToBase: 1, factorFromBase: 1 },
   { name: 'handful', system: 'neutral', kind: 'count', base: 'piece', factorToBase: 1, factorFromBase: 1 },
   { name: 'bunch',   system: 'neutral', kind: 'count', base: 'piece', factorToBase: 1, factorFromBase: 1 },
+  { name: 'leaf',   system: 'neutral', kind: 'count', base: 'piece', factorToBase: 1, factorFromBase: 1 },
+  { name: 'stem',   system: 'neutral', kind: 'count', base: 'piece', factorToBase: 1, factorFromBase: 1 },
 ];
 
 export const getUnit = (name: string) =>
