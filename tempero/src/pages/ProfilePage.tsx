@@ -302,7 +302,7 @@ export default function ProfilePage() {
         {isOwnProfile && <XpCard />}
 
         {/* RIGHT SIDE */}
-        <div className="w-full ">
+        <div className="w-full">
           <div className="flex gap-6 mb-5 border-b border-dark/10 font-heading text-lg ">
             <button
               className={`pb-2 ${

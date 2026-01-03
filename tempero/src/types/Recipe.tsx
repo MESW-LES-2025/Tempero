@@ -80,12 +80,8 @@ export type Step = {
 };
 
 export default function UploadRecipeButton() {
-
-
-
-
     return (
-        <button className="bg-main text-bright text-3xl font-heading fixed right-6 bottom-10 py-2 px-4 rounded shadow-2xl hover:cursor-pointer hover:-translate-y-1 hover:opacity-80 transition-all">
+        <button className="bg-main text-bright text-3xl font-heading sticky  bottom-18 py-2 px-4 w-14 h-14 rounded shadow-2xl hover:cursor-pointer hover:-translate-y-1 hover:opacity-80 transition-all ">
             <NavLink to="/upload-recipe">+</NavLink>
         </button>
     )
