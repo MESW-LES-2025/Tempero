@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes, Navigate, Outlet, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "./config/supabaseClient";
+import ScrollToTop from "./components/ScrollToTop";
 import ErrorImage from "./assets/404.png";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
@@ -78,6 +79,7 @@ function MainLayout() {
 export default function App() {
   return (
     <BrowserRouter basename="/Tempero">
+      <ScrollToTop />
       <Routes>
         {/* Full-bleed auth pages: no navbar/footer/padding */}
         <Route path="login" element={<LoginPage />} />
