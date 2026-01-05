@@ -127,6 +127,8 @@ function DetailsStep() {
 
 function IngredientsStep() {
   const { form, setForm } = useUploadRecipe();
+  const addButtonRef = useRef<HTMLButtonElement>(null);
+  const [shouldScroll, setShouldScroll] = useState(false);
 
   function addIngredient() {
     // We add a temp ID for React 'key' props.
@@ -138,7 +140,15 @@ function IngredientsStep() {
         { id: crypto.randomUUID(), name: "", amount: 1, unit: "", note: "" },
       ],
     }));
+    setShouldScroll(true);
   }
+
+  useEffect(() => {
+    if (shouldScroll && addButtonRef.current) {
+      addButtonRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      setShouldScroll(false);
+    }
+  }, [form.ingredients.length, shouldScroll]);
 
   function updateIngredient(idx: number, patch: any) {
     setForm((p) => {
@@ -159,11 +169,14 @@ function IngredientsStep() {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-col gap-2">
+    <div className="space-y-3 custom-scroll" id="ingredient-list">
+      <div className="flex flex-col gap-2"  >
         {form.ingredients.map((ing, i) => (
           // Use ing.id for the key to ensure input focus stability
-          <div key={ing.id} className="space-y-1 mb-4">
+          <div 
+            key={ing.id} 
+            className="space-y-1 mb-4"
+          >
             <div className="flex gap-2">
               <input
                 className="w-full rounded-lg border px-3 py-2 outline-none shadow-lg bg-bright focus:ring-1 focus:ring-main focus:shadow-main/20 border-none transition-all duration-200 ease-in-out"
@@ -216,9 +229,11 @@ function IngredientsStep() {
       </div>
 
       <button
+        ref={addButtonRef}
         type="button"
         onClick={addIngredient}
         className="mt-2 px-3 py-2 bg-main text-bright rounded text-sm"
+        
       >
         Add ingredient
       </button>
