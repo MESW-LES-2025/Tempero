@@ -243,6 +243,8 @@ function IngredientsStep() {
 
 function StepsStep() {
   const { form, setForm } = useUploadRecipe();
+  const addStepButtonRef = useRef<HTMLButtonElement>(null);
+  const [shouldScroll, setShouldScroll] = useState(false);
 
   function addStep() {
     setForm((p) => ({
@@ -252,7 +254,16 @@ function StepsStep() {
         { id: makeId(), index: p.steps.length + 1, description: "" },
       ],
     }));
+    setShouldScroll(true);
   }
+
+  useEffect(() => {
+    if (shouldScroll && addStepButtonRef.current) {
+      addStepButtonRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      setShouldScroll(false);
+    }
+  }, [form.steps.length, shouldScroll]);
+
   function updateStep(idx: number, desc: string) {
     setForm((p) => {
       const steps = [...p.steps];
@@ -293,6 +304,7 @@ function StepsStep() {
       </div>
 
       <button
+        ref={addStepButtonRef}
         type="button"
         onClick={addStep}
         className="mt-2 px-3 py-2 bg-main text-bright rounded text-sm"
