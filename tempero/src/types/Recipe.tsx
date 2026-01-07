@@ -1,6 +1,5 @@
 import { NavLink } from "react-router-dom";
 import { supabase } from "../config/supabaseClient";
-import { useEffect, useState } from "react";
 
 export type RecipePreview = {
     id: string;
