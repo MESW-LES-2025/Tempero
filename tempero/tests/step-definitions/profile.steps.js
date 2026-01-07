@@ -70,13 +70,13 @@ When('I visit another user\'s profile {string}', async function (url) {
 Then('I should see wayne\'s display name', async function () {
   const displayName = await this.page.locator('h1.font-heading-styled').textContent();
   expect(displayName).toBeTruthy();
-  await this.page.waitForTimeout(500);
+  await this.page.waitForTimeout(1000);
 });
 
 Then('I should not see an {string} button', async function (buttonText) {
   const button = await this.page.locator(`button:has-text("${buttonText}")`);
   await expect(button).not.toBeVisible();
-  await this.page.waitForTimeout(500);
+  await this.page.waitForTimeout(1000);
 });
 
 // ============================================================================
@@ -93,7 +93,7 @@ Given('I am on user {string} profile page', async function (username) {
 Given('I am not following {string}', async function (username) {
   const button = await this.page.locator('button:has-text("Follow")');
   await expect(button).toBeVisible();
-  await this.page.waitForTimeout(500);
+  await this.page.waitForTimeout(1000);
 });
 
 When('I click the {string} button', async function (buttonText) {
@@ -106,7 +106,7 @@ Then('the button should change to {string}', async function (buttonText) {
   await this.page.waitForTimeout(2000);
   const button = await this.page.locator(`button:has-text("${buttonText}")`);
   await expect(button).toBeVisible({ timeout: 15000 });
-  await this.page.waitForTimeout(500);
+  await this.page.waitForTimeout(1000);
 });
 
 Then('the followers count should increase by 1', async function () {
@@ -176,7 +176,7 @@ Then('the {string} tab should be active', async function (tabName) {
   const tab = await this.page.locator(`button:has-text("${tabName}")`);
   const classes = await tab.getAttribute('class');
   expect(classes).toContain('text-secondary');
-  await this.page.waitForTimeout(500);
+  await this.page.waitForTimeout(1000);
 });
 
 Then('I should see the reviews content', async function () {
@@ -209,7 +209,7 @@ When('I visit the profile page {string}', async function (url) {
 Then('I should see {string}', async function (text) {
   const element = await this.page.locator(`text=${text}`);
   await expect(element).toBeVisible();
-  await this.page.waitForTimeout(500);
+  await this.page.waitForTimeout(1000);
 });
 
 // ============================================================================
@@ -223,7 +223,7 @@ Given('a user {string} has a bio {string}', async function (username, bio) {
 Then('I should see the bio {string}', async function (bio) {
   const bioElement = await this.page.locator(`text=${bio}`);
   await expect(bioElement).toBeVisible();
-  await this.page.waitForTimeout(500);
+  await this.page.waitForTimeout(1000);
 });
 
 // ============================================================================
@@ -246,7 +246,7 @@ Given('a user {string} has no bio', async function (username) {
 Then('I should see an error {string}', async function (errorMessage) {
   const error = await this.page.locator('text=' + errorMessage);
   await expect(error).toBeVisible();
-  await this.page.waitForTimeout(500);
+  await this.page.waitForTimeout(1000);
 });
 
 // ============================================================================

@@ -22,9 +22,9 @@ export default function PublicListsPage() {
 
   return (
     <main className="min-h-screen bg-bright">
-      <section className="mx-auto max-w-5xl px-4 pb-12 pt-8 sm:px-6 lg:px-10">
+      <section className="  px-4 pb-12 pt-13 lg:pt-8 sm:px-6 lg:px-10">
         <header className="mt-10 md:mt-0 mb-6">
-          <h1 className="text-2xl font-heading text-secondary sm:text-3xl">
+          <h1 className="text-3xl lg:text-4xl font-heading-styled text-secondary ">
             Recipe lists
           </h1>
           <p className="mt-1 text-sm font-body text-dark">

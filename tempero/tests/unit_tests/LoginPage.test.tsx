@@ -5,6 +5,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import LoginPage from "../../src/pages/LoginPage";
 import { supabase } from "../../src/config/supabaseClient";
+import "@testing-library/jest-dom/vitest";
+
 
 // mock react-router-dom
 const mockNavigate = vi.fn();

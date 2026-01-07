@@ -4,6 +4,7 @@ import { supabase } from "../../src/config/supabaseClient";
 
 vi.mock("../../src/config/supabaseClient", () => {
   return {
+    isStaging: false,
     supabase: {
       storage: {
         from: vi.fn(() => ({

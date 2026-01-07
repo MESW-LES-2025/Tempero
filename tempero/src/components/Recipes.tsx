@@ -43,13 +43,15 @@ export default function Recipes({ userId }: RecipesProps) {
 
 
   return (
-    <div
-      className="grid w-full grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4 justify-items-center sm:justify-items-start"
-    >
-      {recipes.map((r) => (
-      <RecipeCard key={r.id} recipe={r} />
-      ))}
-      <UploadRecipeButton />
+    <div className="relative w-full">
+      <div className="grid w-full grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4 justify-items-center sm:justify-items-start">
+        {recipes.map((r) => (
+          <RecipeCard key={r.id} recipe={r} />
+        ))}
+      </div>
+      <div className="sticky bottom-16 w-full flex justify-end pr-4 pt-4">
+        <UploadRecipeButton />
+      </div>
     </div>
   );
 }

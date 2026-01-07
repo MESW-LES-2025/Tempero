@@ -100,7 +100,7 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-bright">
-      <main className="max-w-6xl mx-auto pt-24 pb-16 px-4 sm:px-8">
+      <main className="px-4 pb-12 pt-23 md:pt-8 sm:px-6 lg:px-10">
         <header className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-4xl font-heading-styled text-secondary mb-2">
