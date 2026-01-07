@@ -6,3 +6,4 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_KEY as string;
 
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
+export const isStaging = supabaseUrl.includes("qpjltqswskalpzjwnool");
