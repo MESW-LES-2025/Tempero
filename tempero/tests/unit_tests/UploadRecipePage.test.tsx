@@ -99,6 +99,7 @@ const renderPage = () =>
 describe("UploadRecipePage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.HTMLElement.prototype.scrollIntoView = vi.fn();
   });
   it("faz upload de imagem JPG, chama compressImage e uploadImage e guarda imagePath", async () => {
     // user logado para não haver stresses mais tarde
