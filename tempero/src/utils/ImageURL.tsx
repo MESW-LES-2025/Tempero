@@ -1,4 +1,4 @@
-import { supabase } from "../config/supabaseClient";
+import { isStaging, supabase } from "../config/supabaseClient";
 
 
 export function recipeImageUrl(
@@ -9,13 +9,13 @@ export function recipeImageUrl(
 
   const { data } = supabase.storage
     .from("images")
-    .getPublicUrl(path, {
+    .getPublicUrl(path, !isStaging ? {
       transform: {
         width,
         quality: 80,
         format: "origin",
       },
-    });
+    } : {});
 
   return data.publicUrl;
 }
@@ -28,13 +28,13 @@ export function profileImageUrl(
 
   const { data } = supabase.storage
     .from("images")
-    .getPublicUrl(path, {
+    .getPublicUrl(path, !isStaging ? {
       transform: {
         width,
         quality: 80,
         format: "origin",
       },
-    });
+    } : {});
 
   return data.publicUrl;
 }
