@@ -27,7 +27,6 @@ export default function RecipeCard({
 }: RecipeCardProps) {
   const imgSrc = resolveImage(
     recipe.image_url,
-    variant === "grid" ? 600 : 360
   );
 
   // --- LIST VARIANT (mantido como tinhas) ---
@@ -154,10 +153,10 @@ export default function RecipeCard({
   );
 }
 
-function resolveImage(imagePath?: string | null, width = 600) {
+function resolveImage(imagePath?: string | null) {
   if (!imagePath) return undefined;
   if (imagePath.startsWith("http")) return imagePath;
-  return recipeImageUrl(imagePath, width);
+  return recipeImageUrl(imagePath);
 }
 
 function MetaPill({ label, value }: { label: string; value?: string }) {

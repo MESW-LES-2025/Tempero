@@ -312,7 +312,7 @@ export default function RecipePage() {
   }, [id]);
 
   const heroImage = useMemo(
-    () => recipeImageUrl(recipe?.image_url ?? null, 900),
+    () => recipeImageUrl(recipe?.image_url ?? null),
     [recipe?.image_url]
   );
 
