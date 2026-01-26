@@ -13,6 +13,13 @@ type RecipesProps = {
 export default function Recipes({ userId }: RecipesProps) {
   const [recipes, setRecipes] = useState<RecipePreview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setCurrentUserId(data?.user?.id ?? null);
+    });
+  }, []);
 
   useEffect(() => {
     if (!userId) {
@@ -41,6 +48,7 @@ export default function Recipes({ userId }: RecipesProps) {
 
   if (loading) return <Loader message="Fetching recipes..." />;
 
+  const isOwnProfile = currentUserId && userId && currentUserId === userId;
 
   return (
     <div className="relative w-full">
@@ -49,9 +57,11 @@ export default function Recipes({ userId }: RecipesProps) {
           <RecipeCard key={r.id} recipe={r} />
         ))}
       </div>
-      <div className="sticky bottom-16 w-full flex justify-end pr-4 pt-4">
-        <UploadRecipeButton />
-      </div>
+      {isOwnProfile && (
+        <div className="sticky bottom-16 w-full flex justify-end pr-4 pt-4">
+          <UploadRecipeButton />
+        </div>
+      )}
     </div>
   );
 }
