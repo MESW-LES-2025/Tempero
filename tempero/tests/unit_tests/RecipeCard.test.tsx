@@ -7,7 +7,7 @@ import { recipeImageUrl } from "../../src/utils/ImageURL";
 // mock recipeImageUrl para controlarmos o comportamento de resolveImage
 vi.mock("../../src/utils/ImageURL", () => {
   return {
-    recipeImageUrl: vi.fn((path: string, width: number) => `https://cdn.test/${width}/${path}`),
+    recipeImageUrl: vi.fn((path: string) => `https://cdn.test/${path}`),
   };
 });
 
@@ -35,12 +35,12 @@ describe("RecipeCard", () => {
 
     renderWithRouter(<RecipeCard recipe={recipe} />); // default variant = grid
 
-    // recipeImageUrl é chamado com width 600
-    expect(mockedRecipeImageUrl).toHaveBeenCalledWith("recipes/test.jpg", 600);
+    // recipeImageUrl é chamado 
+    expect(mockedRecipeImageUrl).toHaveBeenCalledWith("recipes/test.jpg");
 
     const img = screen.getByRole("img", { name: /test recipe/i }) as HTMLImageElement;
     expect(img).toBeInTheDocument();
-    expect(img.src).toBe("https://cdn.test/600/recipes/test.jpg");
+    expect(img.src).toBe("https://cdn.test/recipes/test.jpg");
 
     // difficulty numérica -> "3/5"
     expect(screen.getByText(/difficulty:/i).textContent).toMatch(/3\/5/);
@@ -101,7 +101,7 @@ describe("RecipeCard", () => {
     );
 
     // resolveImage chamou recipeImageUrl com largura 360
-    expect(mockedRecipeImageUrl).toHaveBeenCalledWith("recipes/list.jpg", 360);
+    expect(mockedRecipeImageUrl).toHaveBeenCalledWith("recipes/list.jpg");
 
     // título como link
     const links = screen.getAllByRole("link", { name: /list recipe/i });
