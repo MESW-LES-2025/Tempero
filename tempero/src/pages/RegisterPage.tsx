@@ -110,6 +110,10 @@ useEffect(() => {
       email,
       password,
       options: {
+        emailRedirectTo:
+          window.location.hostname === "localhost"
+              ? "http://localhost:5173/Tempero/login"
+              : "https://mesw-les-2025.github.io/Tempero/login",
         data: {
           username: username.trim().toLowerCase(),
           first_name: firstName.trim(),
