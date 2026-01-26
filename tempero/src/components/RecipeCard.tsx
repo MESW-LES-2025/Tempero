@@ -27,7 +27,6 @@ export default function RecipeCard({
 }: RecipeCardProps) {
   const imgSrc = resolveImage(
     recipe.image_url,
-    variant === "grid" ? 600 : 360
   );
 
   // --- LIST VARIANT (mantido como tinhas) ---
