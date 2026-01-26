@@ -157,7 +157,7 @@ export default function RecipeCard({
 function resolveImage(imagePath?: string | null, width = 600) {
   if (!imagePath) return undefined;
   if (imagePath.startsWith("http")) return imagePath;
-  return recipeImageUrl(imagePath, width);
+  return recipeImageUrl(imagePath);
 }
 
 function MetaPill({ label, value }: { label: string; value?: string }) {
