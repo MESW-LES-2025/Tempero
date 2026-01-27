@@ -6,6 +6,7 @@ export interface Review {
   recipe_id?: string;
   author_id: string;
   description: string;
+  average_rating?: DoubleRange | null;
   review: number; // 1-5
   created_at?: string;
   updated_at?: string;
@@ -15,6 +16,8 @@ export type ReviewRecipePreview = {
   id: string;
   title: string;
   short_description?: string | null;
+  average_rating?: DoubleRange | null;
+
   image_url?: string | null;
   prep_time?: number | null;
   cook_time?: number | null;
@@ -34,6 +37,7 @@ export type ReviewFeedItem = {
   id: string;
   rating: number; // 1-5
   description?: string | null;
+  average_rating?: number | null;
   updated_at?: string | null;
   recipe: ReviewRecipePreview | null;
   author: ReviewAuthor | null;
@@ -56,6 +60,7 @@ export async function fetchRecentReviews(
         author_id,
         review,
         description,
+        average_rating,
         recipe_id,
         created_at,
         updated_at,
@@ -115,6 +120,7 @@ export async function fetchRecentReviews(
     id: r.id,
     rating: r.review,
     description: r.description ?? null,
+    average_rating: typeof r.average_rating === "number" ? r.average_rating : null,
     updated_at: r.updated_at ?? r.created_at ?? null,
     recipe: r.recipes ?? null,
     author: profileByAuthId.get(r.author_id) ?? null,

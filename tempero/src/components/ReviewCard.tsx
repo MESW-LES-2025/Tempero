@@ -17,7 +17,7 @@ export default function ReviewCard({
   const profileHref = review.author?.username
     ? `/profile/${review.author.username}`
     : undefined;
-  const safeRating = clampRating(review.rating);
+  const safeRating  =review.average_rating;
 
   return (
     <article
