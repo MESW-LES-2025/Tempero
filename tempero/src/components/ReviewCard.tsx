@@ -35,7 +35,6 @@ export default function ReviewCard({
               <span className="text-dark/60">/5</span>
             </span>
           </div>
-          <Avatar author={review.author} />
         </Link>
 
         <div className="text-sm font-body text-dark/70 flex items-center gap-2 mb-10">
@@ -89,23 +88,4 @@ function clampRating(value: number) {
   return Math.max(0, Math.min(5, Math.round(value)));
 }
 
-function Avatar({ author }: { author: ReviewAuthor | null }) {
-  const src = author?.profile_picture_url;
-  const initials = (author?.first_name?.[0] ?? author?.last_name?.[0] ?? "?").toUpperCase();
 
-  if (src) {
-    return (
-      <img
-        src={src}
-        alt={author?.username ?? "Profile picture"}
-        className="h-10 w-10 rounded-full object-cover border border-white shadow-sm"
-      />
-    );
-  }
-
-  return (
-    <div className="h-10 w-10 rounded-full bg-main/10 text-main font-semibold flex items-center justify-center border border-main/20">
-      {initials}
-    </div>
-  );
-}
