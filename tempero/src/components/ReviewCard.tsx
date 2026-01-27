@@ -83,9 +83,6 @@ function formatName(author: ReviewAuthor | null) {
   return name || author.username || "Tempero cook";
 }
 
-function clampRating(value: number) {
-  if (Number.isNaN(value)) return 0;
-  return Math.max(0, Math.min(5, Math.round(value)));
-}
+
 
 
